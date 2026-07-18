@@ -37,8 +37,8 @@ function AtsPage() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2">
           <GlassCard>
             <div className="flex items-center gap-2 text-primary"><ScanLine className="h-4 w-4" /><h3 className="font-display font-semibold">New scan</h3></div>
-            <div className="mt-5 space-y-4">
-              <label>
+            <div className="mt-5 space-y-5">
+              <label className="block">
                 <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Resume</span>
                 <select value={resumeId} onChange={(e) => setResumeId(e.target.value)} className="w-full rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm focus:border-primary focus:ring-glow">
                   <option value="">Select a resume…</option>
@@ -47,7 +47,7 @@ function AtsPage() {
                   ))}
                 </select>
               </label>
-              <label>
+              <label className="block">
                 <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Job description</span>
                 <textarea rows={10} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the full JD here…" className="w-full rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm focus:border-primary focus:ring-glow" />
               </label>
