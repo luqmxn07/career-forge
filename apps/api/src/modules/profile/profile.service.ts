@@ -14,11 +14,36 @@ export class ProfileService {
 
   async getProfile(userId: string) {
     const data = await this.profileRepository.getProfileData(userId);
-    const completionPercentage = this.calculateCompletionPercentage(data);
+    const completionScore = this.calculateCompletionPercentage(data);
 
     return {
-      ...data,
-      completionPercentage
+      id: data.profile?.id,
+      fullName: data.profile?.fullName,
+      summary: data.profile?.summary,
+      phoneNumber: data.profile?.phoneNumber,
+      location: data.profile?.location,
+      age: data.profile?.age,
+      avatarUrl: data.profile?.avatarUrl,
+      education: data.education.map((edu: any) => ({
+        id: edu.id,
+        school: edu.institution,
+        degree: edu.degree,
+        fieldOfStudy: edu.fieldOfStudy,
+        startDate: edu.startDate ? new Date(edu.startDate).getFullYear().toString() : "",
+        endDate: edu.endDate ? new Date(edu.endDate).getFullYear().toString() : ""
+      })),
+      experiences: data.experience.map((exp: any) => ({
+        id: exp.id,
+        company: exp.company,
+        role: exp.title,
+        startDate: exp.startDate ? new Date(exp.startDate).getFullYear().toString() : "",
+        endDate: exp.endDate ? new Date(exp.endDate).getFullYear().toString() : "Present",
+        description: exp.description
+      })),
+      skills: data.skills.map((s: any) => s.name),
+      languages: data.languages,
+      socialLinks: data.socialLinks,
+      completionScore
     };
   }
 
