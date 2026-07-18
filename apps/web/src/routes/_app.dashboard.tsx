@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { AreaChart, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { FileText, ScanLine, MessageSquare, Zap, Briefcase, ArrowRight } from "lucide-react";
+import { FileText, ScanLine, MessageSquare, Zap, Briefcase, ArrowRight, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { GlassCard } from "@/components/shared/GlassCard";
@@ -13,8 +13,16 @@ export const Route = createFileRoute("/_app/dashboard")({
 });
 
 function DashboardPage() {
-  const { data } = useDashboardStats();
+  const { data, isLoading } = useDashboardStats();
   
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   const resumesCount = data?.resumesCount ?? 0;
   const averageAtsScore = data?.averageAtsScore ?? 0;
   const interviewsCount = data?.interviewsCount ?? 0;
