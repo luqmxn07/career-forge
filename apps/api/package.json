@@ -10,7 +10,8 @@
     "prisma:migrate": "prisma migrate dev --schema=src/prisma/schema.prisma",
     "prisma:generate": "prisma generate --schema=src/prisma/schema.prisma",
     "prisma:studio": "prisma studio --schema=src/prisma/schema.prisma",
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "npx -y puppeteer browsers install chrome"
   },
   "prisma": {
     "seed": "tsx src/prisma/seed.ts"
