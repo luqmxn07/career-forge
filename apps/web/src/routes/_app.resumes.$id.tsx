@@ -39,6 +39,19 @@ function ResumeEditor() {
     );
   }
 
+  let parsedContent: any = {};
+  let parseError = "";
+  try {
+    parsedContent = JSON.parse(content || "{}");
+  } catch (e: any) {
+    parseError = "Invalid JSON syntax. Fix syntax to update preview.";
+  }
+  const personalInfo = parsedContent.personalInfo || {};
+  const summary = parsedContent.summary || "";
+  const experience = parsedContent.experience || [];
+  const education = parsedContent.education || [];
+  const skills = parsedContent.skills || [];
+
   return (
     <div>
       <Link to="/resumes" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
@@ -85,26 +98,94 @@ function ResumeEditor() {
           </label>
         </GlassCard>
 
-        <GlassCard>
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">Live preview</p>
-          <div className="mt-4 rounded-lg bg-white p-8 text-zinc-900 shadow-inner">
-            <h2 className="font-display text-2xl font-bold">{title || "Your Name"}</h2>
-            <p className="mt-1 text-xs text-zinc-500">San Francisco · you@work.com · linkedin.com/in/you</p>
-            <div className="mt-5 border-t border-zinc-200 pt-4">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Summary</h3>
-              <p className="mt-1.5 text-sm">Product-minded engineer with 6 years shipping consumer products at scale.</p>
+        <GlassCard className="flex flex-col">
+          <div className="flex items-center justify-between">
+            <p className="text-xs uppercase tracking-wider text-muted-foreground">Live preview</p>
+            {parseError && <span className="text-[11px] text-amber-500 font-medium">{parseError}</span>}
+          </div>
+          <div className="scrollbar-thin mt-4 max-h-[620px] overflow-y-auto rounded-lg bg-white p-8 text-zinc-900 shadow-inner">
+            {/* Header */}
+            <h2 className="font-display text-2xl font-bold tracking-tight text-zinc-950">
+              {personalInfo.fullName || title || "Your Name"}
+            </h2>
+            <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs text-zinc-500">
+              {personalInfo.location && <span>{personalInfo.location}</span>}
+              {personalInfo.location && (personalInfo.email || personalInfo.phone) && <span>·</span>}
+              {personalInfo.email && <a href={`mailto:${personalInfo.email}`} className="hover:underline">{personalInfo.email}</a>}
+              {personalInfo.email && personalInfo.phone && <span>·</span>}
+              {personalInfo.phone && <span>{personalInfo.phone}</span>}
+              {personalInfo.website && <span>·</span>}
+              {personalInfo.website && <a href={personalInfo.website} target="_blank" className="hover:underline">{personalInfo.website}</a>}
             </div>
-            <div className="mt-5">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Experience</h3>
-              <div className="mt-2 text-sm">
-                <p className="font-semibold">Senior Frontend Engineer · Stripe</p>
-                <p className="text-xs text-zinc-500">2022 — Present</p>
-                <ul className="mt-1 list-disc pl-4 text-sm">
-                  <li>Led migration of 12M+ session/day dashboard to React 19.</li>
-                  <li>Reduced first paint by 42% via streaming SSR.</li>
-                </ul>
+
+            {/* Summary */}
+            {summary && (
+              <div className="mt-5 border-t border-zinc-200 pt-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Professional Summary</h3>
+                <p className="mt-2 text-xs leading-relaxed text-zinc-700">{summary}</p>
               </div>
-            </div>
+            )}
+
+            {/* Experience */}
+            {experience.length > 0 && (
+              <div className="mt-5 border-t border-zinc-200 pt-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Work Experience</h3>
+                <div className="mt-2 space-y-4">
+                  {experience.map((exp: any, idx: number) => (
+                    <div key={idx} className="text-xs">
+                      <div className="flex items-center justify-between font-semibold text-zinc-950">
+                        <span>{exp.position} · {exp.company}</span>
+                        <span className="text-[11px] text-zinc-500 font-normal">{exp.startDate} — {exp.endDate || "Present"}</span>
+                      </div>
+                      {exp.description && (
+                        <ul className="mt-1.5 list-disc pl-4 space-y-0.5 text-zinc-700">
+                          {(Array.isArray(exp.description)
+                            ? exp.description
+                            : typeof exp.description === "string"
+                            ? exp.description.split("\n").filter((l: string) => l.trim().length > 0)
+                            : []
+                          ).map((bullet: string, bIdx: number) => (
+                            <li key={bIdx}>{bullet.replace(/^[-\*\s]+/, "")}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Education */}
+            {education.length > 0 && (
+              <div className="mt-5 border-t border-zinc-200 pt-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Education</h3>
+                <div className="mt-2 space-y-3">
+                  {education.map((edu: any, idx: number) => (
+                    <div key={idx} className="text-xs">
+                      <div className="flex items-center justify-between font-semibold text-zinc-950">
+                        <span>{edu.degree} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ""} · {edu.school}</span>
+                        <span className="text-[11px] text-zinc-500 font-normal">{edu.startDate} — {edu.endDate}</span>
+                      </div>
+                      {edu.description && <p className="mt-1 text-zinc-600">{edu.description}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Skills */}
+            {skills.length > 0 && (
+              <div className="mt-5 border-t border-zinc-200 pt-4">
+                <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Skills</h3>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {(Array.isArray(skills) ? skills : [skills]).map((skill: any, idx: number) => (
+                    <span key={idx} className="rounded bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-800">
+                      {typeof skill === "string" ? skill : skill.name || JSON.stringify(skill)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </GlassCard>
       </div>

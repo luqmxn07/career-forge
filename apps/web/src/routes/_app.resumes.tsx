@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import * as Dialog from "@radix-ui/react-dialog";
 import { FileText, Plus, Download, Clock, Loader2 } from "lucide-react";
@@ -25,6 +25,19 @@ function ResumesPage() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [templateId, setTemplateId] = useState("9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const list = resumes.length ? resumes : [
     { id: "demo-1", title: "Senior Frontend — Stripe", updatedAt: "2h ago" } as any,
