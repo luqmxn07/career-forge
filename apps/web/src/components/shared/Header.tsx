@@ -31,9 +31,7 @@ export function Header() {
       </button>
 
       <div className="flex items-center gap-2 lg:hidden">
-        <div className="grid h-8 w-8 place-items-center rounded-lg bg-linear-to-br from-primary to-primary-glow">
-          <Sparkles className="h-4 w-4 text-primary-foreground" />
-        </div>
+        <img src="/logo.png" className="h-8 w-8 object-contain" alt="CareerForge Logo" />
         <span className="font-display font-semibold">CareerForge</span>
       </div>
 

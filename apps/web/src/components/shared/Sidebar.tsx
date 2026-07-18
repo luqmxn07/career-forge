@@ -32,9 +32,7 @@ export function Sidebar() {
       )}
     >
       <div className={cn("flex items-center gap-2 px-4", collapsed && "justify-center px-2")}>
-        <div className="grid h-9 w-9 place-items-center rounded-lg bg-linear-to-br from-primary to-primary-glow shadow-[0_0_20px_hsl(212_100%_60%/0.5)]">
-          <Sparkles className="h-4 w-4 text-primary-foreground" />
-        </div>
+        <img src="/logo.png" className="h-9 w-9 object-contain" alt="CareerForge Logo" />
         {!collapsed && (
           <div>
             <p className="font-display text-sm font-semibold leading-tight">CareerForge</p>

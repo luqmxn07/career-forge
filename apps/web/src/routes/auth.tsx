@@ -12,9 +12,7 @@ function AuthLayout() {
         <div className="absolute -right-24 bottom-10 h-80 w-80 rounded-full bg-emerald/20 blur-3xl" />
         <div className="relative z-10 flex h-full flex-col justify-between p-12">
           <Link to="/" className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-linear-to-br from-primary to-primary-glow shadow-[0_0_20px_hsl(212_100%_60%/0.5)]">
-              <Sparkles className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <img src="/logo.png" className="h-9 w-9 object-contain" alt="CareerForge Logo" />
             <span className="font-display text-lg font-semibold">CareerForge</span>
           </Link>
           <div>
