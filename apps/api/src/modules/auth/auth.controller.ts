@@ -7,7 +7,7 @@ const COOKIE_NAME = "cf_refresh_token";
 const getCookieOptions = () => ({
   httpOnly: true,
   secure: env.NODE_ENV === "production",
-  sameSite: "lax" as const,
+  sameSite: (env.NODE_ENV === "production" ? "none" : "lax") as const,
   maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
 });
 
@@ -87,11 +87,8 @@ export class AuthController {
         await this.authService.logout(refreshToken);
       }
 
-      res.clearCookie(COOKIE_NAME, {
-        httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: "lax"
-      });
+      const { maxAge, ...clearOptions } = getCookieOptions();
+      res.clearCookie(COOKIE_NAME, clearOptions);
 
       res.status(200).json({
         success: true,
@@ -107,11 +104,8 @@ export class AuthController {
       const userId = (req as any).user.userId;
       await this.authService.logoutAllDevices(userId);
 
-      res.clearCookie(COOKIE_NAME, {
-        httpOnly: true,
-        secure: env.NODE_ENV === "production",
-        sameSite: "lax"
-      });
+      const { maxAge, ...clearOptions } = getCookieOptions();
+      res.clearCookie(COOKIE_NAME, clearOptions);
 
       res.status(200).json({
         success: true,
