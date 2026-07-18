@@ -32,6 +32,26 @@ export function useUpdateResume(id: string) {
 }
 export function useCompileResume(id: string) {
   return useMutation({
-    mutationFn: () => api.post<{ downloadUrl: string; jobId?: string }>(`/resume/${id}/compile`),
+    mutationFn: async () => {
+      const { jobId } = await api.post<{ jobId: string }>(`/resume/${id}/export`);
+      if (!jobId) {
+        throw new Error("No PDF generation job started");
+      }
+      
+      const checkStatus = async (): Promise<string> => {
+        const res = await api.get<{ status: string; fileUrl?: string; error?: string }>(`/resume/${id}/export/${jobId}`);
+        if (res.status === "completed" && res.fileUrl) {
+          return res.fileUrl;
+        }
+        if (res.status === "failed") {
+          throw new Error(res.error || "PDF compilation failed");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        return checkStatus();
+      };
+      
+      const downloadUrl = await checkStatus();
+      return { downloadUrl };
+    },
   });
 }

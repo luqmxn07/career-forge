@@ -13,11 +13,16 @@ export const Route = createFileRoute("/_app/resumes/$id")({
 
 function ResumeEditor() {
   const { id } = Route.useParams();
-  const { data: resume } = useResume(id);
+  const { data: resume, isLoading } = useResume(id);
   const update = useUpdateResume(id);
   const compile = useCompileResume(id);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (resume) {
@@ -25,6 +30,14 @@ function ResumeEditor() {
       setContent(typeof resume.content === "string" ? resume.content : JSON.stringify(resume.content ?? {}, null, 2));
     }
   }, [resume]);
+
+  if (!mounted || isLoading || !resume) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div>

@@ -2,11 +2,11 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import * as Dialog from "@radix-ui/react-dialog";
-import { FileText, Plus, Download, Clock } from "lucide-react";
+import { FileText, Plus, Download, Clock, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
-import { useResumes, useCreateResume } from "@/features/resume/api/resume";
+import { useResumes, useCreateResume, useCompileResume } from "@/features/resume/api/resume";
 
 export const Route = createFileRoute("/_app/resumes")({
   head: () => ({ meta: [{ title: "Resumes — CareerForge" }] }),
@@ -45,28 +45,7 @@ function ResumesPage() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {list.map((r, i) => (
-          <motion.div key={r.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
-            <Link to="/resumes/$id" params={{ id: r.id }}>
-              <GlassCard className="h-full transition-transform hover:-translate-y-0.5 hover:ring-glow">
-                <div className="flex items-start justify-between">
-                  <div className="grid h-10 w-10 place-items-center rounded-lg bg-linear-to-br from-primary/30 to-primary/0 text-primary">
-                    <FileText className="h-5 w-5" />
-                  </div>
-                  <span className="text-[10px] uppercase tracking-widest text-muted-foreground">v3</span>
-                </div>
-                <p className="mt-4 font-display text-lg font-semibold">{r.title}</p>
-                <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Clock className="h-3 w-3" /> Updated {r.updatedAt || "recently"}
-                </p>
-                <div className="mt-6 flex items-center justify-between">
-                  <span className="rounded-full bg-emerald/15 px-2 py-0.5 text-[11px] font-semibold text-emerald">ATS 88</span>
-                  <button className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-                    <Download className="h-3.5 w-3.5" /> PDF
-                  </button>
-                </div>
-              </GlassCard>
-            </Link>
-          </motion.div>
+          <ResumeCard key={r.id} r={r} i={i} />
         ))}
       </div>
 
@@ -116,5 +95,62 @@ function ResumesPage() {
         </Dialog.Portal>
       </Dialog.Root>
     </div>
+  );
+}
+
+function ResumeCard({ r, i }: { r: any; i: number }) {
+  const compile = useCompileResume(r.id);
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (r.id.startsWith("demo-")) {
+      toast.error("Please create a real resume to compile a PDF");
+      return;
+    }
+    
+    toast.promise(
+      compile.mutateAsync(),
+      {
+        loading: "Compiling PDF... This may take a few seconds",
+        success: (d) => {
+          if (d?.downloadUrl) {
+            window.open(d.downloadUrl, "_blank");
+          }
+          return "PDF ready and downloaded successfully!";
+        },
+        error: (err) => err.message || "Failed to compile PDF"
+      }
+    );
+  };
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+      <Link to="/resumes/$id" params={{ id: r.id }}>
+        <GlassCard className="h-full transition-transform hover:-translate-y-0.5 hover:ring-glow">
+          <div className="flex items-start justify-between">
+            <div className="grid h-10 w-10 place-items-center rounded-lg bg-linear-to-br from-primary/30 to-primary/0 text-primary">
+              <FileText className="h-5 w-5" />
+            </div>
+            <span className="text-[10px] uppercase tracking-widest text-muted-foreground">v3</span>
+          </div>
+          <p className="mt-4 font-display text-lg font-semibold">{r.title}</p>
+          <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3" /> Updated {r.updatedAt || "recently"}
+          </p>
+          <div className="mt-6 flex items-center justify-between">
+            <span className="rounded-full bg-emerald/15 px-2 py-0.5 text-[11px] font-semibold text-emerald">ATS 88</span>
+            <button
+              onClick={handleDownload}
+              disabled={compile.isPending}
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
+            >
+              {compile.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" /> : <Download className="h-3.5 w-3.5" />} PDF
+            </button>
+          </div>
+        </GlassCard>
+      </Link>
+    </motion.div>
   );
 }
