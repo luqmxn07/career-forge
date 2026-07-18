@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-const defaultTemplates = [
+export const defaultTemplates = [
   {
     id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d",
     name: "Modern Minimalist",
@@ -520,11 +520,13 @@ async function main() {
   console.log("✅ Seed complete!");
 }
 
-main()
-  .catch((e) => {
-    console.error("❌ Error seeding templates:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+if (process.argv[1] && (process.argv[1].includes("seed.ts") || process.argv[1].includes("seed.js"))) {
+  main()
+    .catch((e) => {
+      console.error("❌ Error seeding templates:", e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

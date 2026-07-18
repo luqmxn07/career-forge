@@ -4,9 +4,29 @@ import { logger } from "./utils/logger.js";
 import { container } from "./config/di-container.js";
 import { pdfWorker } from "./modules/pdf/pdf.worker.js";
 import { reminderWorker } from "./modules/job-tracker/reminder.worker.js";
+import { defaultTemplates } from "./prisma/seed.js";
 
-const server = app.listen(env.PORT, () => {
+const server = app.listen(env.PORT, async () => {
   logger.info(`🚀 CareerForge Server started in ${env.NODE_ENV} mode on port ${env.PORT}`);
+  
+  // Auto-seed database templates on startup if table is empty
+  try {
+    const prisma = container.prisma;
+    const count = await prisma.template.count();
+    if (count === 0) {
+      logger.info("🌱 Seeding database templates on startup...");
+      for (const t of defaultTemplates) {
+        await prisma.template.upsert({
+          where: { id: t.id },
+          update: t,
+          create: t
+        });
+      }
+      logger.info("✅ Database templates seeded successfully!");
+    }
+  } catch (err) {
+    logger.error("❌ Failed to auto-seed database templates on startup:", err);
+  }
 });
 
 const gracefulShutdown = async (signal: string) => {
