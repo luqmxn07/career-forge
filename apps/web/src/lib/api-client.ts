@@ -128,6 +128,9 @@ export async function apiRequest<T = unknown>(path: string, opts: RequestOptions
       "Request failed";
     throw new ApiError(String(msg), res.status, payload);
   }
+  if (payload && typeof payload === "object" && "success" in payload && "data" in payload) {
+    return (payload as any).data as T;
+  }
   return payload as T;
 }
 
