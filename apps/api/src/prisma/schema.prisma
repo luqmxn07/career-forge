@@ -1,0 +1,455 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum PlanTier {
+  FREE
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+  PAUSE
+}
+
+enum JobStage {
+  WISHLIST
+  APPLIED
+  OA
+  INTERVIEW
+  HR_ROUND
+  OFFER
+  REJECTED
+  ARCHIVED
+}
+
+enum CreditTransactionType {
+  ALLOCATION
+  CONSUMPTION
+  REFUND
+  ADJUSTMENT
+}
+
+model User {
+  id             String       @id @default(uuid()) @db.Uuid
+  email          String       @unique
+  passwordHash   String?      @map("password_hash")
+  authProvider   AuthProvider @default(EMAIL) @map("auth_provider")
+  emailVerified  Boolean      @default(false) @map("email_verified")
+  role           Role         @default(USER)
+  status         UserStatus   @default(ACTIVE)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  profile        UserProfile?
+  refreshTokens  RefreshToken[]
+  education      Education[]
+  experience     Experience[]
+  skills         Skill[]
+  languages      Language[]
+  socialLinks    SocialLink[]
+  resumes        Resume[]
+  coverLetters   CoverLetter[]
+  atsScans       AtsScan[]
+  interviews     InterviewSession[]
+  jobEntries     JobEntry[]
+  subscription   Subscription?
+  creditLedgers  AiCreditLedger[]
+  auditLogs      AuditLog[]        @relation("ActorRelation")
+  feedback       FeedbackTicket[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique
+  device    String?
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  revokedAt DateTime? @map("revoked_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model UserProfile {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @unique @map("user_id") @db.Uuid
+  fullName     String   @map("full_name")
+  phoneNumber  String?  @map("phone_number")
+  location     String?
+  age          String?
+  summary      String?  @db.Text
+  avatarUrl    String?  @map("avatar_url")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model Education {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  institution  String
+  degree       String
+  fieldOfStudy String?  @map("field_of_study")
+  startDate    DateTime @map("start_date")
+  endDate      DateTime? @map("end_date")
+  isCurrent    Boolean  @default(false) @map("is_current")
+  gpa          String?
+  description  String?  @db.Text
+  sortOrder    Int      @default(0) @map("sort_order")
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("education_entries")
+}
+
+model Experience {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  company      String
+  title        String
+  location     String?
+  startDate    DateTime @map("start_date")
+  endDate      DateTime? @map("end_date")
+  isCurrent    Boolean  @default(false) @map("is_current")
+  description  String?  @db.Text
+  sortOrder    Int      @default(0) @map("sort_order")
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("experience_entries")
+}
+
+model Skill {
+  id        String  @id @default(uuid()) @db.Uuid
+  userId    String  @map("user_id") @db.Uuid
+  name      String
+  category  String? // Technical, Soft, Tools
+  level     String? // Beginner, Intermediate, Expert
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@map("skills")
+}
+
+model Language {
+  id          String @id @default(uuid()) @db.Uuid
+  userId      String @map("user_id") @db.Uuid
+  name        String
+  proficiency String // Native, Fluent, Conversational, Basic
+
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@map("languages")
+}
+
+model SocialLink {
+  id        String @id @default(uuid()) @db.Uuid
+  userId    String @map("user_id") @db.Uuid
+  platform  String // LinkedIn, GitHub, Website, etc.
+  url       String
+
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@map("social_links")
+}
+
+model Template {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String   @unique
+  thumbnailUrl  String?  @map("thumbnail_url")
+  htmlStructure String   @map("html_structure") @db.Text
+  cssStyles     String   @map("css_styles") @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  resumes       Resume[]
+
+  @@map("templates")
+}
+
+model Resume {
+  id            String          @id @default(uuid()) @db.Uuid
+  userId        String          @map("user_id") @db.Uuid
+  templateId    String          @map("template_id") @db.Uuid
+  title         String
+  themeSettings Json            @map("theme_settings")
+  content       Json // Current state of sections, bullets, etc.
+  isLocked      Boolean         @default(false) @map("is_locked")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  deletedAt     DateTime?       @map("deleted_at")
+
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  template      Template        @relation(fields: [templateId], references: [id])
+  versions      ResumeVersion[]
+  scans         AtsScan[]
+
+  @@index([userId, deletedAt])
+  @@map("resumes")
+}
+
+model ResumeVersion {
+  id              String    @id @default(uuid()) @db.Uuid
+  resumeId        String    @map("resume_id") @db.Uuid
+  contentSnapshot Json      @map("content_snapshot")
+  changeSummary   String?   @map("change_summary")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  resume          Resume    @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  jobEntries      JobEntry[]
+
+  @@map("resume_versions")
+}
+
+model AtsScan {
+  id                 String   @id @default(uuid()) @db.Uuid
+  userId             String   @map("user_id") @db.Uuid
+  resumeId           String   @map("resume_id") @db.Uuid
+  jobDescriptionHash String   @map("job_description_hash")
+  jobDescriptionText String   @map("job_description_text") @db.Text
+  overallScore       Int      @map("overall_score")
+  subScores          Json     @map("sub_scores")
+  missingKeywords    Json     @map("missing_keywords")
+  formattingIssues   Json     @map("formatting_issues")
+  feedback           String   @db.Text
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume             Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId, createdAt(sort: Desc)])
+  @@map("ats_scans")
+}
+
+model CoverLetter {
+  id                 String    @id @default(uuid()) @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  title              String
+  company            String
+  role               String
+  jobDescriptionText String?   @map("job_description_text") @db.Text
+  tone               String
+  content            String    @db.Text
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+  deletedAt          DateTime? @map("deleted_at")
+
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobEntries         JobEntry[]
+
+  @@map("cover_letters")
+}
+
+model InterviewSession {
+  id                 String              @id @default(uuid()) @db.Uuid
+  userId             String              @map("user_id") @db.Uuid
+  type               String // HR, Technical, Behavioral, Resume, JD
+  difficulty         String // Entry, Mid, Senior
+  status             String // IN_PROGRESS, COMPLETED
+  sourceResumeId     String?             @map("source_resume_id") @db.Uuid
+  jobDescriptionText String?             @map("job_description_text") @db.Text
+  startedAt          DateTime            @default(now()) @map("started_at")
+  completedAt        DateTime?           @map("completed_at")
+
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions          InterviewQuestion[]
+
+  @@map("interview_sessions")
+}
+
+model InterviewQuestion {
+  id         String            @id @default(uuid()) @db.Uuid
+  sessionId  String            @map("session_id") @db.Uuid
+  question   String            @db.Text
+  sortOrder  Int               @map("sort_order")
+  createdAt  DateTime          @default(now()) @map("created_at")
+
+  session    InterviewSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  answers    InterviewAnswer[]
+
+  @@map("interview_questions")
+}
+
+model InterviewAnswer {
+  id              String            @id @default(uuid()) @db.Uuid
+  questionId      String            @map("question_id") @db.Uuid
+  answerText      String            @map("answer_text") @db.Text
+  score           Int
+  rubricBreakdown Json              @map("rubric_breakdown")
+  feedback        String            @db.Text
+  attemptNumber   Int               @map("attempt_number")
+  createdAt       DateTime          @default(now()) @map("created_at")
+
+  question        InterviewQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("interview_answers")
+}
+
+model JobEntry {
+  id                    String            @id @default(uuid()) @db.Uuid
+  userId                String            @map("user_id") @db.Uuid
+  company               String
+  role                  String
+  stage                 JobStage          @default(WISHLIST)
+  linkedResumeVersionId String?           @map("linked_resume_version_id") @db.Uuid
+  linkedCoverLetterId   String?           @map("linked_cover_letter_id") @db.Uuid
+  notes                 String?           @db.Text
+  deadline              DateTime?
+  tags                  Json?
+  createdAt             DateTime          @default(now()) @map("created_at")
+  updatedAt             DateTime          @updatedAt @map("updated_at")
+  deletedAt             DateTime?         @map("deleted_at")
+
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumeVersion         ResumeVersion?    @relation(fields: [linkedResumeVersionId], references: [id], onDelete: SetNull)
+  coverLetter           CoverLetter?      @relation(fields: [linkedCoverLetterId], references: [id], onDelete: SetNull)
+  history               JobStageHistory[]
+
+  @@index([userId, stage, updatedAt(sort: Desc)])
+  @@map("job_entries")
+}
+
+model JobStageHistory {
+  id               String   @id @default(uuid()) @db.Uuid
+  jobEntryId       String   @map("job_entry_id") @db.Uuid
+  stage            JobStage
+  transitionedAt   DateTime @default(now()) @map("transitioned_at")
+
+  jobEntry         JobEntry @relation(fields: [jobEntryId], references: [id], onDelete: Cascade)
+
+  @@map("job_stage_history")
+}
+
+model Subscription {
+  id                     String             @id @default(uuid()) @db.Uuid
+  userId                 String             @unique @map("user_id") @db.Uuid
+  planTier               PlanTier           @default(FREE) @map("plan_tier")
+  status                 SubscriptionStatus @default(ACTIVE)
+  stripeCustomerId       String?            @map("stripe_customer_id")
+  stripeSubscriptionId   String?            @map("stripe_subscription_id")
+  renewsAt               DateTime?          @map("renews_at")
+  createdAt              DateTime           @default(now()) @map("created_at")
+  updatedAt              DateTime           @updatedAt @map("updated_at")
+
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Invoice {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  stripeInvoiceId String?  @map("stripe_invoice_id")
+  amount        Int
+  currency      String
+  status        String
+  pdfUrl        String?  @map("pdf_url")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("invoices")
+}
+
+model AiCreditLedger {
+  id             String                @id @default(uuid()) @db.Uuid
+  userId         String                @map("user_id") @db.Uuid
+  transactionType CreditTransactionType @map("transaction_type")
+  amount         Int
+  relatedFeature String?               @map("related_feature")
+  balanceAfter   Int                   @map("balance_after")
+  createdAt      DateTime              @default(now()) @map("created_at")
+
+  user           User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("ai_credit_ledgers")
+}
+
+model AuditLog {
+  id               String   @id @default(uuid()) @db.Uuid
+  actorId          String?  @map("actor_id") @db.Uuid
+  actionType       String   @map("action_type")
+  targetEntityType String   @map("target_entity_type")
+  targetEntityId   String?  @map("target_entity_id") @db.Uuid
+  beforeValue      Json?    @map("before_value")
+  afterValue       Json?    @map("after_value")
+  reasonCode       String?  @map("reason_code")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  actor            User?    @relation("ActorRelation", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+model FeedbackTicket {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  type        String // BUG, FEATURE, GENERAL
+  subject     String
+  description String   @db.Text
+  status      String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("feedback_tickets")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  title     String
+  message   String
+  type      String // INFO, SUCCESS, WARNING, AI_SUGGESTION
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+model NotificationPreference {
+  id                     String   @id @default(uuid()) @db.Uuid
+  userId                 String   @unique @map("user_id") @db.Uuid
+  emailMarketingEnabled  Boolean  @default(true) @map("email_marketing_enabled")
+  emailSecurityEnabled   Boolean  @default(true) @map("email_security_enabled")
+  emailRemindersEnabled  Boolean  @default(true) @map("email_reminders_enabled")
+  inAppAiSuggestion      Boolean  @default(true) @map("in_app_ai_suggestion")
+
+  @@map("notification_preferences")
+}
