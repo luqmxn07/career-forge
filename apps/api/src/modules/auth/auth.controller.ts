@@ -49,6 +49,7 @@ export class AuthController {
         success: true,
         data: {
           accessToken,
+          refreshToken,
           expiresIn
         }
       });
@@ -71,6 +72,7 @@ export class AuthController {
         success: true,
         data: {
           accessToken,
+          refreshToken: newRefreshToken,
           expiresIn
         }
       });

@@ -54,16 +54,26 @@ async function refreshAccessToken(): Promise<string | null> {
   if (!refreshPromise) {
     refreshPromise = (async () => {
       try {
+        const storedRefreshToken = typeof window !== "undefined" ? localStorage.getItem("cf_refresh_token") : null;
+        
         const res = await fetch(buildUrl("/auth/refresh"), {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
+          body: storedRefreshToken ? JSON.stringify({ refreshToken: storedRefreshToken }) : undefined
         });
         if (!res.ok) return null;
-        const data = (await res.json().catch(() => null)) as { accessToken?: string } | null;
-        if (data?.accessToken) {
-          setAccessToken(data.accessToken);
-          return data.accessToken;
+        const payload = (await res.json().catch(() => null)) as { success?: boolean; data?: { accessToken?: string; refreshToken?: string } } | null;
+        const tokenData = payload?.data;
+        if (tokenData?.accessToken) {
+          setAccessToken(tokenData.accessToken);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("cf_access_token", tokenData.accessToken);
+            if (tokenData.refreshToken) {
+              localStorage.setItem("cf_refresh_token", tokenData.refreshToken);
+            }
+          }
+          return tokenData.accessToken;
         }
         return null;
       } finally {

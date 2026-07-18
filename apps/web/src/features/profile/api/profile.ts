@@ -32,7 +32,8 @@ export function useUpdateProfile() {
 export function useAddEducation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: NonNullable<Profile["education"]>[number]) => api.post("/profile/education", body),
+    mutationFn: (body: { institution: string; degree: string; startDate: string; endDate?: string | null; isCurrent?: boolean }) => 
+      api.post("/profile/education", body),
     onSuccess: () => qc.invalidateQueries({ queryKey: profileKey }),
   });
 }
@@ -40,7 +41,8 @@ export function useAddEducation() {
 export function useAddExperience() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: NonNullable<Profile["experiences"]>[number]) => api.post("/profile/experience", body),
+    mutationFn: (body: { company: string; title: string; startDate: string; endDate?: string | null; isCurrent?: boolean }) => 
+      api.post("/profile/experience", body),
     onSuccess: () => qc.invalidateQueries({ queryKey: profileKey }),
   });
 }

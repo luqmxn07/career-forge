@@ -2,14 +2,14 @@ import { useMutation } from "@tanstack/react-query";
 import { api, setAccessToken } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/auth-store";
 
-export interface LoginResponse { accessToken: string; expiresIn: number; user?: any; }
+export interface LoginResponse { accessToken: string; refreshToken?: string; expiresIn: number; user?: any; }
 
 export function useLogin() {
   const setSession = useAuthStore((s) => s.setSession);
   return useMutation({
     mutationFn: (body: { email: string; password: string }) =>
       api.post<LoginResponse>("/auth/login", body),
-    onSuccess: (data) => setSession(data.accessToken, data.user ?? null),
+    onSuccess: (data) => setSession(data.accessToken, data.user ?? null, data.refreshToken),
   });
 }
 
