@@ -14,9 +14,9 @@ export const Route = createFileRoute("/_app/resumes")({
 });
 
 const templates = [
-  { id: "minimal", name: "Minimal", desc: "Clean single-column, ATS-safe" },
-  { id: "compact", name: "Compact", desc: "Two-column, dense" },
-  { id: "editorial", name: "Editorial", desc: "Elegant serif accents" },
+  { id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d", name: "Minimal", desc: "Clean single-column, ATS-safe" },
+  { id: "a3a2901a-8c5f-40e9-aa81-9b1b4d0891d2", name: "Compact", desc: "Two-column, dense" },
+  { id: "f3b39cb2-9d3f-4e0e-9273-04b39ad34b22", name: "Editorial", desc: "Elegant serif accents" },
 ];
 
 function ResumesPage() {
@@ -24,7 +24,7 @@ function ResumesPage() {
   const create = useCreateResume();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [templateId, setTemplateId] = useState("minimal");
+  const [templateId, setTemplateId] = useState("9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d");
 
   const list = resumes.length ? resumes : [
     { id: "demo-1", title: "Senior Frontend — Stripe", updatedAt: "2h ago" } as any,
