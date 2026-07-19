@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Sparkles, Loader2, Zap } from "lucide-react";
+import { Sparkles, Loader2, Zap, Briefcase } from "lucide-react";
 import { motion } from "framer-motion";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
 import { useCoverLetters, useCreateCoverLetter } from "@/features/cover-letters/api/cover-letters";
 import { useResumes } from "@/features/resume/api/resume";
+import { useJobTracker } from "@/features/job-tracker/api/job-tracker";
 
 export const Route = createFileRoute("/_app/cover-letters")({
   head: () => ({ meta: [{ title: "Cover Letters — CareerForge" }] }),
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/_app/cover-letters")({
 function CoverLettersPage() {
   const { data: letters = [], isLoading: loadingLetters } = useCoverLetters();
   const { data: resumes = [], isLoading: loadingResumes } = useResumes();
+  const { data: jobCards = [] } = useJobTracker();
   const create = useCreateCoverLetter();
   const [resumeId, setResumeId] = useState("");
   const [jd, setJd] = useState("");
@@ -59,6 +61,44 @@ function CoverLettersPage() {
           <GlassCard>
             <div className="flex items-center gap-2 text-primary"><Sparkles className="h-4 w-4" /><h3 className="font-display font-semibold">Generate</h3></div>
             <div className="mt-5 space-y-4">
+              
+              {/* Auto-Fill from Tracked Jobs */}
+              {jobCards && jobCards.length > 0 && (
+                <div className="rounded-md border border-primary/30 bg-primary/10 p-3 space-y-1.5">
+                  <label className="block">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+                        <Briefcase className="h-3.5 w-3.5" /> Auto-Fill from Tracked Jobs
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        {jobCards.length} saved {jobCards.length === 1 ? "job" : "jobs"}
+                      </span>
+                    </div>
+                    <select
+                      onChange={(e) => {
+                        const selectedJob = jobCards.find((j: any) => j.id === e.target.value);
+                        if (selectedJob) {
+                          const cleanJd = (selectedJob.notes || "")
+                            .replace(/^Job Link:.*?\n?/i, "")
+                            .replace(/^Key Requirements:\s*/i, "")
+                            .trim();
+                          setJd(cleanJd || `Target Role: ${selectedJob.position} at ${selectedJob.company}`);
+                          toast.success(`Auto-filled JD for ${selectedJob.company}`);
+                        }
+                      }}
+                      defaultValue=""
+                      className="w-full rounded-md border border-glass-border bg-input px-3 py-2 text-xs outline-none focus:border-primary text-foreground"
+                    >
+                      <option value="" disabled>Select a tracked job to auto-fill details...</option>
+                      {jobCards.map((j: any) => (
+                        <option key={j.id} value={j.id}>
+                          {j.position} at {j.company} ({j.stage || "WISHLIST"})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              )}
               <select value={resumeId} onChange={(e) => setResumeId(e.target.value)} className="w-full rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm">
                 <option value="">Select resume…</option>
                 {resumes.map((r: any) => (

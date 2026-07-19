@@ -2,11 +2,12 @@ import { createFileRoute, Link, useNavigate, Outlet, useRouterState } from "@tan
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { MessageSquare, Loader2, Zap } from "lucide-react";
+import { MessageSquare, Loader2, Zap, Briefcase } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
 import { useInterviews, useCreateInterview } from "@/features/interviews/api/interviews";
 import { useResumes } from "@/features/resume/api/resume";
+import { useJobTracker } from "@/features/job-tracker/api/job-tracker";
 
 export const Route = createFileRoute("/_app/interviews")({
   head: () => ({ meta: [{ title: "Interview Simulator — CareerForge" }] }),
@@ -25,6 +26,7 @@ function InterviewsLayout() {
 function InterviewsPage() {
   const { data: sessions = [], isLoading: loadingSessions } = useInterviews();
   const { data: resumes = [], isLoading: loadingResumes } = useResumes();
+  const { data: jobCards = [] } = useJobTracker();
   const create = useCreateInterview();
   const navigate = useNavigate();
   const [resumeId, setResumeId] = useState("");
@@ -72,31 +74,73 @@ function InterviewsPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2 space-y-4">
           <GlassCard>
             <div className="flex items-center gap-2 text-primary"><MessageSquare className="h-4 w-4" /><h3 className="font-display font-semibold">Start a session</h3></div>
-            <div className="mt-5 grid gap-4 sm:grid-cols-2">
-              <select value={resumeId} onChange={(e) => setResumeId(e.target.value)} className="rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm sm:col-span-1">
-                <option value="">Select a resume…</option>
-                {resumes.map((r: any) => (
-                  <option key={r.id} value={r.id}>{r.title}</option>
-                ))}
-              </select>
-              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Target Role / Company (e.g. Frontend Dev at Google)" className="rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm" />
-              <textarea rows={7} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste Job Description..." className="rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm sm:col-span-2" />
-              <div className="sm:col-span-2">
-                <button
-                  disabled={!resumeId || !title || create.isPending}
-                  onClick={() => create.mutate({ resumeId, jobTitle: title, jobDescription: jd }, {
-                    onSuccess: (data: any) => {
-                      toast.success("Session created");
-                      if (data?.id) {
-                        navigate({ to: "/interviews/$id", params: { id: data.id } });
-                      }
-                    },
-                    onError: (e: any) => toast.error(e.message || "Failed"),
-                  })}
-                  className="btn-glow btn-glow-hover inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-semibold disabled:opacity-50"
-                >
-                  {create.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />} Begin interview session
-                </button>
+            <div className="mt-5 space-y-4">
+              
+              {/* Auto-Fill from Tracked Jobs */}
+              {jobCards && jobCards.length > 0 && (
+                <div className="rounded-md border border-primary/30 bg-primary/10 p-3 space-y-1.5">
+                  <label className="block">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+                        <Briefcase className="h-3.5 w-3.5" /> Auto-Fill from Tracked Jobs
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        {jobCards.length} saved {jobCards.length === 1 ? "job" : "jobs"}
+                      </span>
+                    </div>
+                    <select
+                      onChange={(e) => {
+                        const selectedJob = jobCards.find((j: any) => j.id === e.target.value);
+                        if (selectedJob) {
+                          setTitle(`${selectedJob.position} at ${selectedJob.company}`);
+                          const cleanJd = (selectedJob.notes || "")
+                            .replace(/^Job Link:.*?\n?/i, "")
+                            .replace(/^Key Requirements:\s*/i, "")
+                            .trim();
+                          setJd(cleanJd || `Position: ${selectedJob.position}\nCompany: ${selectedJob.company}`);
+                          toast.success(`Auto-filled session details for ${selectedJob.company}`);
+                        }
+                      }}
+                      defaultValue=""
+                      className="w-full rounded-md border border-glass-border bg-input px-3 py-2 text-xs outline-none focus:border-primary text-foreground"
+                    >
+                      <option value="" disabled>Select a tracked job to auto-fill details...</option>
+                      {jobCards.map((j: any) => (
+                        <option key={j.id} value={j.id}>
+                          {j.position} at {j.company} ({j.stage || "WISHLIST"})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              )}
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <select value={resumeId} onChange={(e) => setResumeId(e.target.value)} className="rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm sm:col-span-1">
+                  <option value="">Select a resume…</option>
+                  {resumes.map((r: any) => (
+                    <option key={r.id} value={r.id}>{r.title}</option>
+                  ))}
+                </select>
+                <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Target Role / Company (e.g. Frontend Dev at Google)" className="rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm" />
+                <textarea rows={7} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste Job Description..." className="rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm sm:col-span-2" />
+                <div className="sm:col-span-2">
+                  <button
+                    disabled={!resumeId || !title || create.isPending}
+                    onClick={() => create.mutate({ resumeId, jobTitle: title, jobDescription: jd }, {
+                      onSuccess: (data: any) => {
+                        toast.success("Session created");
+                        if (data?.id) {
+                          navigate({ to: "/interviews/$id", params: { id: data.id } });
+                        }
+                      },
+                      onError: (e: any) => toast.error(e.message || "Failed"),
+                    })}
+                    className="btn-glow btn-glow-hover inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-semibold disabled:opacity-50"
+                  >
+                    {create.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageSquare className="h-4 w-4" />} Begin interview session
+                  </button>
+                </div>
               </div>
             </div>
           </GlassCard>

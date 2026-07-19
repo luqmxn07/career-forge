@@ -2,11 +2,12 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import * as Dialog from "@radix-ui/react-dialog";
-import { FileText, Plus, Download, Clock, Loader2 } from "lucide-react";
+import { FileText, Plus, Download, Clock, Loader2, Briefcase } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
 import { useResumes, useCreateResume, useCompileResume } from "@/features/resume/api/resume";
+import { useJobTracker } from "@/features/job-tracker/api/job-tracker";
 
 export const Route = createFileRoute("/_app/resumes")({
   head: () => ({ meta: [{ title: "Resumes — CareerForge" }] }),
@@ -30,6 +31,7 @@ const templates = [
 
 function ResumesPage() {
   const { data: resumes = [], isLoading } = useResumes();
+  const { data: jobCards = [] } = useJobTracker();
   const create = useCreateResume();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -90,10 +92,10 @@ function ResumesPage() {
     <div>
       <PageHeader
         title="Resumes"
-        description="Craft minimalist, ATS-ready resumes. PDF compilation runs asynchronously in the background."
+        description="Create, tailor, and export ATS-ready resumes with 1-click AI generation."
         actions={
-          <button onClick={() => setOpen(true)} className="btn-glow btn-glow-hover inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold">
-            <Plus className="h-4 w-4" /> New resume
+          <button onClick={() => setOpen(true)} className="btn-glow btn-glow-hover inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold">
+            <Plus className="h-4 w-4" /> Create resume
           </button>
         }
       />
@@ -108,11 +110,11 @@ function ResumesPage() {
           </button>
         </GlassCard>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {resumes.map((r, i) => (
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {resumes.map((r: any, i: number) => (
             <ResumeCard key={r.id} r={r} i={i} />
           ))}
-        </div>
+        </ul>
       )}
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -122,6 +124,47 @@ function ResumesPage() {
             <Dialog.Title className="font-display text-xl font-semibold">Create a new resume</Dialog.Title>
             <Dialog.Description className="mt-1 text-sm text-muted-foreground">Give it a title and pick a template. You can rewrite everything later.</Dialog.Description>
             <div className="mt-5 space-y-4">
+              
+              {/* Auto-Fill from Tracked Jobs */}
+              {jobCards && jobCards.length > 0 && (
+                <div className="rounded-md border border-primary/30 bg-primary/10 p-3 space-y-1.5">
+                  <label className="block">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+                        <Briefcase className="h-3.5 w-3.5" /> Auto-Fill from Tracked Jobs
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        {jobCards.length} saved {jobCards.length === 1 ? "job" : "jobs"}
+                      </span>
+                    </div>
+                    <select
+                      onChange={(e) => {
+                        const selectedJob = jobCards.find((j: any) => j.id === e.target.value);
+                        if (selectedJob) {
+                          setTitle(`${selectedJob.position} — ${selectedJob.company}`);
+                          setTargetRole(selectedJob.position);
+                          const cleanJd = (selectedJob.notes || "")
+                            .replace(/^Job Link:.*?\n?/i, "")
+                            .replace(/^Key Requirements:\s*/i, "")
+                            .trim();
+                          setTargetJd(cleanJd || `Job Position: ${selectedJob.position}\nCompany: ${selectedJob.company}`);
+                          toast.success(`Auto-filled details for ${selectedJob.company}`);
+                        }
+                      }}
+                      defaultValue=""
+                      className="w-full rounded-md border border-glass-border bg-input px-3 py-2 text-xs outline-none focus:border-primary text-foreground"
+                    >
+                      <option value="" disabled>Select a tracked job to auto-fill details...</option>
+                      {jobCards.map((j: any) => (
+                        <option key={j.id} value={j.id}>
+                          {j.position} at {j.company} ({j.stage || "WISHLIST"})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              )}
+
               <label className="block">
                 <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Title</span>
                 <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Senior Engineer — Vercel" className="w-full rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-glow" />
