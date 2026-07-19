@@ -144,8 +144,10 @@ function ResumesPage() {
                           setTitle(`${selectedJob.position} — ${selectedJob.company}`);
                           setTargetRole(selectedJob.position);
                           const cleanJd = (selectedJob.notes || "")
-                            .replace(/^Job Link:.*?\n?/i, "")
-                            .replace(/^Key Requirements:\s*/i, "")
+                            .replace(/Job Link:\s*https?:\/\/[^\s]+/gi, "")
+                            .replace(/https?:\/\/[^\s]+/gi, "")
+                            .replace(/^Key Requirements:\s*/gi, "")
+                            .replace(/^\s*[\r\n]/gm, "")
                             .trim();
                           setTargetJd(cleanJd || `Job Position: ${selectedJob.position}\nCompany: ${selectedJob.company}`);
                           toast.success(`Auto-filled details for ${selectedJob.company}`);

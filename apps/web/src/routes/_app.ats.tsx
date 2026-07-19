@@ -109,8 +109,10 @@ function AtsPage() {
                         if (selectedJob) {
                           setRole(`${selectedJob.position} — ${selectedJob.company}`);
                           const cleanJd = (selectedJob.notes || "")
-                            .replace(/^Job Link:.*?\n?/i, "")
-                            .replace(/^Key Requirements:\s*/i, "")
+                            .replace(/Job Link:\s*https?:\/\/[^\s]+/gi, "")
+                            .replace(/https?:\/\/[^\s]+/gi, "")
+                            .replace(/^Key Requirements:\s*/gi, "")
+                            .replace(/^\s*[\r\n]/gm, "")
                             .trim();
                           setJd(cleanJd || `Job Position: ${selectedJob.position}\nCompany: ${selectedJob.company}`);
                           toast.success(`Auto-filled details for ${selectedJob.company}`);

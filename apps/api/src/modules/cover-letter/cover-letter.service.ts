@@ -28,7 +28,10 @@ export class CoverLetterService {
       role: string;
       tone: string;
     }
-  ): Promise<CoverLetter> {
+    const targetCompany = data.company && data.company.trim() ? data.company : "Target Company";
+    const targetRole = data.role && data.role.trim() ? data.role : "Target Role";
+    const targetTone = data.tone || "Professional";
+
     let fullName = "Candidate";
     let summary = "";
     const highlights: string[] = [];
@@ -78,20 +81,20 @@ export class CoverLetterService {
         summary,
         highlights: highlights.slice(0, 5), // Send top 5 highlights to keep context clean
         jobDescriptionText: data.jobDescription,
-        companyName: data.company,
-        roleTitle: data.role,
-        tone: data.tone
+        companyName: targetCompany,
+        roleTitle: targetRole,
+        tone: targetTone
       });
 
       // 5. Store Cover Letter in database
-      const title = `${data.role} Cover Letter — ${data.company}`;
+      const title = `${targetRole} Cover Letter — ${targetCompany}`;
       return await this.coverLetterRepository.createCoverLetter({
         userId,
         title,
-        company: data.company,
-        role: data.role,
+        company: targetCompany,
+        role: targetRole,
         jobDescriptionText: data.jobDescription,
-        tone: data.tone,
+        tone: targetTone,
         content: aiResult.content
       });
     } catch (err: any) {

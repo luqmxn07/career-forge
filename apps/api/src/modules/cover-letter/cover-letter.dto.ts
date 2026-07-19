@@ -1,10 +1,10 @@
 import { z } from "zod";
 
 export const createCoverLetterSchema = z.object({
-  resumeId: z.string().uuid("Invalid resume ID format").optional(),
-  jobDescription: z.string().min(50, "Job description must be at least 50 characters long"),
-  company: z.string().min(1, "Company name is required"),
-  role: z.string().min(1, "Job role is required"),
+  resumeId: z.string().optional(),
+  jobDescription: z.string().min(10, "Job description must be at least 10 characters long"),
+  company: z.string().optional().default("Target Company"),
+  role: z.string().optional().default("Target Role"),
   tone: z.string().default("Professional")
 });
 

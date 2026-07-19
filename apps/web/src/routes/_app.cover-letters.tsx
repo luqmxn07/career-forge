@@ -21,16 +21,19 @@ function CoverLettersPage() {
   const create = useCreateCoverLetter();
   const [resumeId, setResumeId] = useState("");
   const [jd, setJd] = useState("");
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] = useState(false);  const [selectedCompany, setSelectedCompany] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
 
   useEffect(() => {
     setMounted(true);
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const queryJd = params.get("jd");
-      if (queryJd) {
-        setJd(queryJd);
-      }
+      const queryCompany = params.get("company");
+      const queryRole = params.get("role");
+      if (queryJd) setJd(queryJd);
+      if (queryCompany) setSelectedCompany(queryCompany);
+      if (queryRole) setSelectedRole(queryRole);
     }
   }, []);
 
@@ -78,9 +81,13 @@ function CoverLettersPage() {
                       onChange={(e) => {
                         const selectedJob = jobCards.find((j: any) => j.id === e.target.value);
                         if (selectedJob) {
+                          setSelectedCompany(selectedJob.company || "");
+                          setSelectedRole(selectedJob.position || "");
                           const cleanJd = (selectedJob.notes || "")
-                            .replace(/^Job Link:.*?\n?/i, "")
-                            .replace(/^Key Requirements:\s*/i, "")
+                            .replace(/Job Link:\s*https?:\/\/[^\s]+/gi, "")
+                            .replace(/https?:\/\/[^\s]+/gi, "")
+                            .replace(/^Key Requirements:\s*/gi, "")
+                            .replace(/^\s*[\r\n]/gm, "")
                             .trim();
                           setJd(cleanJd || `Target Role: ${selectedJob.position} at ${selectedJob.company}`);
                           toast.success(`Auto-filled JD for ${selectedJob.company}`);
@@ -99,6 +106,7 @@ function CoverLettersPage() {
                   </label>
                 </div>
               )}
+
               <select value={resumeId} onChange={(e) => setResumeId(e.target.value)} className="w-full rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm">
                 <option value="">Select resume…</option>
                 {resumes.map((r: any) => (
@@ -108,12 +116,17 @@ function CoverLettersPage() {
               <textarea rows={9} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste JD…" className="w-full rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm" />
               <button
                 disabled={!resumeId || !jd || create.isPending}
-                onClick={() => create.mutate({ resumeId, jobDescription: jd }, {
+                onClick={() => create.mutate({
+                  resumeId,
+                  jobDescription: jd,
+                  company: selectedCompany || "Target Company",
+                  role: selectedRole || "Target Role",
+                } as any, {
                   onSuccess: () => {
                     toast.success("Cover letter drafted");
                     setJd("");
                   },
-                  onError: (e: any) => toast.error(e.message || "Failed"),
+                  onError: (e: any) => toast.error(e.message || "Failed to generate cover letter"),
                 })}
                 className="btn-glow btn-glow-hover inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-semibold disabled:opacity-50"
               >

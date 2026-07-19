@@ -94,8 +94,10 @@ function InterviewsPage() {
                         if (selectedJob) {
                           setTitle(`${selectedJob.position} at ${selectedJob.company}`);
                           const cleanJd = (selectedJob.notes || "")
-                            .replace(/^Job Link:.*?\n?/i, "")
-                            .replace(/^Key Requirements:\s*/i, "")
+                            .replace(/Job Link:\s*https?:\/\/[^\s]+/gi, "")
+                            .replace(/https?:\/\/[^\s]+/gi, "")
+                            .replace(/^Key Requirements:\s*/gi, "")
+                            .replace(/^\s*[\r\n]/gm, "")
                             .trim();
                           setJd(cleanJd || `Position: ${selectedJob.position}\nCompany: ${selectedJob.company}`);
                           toast.success(`Auto-filled session details for ${selectedJob.company}`);
