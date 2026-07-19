@@ -16,9 +16,10 @@ export function Header() {
   const markAll = useMarkAllRead();
   const logout = useLogout();
   const unread = notifications.filter((n) => !n.isRead && !n.read).length;
-  const credits = user?.credits ?? 0;
+  const isAdmin = user?.role === "ADMIN" || user?.email === "aricpaul2007@gmail.com";
+  const credits = user?.credits ?? (isAdmin ? 999999 : 100);
   const creditsMax = 100;
-  const pct = Math.max(0, Math.min(100, (credits / creditsMax) * 100));
+  const pct = isAdmin ? 100 : Math.max(0, Math.min(100, (credits / creditsMax) * 100));
 
   return (
     <header className="glass-panel sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-glass-border px-4 lg:px-6">
@@ -59,15 +60,26 @@ export function Header() {
         <div className="hidden items-center gap-2 rounded-lg border border-glass-border bg-white/[0.03] px-3 py-1.5 sm:flex">
           <Zap className="h-3.5 w-3.5 text-emerald" />
           <div className="text-xs">
-            <span className="font-semibold tabular-nums text-foreground">{credits}</span>
-            <span className="text-muted-foreground"> / {creditsMax}</span>
+            {isAdmin ? (
+              <span className="font-bold text-amber-400 flex items-center gap-1">
+                <span>👑 Admin</span>
+                <span className="text-[10px] text-muted-foreground">(∞ Unlimited)</span>
+              </span>
+            ) : (
+              <>
+                <span className="font-semibold tabular-nums text-foreground">{credits}</span>
+                <span className="text-muted-foreground"> / {creditsMax}</span>
+              </>
+            )}
           </div>
-          <div className="relative h-1.5 w-20 overflow-hidden rounded-full bg-white/[0.06]">
-            <div
-              className="absolute inset-y-0 left-0 rounded-full bg-linear-to-r from-emerald to-primary-glow"
-              style={{ width: `${pct}%` }}
-            />
-          </div>
+          {!isAdmin && (
+            <div className="relative h-1.5 w-20 overflow-hidden rounded-full bg-white/[0.06]">
+              <div
+                className="absolute inset-y-0 left-0 rounded-full bg-linear-to-r from-emerald to-primary-glow"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          )}
         </div>
 
         {/* Notifications */}
@@ -153,7 +165,10 @@ export function Header() {
               className="glass-panel z-50 w-56 rounded-lg border border-glass-border p-1 shadow-2xl data-[state=open]:animate-in data-[state=open]:fade-in-0"
             >
               <div className="px-3 py-2">
-                <p className="truncate text-sm font-medium">{user?.fullName || "Signed in"}</p>
+                <div className="flex items-center justify-between">
+                  <p className="truncate text-sm font-medium">{user?.fullName || "Signed in"}</p>
+                  {isAdmin && <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">ADMIN</span>}
+                </div>
                 <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
               </div>
               <DropdownMenu.Separator className="my-1 h-px bg-glass-border" />

@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { redisClient } from "../../utils/redis.js";
 import { logger } from "../../utils/logger.js";
+import { container } from "../../container.js";
 
 export class DashboardService {
   constructor(private readonly prisma: PrismaClient) {}
@@ -53,12 +54,14 @@ export class DashboardService {
       count: group._count.id
     }));
 
+    const userCredits = await container.creditsService.getBalance(userId);
+
     const stats = {
       resumesCount,
       averageAtsScore: Math.round(atsScans._avg.overallScore || 0),
       jobTrackerStages,
       interviewsCount,
-      credits: latestLedger?.balanceAfter || 50 // default initial credits if none seeded yet
+      credits: userCredits
     };
 
     // 3. Write back to Redis with 60s TTL

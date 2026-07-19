@@ -25,6 +25,16 @@ const server = app.listen(env.PORT, async () => {
       logger.warn("⚠️ Database column verification skipped/handled:", dbErr);
     }
 
+    try {
+      await prisma.user.updateMany({
+        where: { email: { in: ["aricpaul2007@gmail.com", "admin@careerforge.com"] } },
+        data: { role: "ADMIN" }
+      });
+      logger.info("👑 Account Admin access granted to specified accounts.");
+    } catch (adminErr) {
+      logger.warn("Admin role update note:", adminErr);
+    }
+
     const count = await prisma.template.count();
     if (count === 0) {
       logger.info("🌱 Seeding database templates on startup...");

@@ -7,13 +7,13 @@ export class CreditsRepository {
    * Gets the latest balanceAfter value for a user.
    * If no transactions exist, returns 0.
    */
-  async getUserBalance(userId: string, tx?: any): Promise<number> {
+  async getUserBalance(userId: string, tx?: any): Promise<number | null> {
     const client = tx || this.prisma;
     const lastTx = await client.aiCreditLedger.findFirst({
       where: { userId },
       orderBy: { createdAt: "desc" }
     });
-    return lastTx?.balanceAfter || 0;
+    return lastTx ? lastTx.balanceAfter : null;
   }
 
   /**
