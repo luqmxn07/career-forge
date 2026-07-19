@@ -13,22 +13,16 @@ export const educationSchema = z.object({
   institution: z.string().min(1, "Institution is required"),
   degree: z.string().min(1, "Degree is required"),
   fieldOfStudy: z.string().nullable().optional(),
-  startDate: z.coerce.date({ required_error: "Start date is required" }),
+  board: z.string().nullable().optional(),
+  level: z.string().nullable().optional(),
+  marks: z.string().nullable().optional(),
+  yearOfPassing: z.string().nullable().optional(),
+  cityState: z.string().nullable().optional(),
+  startDate: z.coerce.date().nullable().optional(),
   endDate: z.coerce.date().nullable().optional(),
   isCurrent: z.boolean().default(false),
   gpa: z.string().nullable().optional(),
   description: z.string().nullable().optional()
-}).refine((data) => {
-  if (!data.isCurrent && !data.endDate) {
-    return false;
-  }
-  if (data.endDate && data.startDate > data.endDate) {
-    return false;
-  }
-  return true;
-}, {
-  message: "End date is required if not current, and must be after start date",
-  path: ["endDate"]
 });
 
 export const experienceSchema = z.object({

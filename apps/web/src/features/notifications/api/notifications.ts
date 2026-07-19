@@ -5,8 +5,10 @@ export interface Notification {
   id: string;
   title: string;
   body?: string;
-  read: boolean;
-  type?: "deadline" | "pdf" | "billing" | "system";
+  message?: string;
+  isRead?: boolean;
+  read?: boolean;
+  type?: string;
   createdAt?: string;
 }
 

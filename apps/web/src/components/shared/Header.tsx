@@ -15,7 +15,7 @@ export function Header() {
   const { data: notifications = [] } = useNotifications();
   const markAll = useMarkAllRead();
   const logout = useLogout();
-  const unread = notifications.filter((n) => !n.read).length;
+  const unread = notifications.filter((n) => !n.isRead && !n.read).length;
   const credits = user?.credits ?? 0;
   const creditsMax = 100;
   const pct = Math.max(0, Math.min(100, (credits / creditsMax) * 100));
@@ -99,7 +99,7 @@ export function Header() {
                 {unread > 0 && (
                   <button
                     onClick={() => markAll.mutate()}
-                    className="text-xs text-primary hover:underline"
+                    className="text-xs text-primary hover:underline cursor-pointer"
                   >
                     Mark all read
                   </button>
@@ -120,10 +120,10 @@ export function Header() {
                       transition={{ delay: i * 0.03 }}
                       className="flex items-start gap-2 rounded-md px-3 py-2 hover:bg-white/[0.04]"
                     >
-                      <div className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", n.read ? "bg-white/20" : "bg-primary shadow-[0_0_8px_hsl(212_100%_60%/0.8)]")} />
+                      <div className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", (n.isRead || n.read) ? "bg-white/20" : "bg-primary shadow-[0_0_8px_hsl(212_100%_60%/0.8)]")} />
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate">{n.title}</p>
-                        {n.body && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{n.body}</p>}
+                        {(n.body || n.message) && <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{n.body || n.message}</p>}
                       </div>
                     </motion.div>
                   ))}

@@ -119,19 +119,24 @@ model UserProfile {
 }
 
 model Education {
-  id           String   @id @default(uuid()) @db.Uuid
-  userId       String   @map("user_id") @db.Uuid
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @map("user_id") @db.Uuid
   institution  String
   degree       String
-  fieldOfStudy String?  @map("field_of_study")
-  startDate    DateTime @map("start_date")
+  fieldOfStudy String?   @map("field_of_study")
+  board        String?   @map("board")
+  level        String?   @map("level")
+  marks        String?   @map("marks")
+  yearOfPassing String?  @map("year_of_passing")
+  cityState    String?   @map("city_state")
+  startDate    DateTime? @map("start_date")
   endDate      DateTime? @map("end_date")
-  isCurrent    Boolean  @default(false) @map("is_current")
+  isCurrent    Boolean   @default(false) @map("is_current")
   gpa          String?
-  description  String?  @db.Text
-  sortOrder    Int      @default(0) @map("sort_order")
+  description  String?   @db.Text
+  sortOrder    Int       @default(0) @map("sort_order")
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("education_entries")
 }

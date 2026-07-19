@@ -361,4 +361,92 @@ ${ctx.answer}`;
       throw new Error("AI provider returned invalid JSON structure for Interview grading");
     }
   }
+
+  /**
+   * Generates role-tailored resume content (summary, experience STAR bullets, categorized skills)
+   */
+  async tailorResumeForRole(ctx: {
+    targetRole: string;
+    fullName?: string;
+    summary?: string;
+    experiences?: any[];
+    skills?: any[];
+  }): Promise<{
+    summary: string;
+    experience: any[];
+    skills: { technical: string[]; tools: string[]; soft: string[] };
+  }> {
+    const systemInstruction = `You are a high-level executive resume writer and career coach.
+Your job is to take a candidate's background and tailor it specifically for the role of "${ctx.targetRole}".
+Do NOT just copy-paste raw input. 
+Rewrite the professional summary to sound compelling, metric-driven, and focused on "${ctx.targetRole}".
+Rewrite experience descriptions into strong STAR-method action bullet points (starting with strong action verbs like Designed, Architected, Engineered, Implemented, Scaled).
+Categorize skills into technical (programming/frameworks), tools (platforms/IDEs/cloud), and soft skills (leadership, agile).
+
+Return JSON matching this format:
+{
+  "summary": "string",
+  "experience": [
+    {
+      "company": "string",
+      "position": "string",
+      "startDate": "string",
+      "endDate": "string",
+      "bullets": ["bullet 1", "bullet 2"]
+    }
+  ],
+  "skills": {
+    "technical": ["skill1", "skill2"],
+    "tools": ["tool1", "tool2"],
+    "soft": ["soft1", "soft2"]
+  }
+}`;
+
+    const prompt = `--- TARGET JOB ROLE ---
+${ctx.targetRole}
+
+--- CANDIDATE RAW SUMMARY ---
+${ctx.summary || "Not provided"}
+
+--- CANDIDATE EXPERIENCES ---
+${JSON.stringify(ctx.experiences || [], null, 2)}
+
+--- CANDIDATE SKILLS ---
+${JSON.stringify(ctx.skills || [], null, 2)}`;
+
+    try {
+      const rawJson = await this.callLlm(prompt, systemInstruction);
+      const parsed = JSON.parse(rawJson);
+      return {
+        summary: parsed.summary || `Results-driven ${ctx.targetRole} with hands-on experience building scalable applications and driving project success.`,
+        experience: Array.isArray(parsed.experience) ? parsed.experience : (ctx.experiences || []),
+        skills: {
+          technical: parsed.skills?.technical || (ctx.skills?.map((s: any) => typeof s === "string" ? s : s.name) || []),
+          tools: parsed.skills?.tools || ["Git", "VS Code", "Postman", "Docker"],
+          soft: parsed.skills?.soft || ["Problem Solving", "Team Collaboration", "Agile Execution"]
+        }
+      };
+    } catch (e) {
+      logger.warn("[AI Gateway] Using rule-based fallback for role tailoring due to AI response format:", e);
+      return {
+        summary: `Ambitious and detail-oriented ${ctx.targetRole} with strong technical fundamentals and hands-on experience building web applications. Dedicated to writing clean code, optimizing performance, and delivering high-quality software solutions.`,
+        experience: (ctx.experiences || []).map((exp: any) => ({
+          company: exp.company || exp.institution || "Technology Company",
+          position: exp.title || exp.position || ctx.targetRole,
+          startDate: exp.startDate || "",
+          endDate: exp.endDate || "Present",
+          bullets: [
+            `Engineered core features and API endpoints aligned with ${ctx.targetRole} best practices.`,
+            `Collaborated with cross-functional teams to deliver high-quality scalable software components.`,
+            `Optimized workflow performance, reducing latency and enhancing user interface responsiveness.`
+          ]
+        })),
+        skills: {
+          technical: (ctx.skills || []).map((s: any) => typeof s === "string" ? s : s.name).slice(0, 8),
+          tools: ["Git", "GitHub", "VS Code", "Postman"],
+          soft: ["Problem Solving", "Team Collaboration", "Agile Execution"]
+        }
+      };
+    }
+  }
 }
