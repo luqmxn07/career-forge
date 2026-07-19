@@ -31,7 +31,7 @@ export function useSubmitAnswer(id: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { questionIndex: number; answerText: string }) =>
-      api.post<{ feedback: string; score: number }>(`/interviews/${id}/answer`, body),
+      api.post<any>(`/interviews/${id}/answer`, body),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["interviews", id] }),
   });
 }
