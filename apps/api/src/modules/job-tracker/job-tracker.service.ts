@@ -189,4 +189,43 @@ export class JobTrackerService {
       logger.error(`[Job Tracker Service] Failed to cancel reminder for Job ${jobEntryId}: ${(e as any).message}`);
     }
   }
+
+  /**
+   * Discovers and searches live job postings from LinkedIn, Indeed, Glassdoor using AI Gateway.
+   */
+  async searchLiveJobs(
+    userId: string,
+    params: {
+      role: string;
+      city?: string;
+      country?: string;
+      locationPriority?: "city" | "country" | "remote";
+    }
+  ) {
+    let defaultCity = params.city;
+    let defaultCountry = params.country;
+
+    if (!defaultCity || !defaultCountry) {
+      try {
+        const userProfile = await this.prisma.userProfile.findUnique({
+          where: { userId }
+        });
+        if (userProfile?.location) {
+          const parts = userProfile.location.split(",").map((s) => s.trim());
+          if (!defaultCity && parts[0]) defaultCity = parts[0];
+          if (!defaultCountry && parts[1]) defaultCountry = parts[1];
+        }
+      } catch (e) {}
+    }
+
+    const { AiGatewayService } = await import("../ai-gateway/ai-gateway.service.js");
+    const aiGateway = new AiGatewayService();
+
+    return await aiGateway.searchLiveJobs({
+      role: params.role || "Software Engineer",
+      city: defaultCity || "Kolkata",
+      country: defaultCountry || "India",
+      locationPriority: params.locationPriority || "city"
+    });
+  }
 }

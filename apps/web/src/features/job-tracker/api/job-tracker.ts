@@ -12,6 +12,20 @@ export interface JobCard {
   tags?: string[];
 }
 
+export interface DiscoveredJob {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  city: string;
+  country: string;
+  source: string;
+  url: string;
+  salary?: string;
+  isRemote: boolean;
+  descriptionSnippet: string;
+}
+
 export function useJobTracker() {
   return useQuery({ queryKey: ["job-tracker"], queryFn: () => api.get<JobCard[]>("/job-tracker") });
 }
@@ -28,5 +42,15 @@ export function useUpdateJobCard() {
     mutationFn: ({ id, ...body }: Partial<JobCard> & { id: string }) =>
       api.patch<JobCard>(`/job-tracker/${id}`, body),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["job-tracker"] }),
+  });
+}
+export function useSearchLiveJobs() {
+  return useMutation({
+    mutationFn: (body: {
+      role: string;
+      city?: string;
+      country?: string;
+      locationPriority?: "city" | "country" | "remote";
+    }) => api.post<DiscoveredJob[]>("/job-tracker/search", body),
   });
 }

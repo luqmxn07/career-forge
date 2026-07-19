@@ -71,4 +71,23 @@ export class JobTrackerController {
       next(error);
     }
   };
+
+  searchLiveJobs = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = (req as any).user.userId;
+      const { role, city, country, locationPriority } = req.body;
+      const jobs = await this.jobTrackerService.searchLiveJobs(userId, {
+        role,
+        city,
+        country,
+        locationPriority
+      });
+      res.status(200).json({
+        success: true,
+        data: jobs
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

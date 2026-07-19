@@ -11,8 +11,10 @@ export const createJobTrackerRouter = (jobTrackerController: JobTrackerControlle
 
   router.post("/", validate({ body: createJobEntrySchema }), jobTrackerController.create);
   router.get("/", jobTrackerController.getEntries);
+  router.post("/search", jobTrackerController.searchLiveJobs);
   router.get("/:id", jobTrackerController.getEntry);
   router.put("/:id", validate({ body: updateJobEntrySchema }), jobTrackerController.update);
+  router.patch("/:id", validate({ body: updateJobEntrySchema }), jobTrackerController.update);
   router.delete("/:id", jobTrackerController.delete);
 
   return router;
