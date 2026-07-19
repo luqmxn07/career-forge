@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { redisClient } from "../../utils/redis.js";
 import { logger } from "../../utils/logger.js";
-import { container } from "../../container.js";
+import { container } from "../../config/di-container.js";
 
 export class DashboardService {
   constructor(private readonly prisma: PrismaClient) {}
