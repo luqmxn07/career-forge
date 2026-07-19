@@ -52,6 +52,98 @@ function ResumeEditor() {
   const education = parsedContent.education || [];
   const skills = parsedContent.skills || [];
 
+  const handleClientPrint = () => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      toast.error("Please allow popup windows to print resume");
+      return;
+    }
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${title || "Resume"}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    @page { size: A4; margin: 15mm; }
+    body { font-family: 'Inter', sans-serif; color: #09090b; margin: 0; padding: 0; background: #ffffff; -webkit-print-color-adjust: exact; }
+    h2 { font-size: 22px; font-weight: 800; margin: 0; color: #09090b; letter-spacing: -0.02em; }
+    .contact { margin-top: 4px; font-size: 11px; color: #71717a; display: flex; gap: 8px; flex-wrap: wrap; }
+    .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #71717a; margin-top: 18px; border-bottom: 1px solid #e4e4e7; padding-bottom: 4px; }
+    .content-text { margin-top: 6px; font-size: 12px; line-height: 1.5; color: #27272a; }
+    .item-header { display: flex; justify-content: space-between; font-weight: 600; font-size: 12px; color: #09090b; margin-top: 10px; }
+    .item-date { font-size: 11px; font-weight: 400; color: #71717a; }
+    ul { margin: 4px 0 0 0; padding-left: 18px; font-size: 12px; color: #27272a; }
+    li { margin-bottom: 3px; }
+    .skills-flex { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+    .skill-pill { background: #f4f4f5; border: 1px solid #e4e4e7; border-radius: 4px; padding: 2px 6px; font-size: 11px; color: #3f3f46; }
+  </style>
+</head>
+<body>
+  <h2>${personalInfo.fullName || title || "Your Name"}</h2>
+  <div class="contact">
+    ${personalInfo.location ? `<span>${personalInfo.location}</span>` : ""}
+    ${personalInfo.location && (personalInfo.email || personalInfo.phone) ? `<span>·</span>` : ""}
+    ${personalInfo.email ? `<span>${personalInfo.email}</span>` : ""}
+    ${personalInfo.email && personalInfo.phone ? `<span>·</span>` : ""}
+    ${personalInfo.phone ? `<span>${personalInfo.phone}</span>` : ""}
+    ${personalInfo.website ? `<span>· ${personalInfo.website}</span>` : ""}
+  </div>
+
+  ${summary ? `<div class="section-title">Professional Summary</div><div class="content-text">${summary}</div>` : ""}
+
+  ${experience.length > 0 ? `
+    <div class="section-title">Work Experience</div>
+    ${experience.map((exp: any) => `
+      <div class="item-header">
+        <span>${exp.position || exp.title || "Role"} · ${exp.company || ""}</span>
+        <span class="item-date">${exp.startDate || ""} ${exp.startDate || exp.endDate ? "—" : ""} ${exp.endDate || "Present"}</span>
+      </div>
+      ${exp.description ? `
+        <ul>
+          ${(Array.isArray(exp.description) ? exp.description : String(exp.description).split("\n"))
+            .filter((l: string) => l.trim().length > 0)
+            .map((bullet: string) => `<li>${bullet.replace(/^[-\*\s]+/, "")}</li>`).join("")}
+        </ul>
+      ` : ""}
+    `).join("")}
+  ` : ""}
+
+  ${education.length > 0 ? `
+    <div class="section-title">Education</div>
+    ${education.map((edu: any) => `
+      <div class="item-header">
+        <span>${edu.degree || ""} ${edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ""} ${edu.school ? `· ${edu.school}` : ""}</span>
+        <span class="item-date">${edu.startDate || ""} ${edu.startDate || edu.endDate ? "—" : ""} ${edu.endDate || ""}</span>
+      </div>
+      ${edu.description ? `<div class="content-text">${edu.description}</div>` : ""}
+    `).join("")}
+  ` : ""}
+
+  ${skills.length > 0 ? `
+    <div class="section-title">Skills</div>
+    <div class="skills-flex">
+      ${skills.map((s: any) => `<span class="skill-pill">${typeof s === "string" ? s : s.name || s}</span>`).join("")}
+    </div>
+  ` : ""}
+</body>
+</html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+
+    setTimeout(() => {
+      printWindow.focus();
+      printWindow.print();
+    }, 300);
+  };
+
   return (
     <div>
       <Link to="/resumes" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
@@ -81,7 +173,7 @@ function ResumeEditor() {
                       }
                     },
                     onError: (err: any) => {
-                      window.print();
+                      handleClientPrint();
                       reject(err);
                     }
                   });
@@ -97,7 +189,7 @@ function ResumeEditor() {
               {compile.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Compile PDF
             </button>
             <button
-              onClick={() => window.print()}
+              onClick={handleClientPrint}
               className="inline-flex items-center gap-2 rounded-md border border-glass-border bg-white/[0.03] px-3 py-2 text-sm text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
               title="Print or save as PDF directly from browser"
             >
@@ -125,35 +217,6 @@ function ResumeEditor() {
         </GlassCard>
 
         <GlassCard className="flex flex-col">
-          <style>{`
-            @media print {
-              body * {
-                visibility: hidden !important;
-              }
-              #printable-resume-preview, #printable-resume-preview * {
-                visibility: visible !important;
-              }
-              #printable-resume-preview {
-                position: fixed !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 100% !important;
-                height: auto !important;
-                max-height: none !important;
-                overflow: visible !important;
-                box-shadow: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                background: white !important;
-                color: black !important;
-                z-index: 999999 !important;
-              }
-              @page {
-                size: auto;
-                margin: 12mm;
-              }
-            }
-          `}</style>
           <div className="flex items-center justify-between">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">Live preview</p>
             {parseError && <span className="text-[11px] text-amber-500 font-medium">{parseError}</span>}
