@@ -38,11 +38,45 @@ export function useAddEducation() {
   });
 }
 
+export function useUpdateEducation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }: { id: string; institution?: string; degree?: string; level?: string; board?: string; marks?: string; yearOfPassing?: string; startDate?: string | null; endDate?: string | null; isCurrent?: boolean }) => 
+      api.put(`/profile/education/${id}`, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKey }),
+  });
+}
+
+export function useDeleteEducation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/profile/education/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKey }),
+  });
+}
+
 export function useAddExperience() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { company: string; title: string; startDate: string; endDate?: string | null; isCurrent?: boolean }) => 
       api.post("/profile/experience", body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKey }),
+  });
+}
+
+export function useUpdateExperience() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...body }: { id: string; company?: string; title?: string; startDate?: string; endDate?: string | null; isCurrent?: boolean }) => 
+      api.put(`/profile/experience/${id}`, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKey }),
+  });
+}
+
+export function useDeleteExperience() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/profile/experience/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: profileKey }),
   });
 }

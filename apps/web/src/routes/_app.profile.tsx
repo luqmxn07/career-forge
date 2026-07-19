@@ -2,10 +2,19 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { GraduationCap, Briefcase, User, Save, Plus, X, Loader2 } from "lucide-react";
+import { GraduationCap, Briefcase, User, Save, Plus, X, Loader2, Pencil, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
-import { useProfile, useUpdateProfile, useAddEducation, useAddExperience } from "@/features/profile/api/profile";
+import {
+  useProfile,
+  useUpdateProfile,
+  useAddEducation,
+  useUpdateEducation,
+  useDeleteEducation,
+  useAddExperience,
+  useUpdateExperience,
+  useDeleteExperience,
+} from "@/features/profile/api/profile";
 
 export const Route = createFileRoute("/_app/profile")({
   head: () => ({ meta: [{ title: "Profile — CareerForge" }] }),
@@ -16,13 +25,18 @@ function ProfilePage() {
   const { data: profile, isLoading } = useProfile();
   const update = useUpdateProfile();
   const addEdu = useAddEducation();
+  const updateEdu = useUpdateEducation();
+  const deleteEdu = useDeleteEducation();
   const addExp = useAddExperience();
+  const updateExp = useUpdateExperience();
+  const deleteExp = useDeleteExperience();
   const [mounted, setMounted] = useState(false);
 
   const [form, setForm] = useState({ fullName: "", summary: "", phoneNumber: "", location: "", age: "" });
 
   // Education form state
   const [showEduForm, setShowEduForm] = useState(false);
+  const [editingEduId, setEditingEduId] = useState<string | null>(null);
   const [eduSchool, setEduSchool] = useState("");
   const [eduDegree, setEduDegree] = useState("");
   const [eduLevel, setEduLevel] = useState("Undergraduate");
@@ -35,6 +49,7 @@ function ProfilePage() {
 
   // Experience form state
   const [showExpForm, setShowExpForm] = useState(false);
+  const [editingExpId, setEditingExpId] = useState<string | null>(null);
   const [expCompany, setExpCompany] = useState("");
   const [expRole, setExpRole] = useState("");
   const [expStartDate, setExpStartDate] = useState("");
@@ -42,6 +57,7 @@ function ProfilePage() {
   const [expIsCurrent, setExpIsCurrent] = useState(false);
 
   const resetEduForm = () => {
+    setEditingEduId(null);
     setEduSchool("");
     setEduDegree("");
     setEduLevel("Undergraduate");
@@ -55,6 +71,7 @@ function ProfilePage() {
   };
 
   const resetExpForm = () => {
+    setEditingExpId(null);
     setExpCompany("");
     setExpRole("");
     setExpStartDate("");
@@ -139,8 +156,11 @@ function ProfilePage() {
                 </div>
                 {!showEduForm && (
                   <button
-                    onClick={() => setShowEduForm(true)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-emerald hover:text-emerald-hover transition-colors"
+                    onClick={() => {
+                      resetEduForm();
+                      setShowEduForm(true);
+                    }}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-emerald hover:text-emerald-hover transition-colors cursor-pointer"
                   >
                     <Plus className="h-3.5 w-3.5" /> Add
                   </button>
@@ -160,7 +180,8 @@ function ProfilePage() {
                       if (/^\d{4}$/.test(yr)) return `${yr}-01-01`;
                       return yr;
                     };
-                    addEdu.mutate({
+
+                    const payload = {
                       institution: eduSchool,
                       degree: eduDegree,
                       level: eduLevel,
@@ -170,18 +191,36 @@ function ProfilePage() {
                       startDate: formatYearToDate(eduStartDate),
                       endDate: eduIsCurrent ? null : formatYearToDate(eduEndDate),
                       isCurrent: eduIsCurrent
-                    }, {
-                      onSuccess: () => {
-                        toast.success("Education added");
-                        resetEduForm();
-                      },
-                      onError: (err: any) => {
-                        toast.error(err.message || "Failed to add education");
-                      }
-                    });
+                    };
+
+                    if (editingEduId) {
+                      updateEdu.mutate({ id: editingEduId, ...payload }, {
+                        onSuccess: () => {
+                          toast.success("Education updated");
+                          resetEduForm();
+                        },
+                        onError: (err: any) => toast.error(err.message || "Failed to update education"),
+                      });
+                    } else {
+                      addEdu.mutate(payload, {
+                        onSuccess: () => {
+                          toast.success("Education added");
+                          resetEduForm();
+                        },
+                        onError: (err: any) => toast.error(err.message || "Failed to add education"),
+                      });
+                    }
                   }}
                   className="mt-4 p-3 border border-glass-border bg-white/[0.01] rounded-md space-y-3"
                 >
+                  <div className="flex items-center justify-between border-b border-glass-border pb-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-emerald">
+                      {editingEduId ? "Edit Education Entry" : "Add Education Entry"}
+                    </span>
+                    <button type="button" onClick={resetEduForm} className="text-muted-foreground hover:text-foreground">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                   <div>
                     <label className="mb-1 block text-xs font-medium text-muted-foreground uppercase tracking-wider">Level</label>
                     <select
@@ -207,8 +246,8 @@ function ProfilePage() {
                     <button type="button" onClick={resetEduForm} className="btn-glow border border-glass-border rounded-md px-3 py-1.5 text-xs font-semibold">
                       Cancel
                     </button>
-                    <button type="submit" disabled={addEdu.isPending} className="btn-glow bg-emerald text-black rounded-md px-3 py-1.5 text-xs font-semibold disabled:opacity-50">
-                      Save
+                    <button type="submit" disabled={addEdu.isPending || updateEdu.isPending} className="btn-glow bg-emerald text-black rounded-md px-3 py-1.5 text-xs font-semibold disabled:opacity-50">
+                      {editingEduId ? "Update" : "Save"}
                     </button>
                   </div>
                 </form>
@@ -216,12 +255,48 @@ function ProfilePage() {
                 <ul className="mt-3 space-y-3 text-sm">
                   {profile?.education && profile.education.length > 0 ? (
                     profile.education.map((ed, i) => (
-                      <li key={i} className="rounded-md border border-glass-border bg-white/[0.02] p-3">
-                        <div className="flex items-center justify-between">
-                          <p className="font-medium text-xs text-foreground">{ed.level ? `[${ed.level}] ` : ""}{ed.degree}</p>
-                          {ed.yearOfPassing && <span className="text-[11px] text-emerald-400 font-semibold">Passout: {ed.yearOfPassing}</span>}
+                      <li key={ed.id || i} className="group relative rounded-md border border-glass-border bg-white/[0.02] p-3 transition-colors hover:bg-white/[0.04]">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-xs text-foreground">{ed.level ? `[${ed.level}] ` : ""}{ed.degree}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{ed.institution || ed.school} {ed.board ? `(${ed.board})` : ""} {ed.marks ? `· Marks: ${ed.marks}` : ""}</p>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {ed.yearOfPassing && <span className="text-[11px] text-emerald-400 font-semibold mr-1">Passout: {ed.yearOfPassing}</span>}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingEduId(ed.id || null);
+                                setEduSchool(ed.institution || ed.school || "");
+                                setEduDegree(ed.degree || "");
+                                setEduLevel(ed.level || "Undergraduate");
+                                setEduBoard(ed.board || "");
+                                setEduMarks(ed.marks || "");
+                                setEduYearOfPassing(ed.yearOfPassing || "");
+                                setShowEduForm(true);
+                              }}
+                              className="p-1 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                              title="Edit Education"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            {ed.id && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  deleteEdu.mutate(ed.id!, {
+                                    onSuccess: () => toast.success("Education removed"),
+                                    onError: (err: any) => toast.error(err.message || "Failed to remove"),
+                                  });
+                                }}
+                                className="p-1 text-muted-foreground hover:text-rose-400 transition-colors cursor-pointer"
+                                title="Delete Education"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">{ed.institution || ed.school} {ed.board ? `(${ed.board})` : ""} {ed.marks ? `· Marks: ${ed.marks}` : ""}</p>
                       </li>
                     ))
                   ) : (
@@ -239,8 +314,11 @@ function ProfilePage() {
                 </div>
                 {!showExpForm && (
                   <button
-                    onClick={() => setShowExpForm(true)}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-hover transition-colors"
+                    onClick={() => {
+                      resetExpForm();
+                      setShowExpForm(true);
+                    }}
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary-hover transition-colors cursor-pointer"
                   >
                     <Plus className="h-3.5 w-3.5" /> Add
                   </button>
@@ -260,24 +338,43 @@ function ProfilePage() {
                       if (/^\d{4}$/.test(yr)) return `${yr}-01-01`;
                       return yr;
                     };
-                    addExp.mutate({
+
+                    const payload = {
                       company: expCompany,
                       title: expRole,
                       startDate: formatYearToDate(expStartDate) || "",
                       endDate: expIsCurrent ? null : formatYearToDate(expEndDate),
                       isCurrent: expIsCurrent
-                    }, {
-                      onSuccess: () => {
-                        toast.success("Experience added");
-                        resetExpForm();
-                      },
-                      onError: (err: any) => {
-                        toast.error(err.message || "Failed to add experience");
-                      }
-                    });
+                    };
+
+                    if (editingExpId) {
+                      updateExp.mutate({ id: editingExpId, ...payload }, {
+                        onSuccess: () => {
+                          toast.success("Experience updated");
+                          resetExpForm();
+                        },
+                        onError: (err: any) => toast.error(err.message || "Failed to update experience"),
+                      });
+                    } else {
+                      addExp.mutate(payload, {
+                        onSuccess: () => {
+                          toast.success("Experience added");
+                          resetExpForm();
+                        },
+                        onError: (err: any) => toast.error(err.message || "Failed to add experience"),
+                      });
+                    }
                   }}
                   className="mt-4 p-3 border border-glass-border bg-white/[0.01] rounded-md space-y-3"
                 >
+                  <div className="flex items-center justify-between border-b border-glass-border pb-2">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                      {editingExpId ? "Edit Experience Entry" : "Add Experience Entry"}
+                    </span>
+                    <button type="button" onClick={resetExpForm} className="text-muted-foreground hover:text-foreground">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                   <Field label="Company / Employer" value={expCompany} onChange={setExpCompany} placeholder="e.g. Google" />
                   <Field label="Role / Job Title" value={expRole} onChange={setExpRole} placeholder="e.g. Frontend Engineer" />
                   <div className="grid grid-cols-2 gap-2">
@@ -299,8 +396,8 @@ function ProfilePage() {
                     <button type="button" onClick={resetExpForm} className="btn-glow border border-glass-border rounded-md px-3 py-1.5 text-xs font-semibold">
                       Cancel
                     </button>
-                    <button type="submit" disabled={addExp.isPending} className="btn-glow bg-primary text-black rounded-md px-3 py-1.5 text-xs font-semibold disabled:opacity-50">
-                      Save
+                    <button type="submit" disabled={addExp.isPending || updateExp.isPending} className="btn-glow bg-primary text-black rounded-md px-3 py-1.5 text-xs font-semibold disabled:opacity-50">
+                      {editingExpId ? "Update" : "Save"}
                     </button>
                   </div>
                 </form>
@@ -308,9 +405,45 @@ function ProfilePage() {
                 <ul className="mt-3 space-y-3 text-sm">
                   {profile?.experiences && profile.experiences.length > 0 ? (
                     profile.experiences.map((ex, i) => (
-                      <li key={i} className="rounded-md border border-glass-border bg-white/[0.02] p-3">
-                        <p className="font-medium">{ex.role} · {ex.company}</p>
-                        <p className="text-xs text-muted-foreground">{ex.startDate}–{ex.endDate || "Present"}</p>
+                      <li key={ex.id || i} className="group relative rounded-md border border-glass-border bg-white/[0.02] p-3 transition-colors hover:bg-white/[0.04]">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-xs text-foreground">{ex.role} · {ex.company}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{ex.startDate}–{ex.endDate || "Present"}</p>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingExpId(ex.id || null);
+                                setExpCompany(ex.company || "");
+                                setExpRole(ex.role || "");
+                                setExpStartDate(ex.startDate || "");
+                                setExpEndDate(ex.endDate || "");
+                                setShowExpForm(true);
+                              }}
+                              className="p-1 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                              title="Edit Experience"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                            </button>
+                            {ex.id && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  deleteExp.mutate(ex.id!, {
+                                    onSuccess: () => toast.success("Experience removed"),
+                                    onError: (err: any) => toast.error(err.message || "Failed to remove"),
+                                  });
+                                }}
+                                className="p-1 text-muted-foreground hover:text-rose-400 transition-colors cursor-pointer"
+                                title="Delete Experience"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </li>
                     ))
                   ) : (
