@@ -89,4 +89,10 @@ export class InterviewsRepository {
       }
     });
   }
+
+  async deleteSession(id: string): Promise<InterviewSession> {
+    return this.prisma.interviewSession.delete({
+      where: { id }
+    });
+  }
 }
