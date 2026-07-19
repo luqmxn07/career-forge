@@ -16,7 +16,7 @@ export function Header() {
   const markAll = useMarkAllRead();
   const logout = useLogout();
   const unread = notifications.filter((n) => !n.isRead && !n.read).length;
-  const isAdmin = user?.role === "ADMIN" || user?.email === "aricpaul2007@gmail.com";
+  const isAdmin = user?.role?.toLowerCase() === "admin" || user?.email === "aricpaul2007@gmail.com";
   const credits = user?.credits ?? (isAdmin ? 999999 : 100);
   const creditsMax = 100;
   const pct = isAdmin ? 100 : Math.max(0, Math.min(100, (credits / creditsMax) * 100));
