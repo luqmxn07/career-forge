@@ -133,13 +133,19 @@ function ResumeCard({ r, i }: { r: any; i: number }) {
       compile.mutateAsync(),
       {
         loading: "Compiling PDF... This may take a few seconds",
-        success: (d) => {
+        success: (d: any) => {
           if (d?.downloadUrl) {
-            window.open(d.downloadUrl, "_blank");
+            const link = document.createElement("a");
+            link.href = d.downloadUrl;
+            link.target = "_blank";
+            link.download = `${r.title || "Resume"}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
           }
-          return "PDF ready and downloaded successfully!";
+          return "PDF compiled successfully!";
         },
-        error: (err) => err.message || "Failed to compile PDF"
+        error: (err: any) => err.message || "Failed to compile PDF"
       }
     );
   };

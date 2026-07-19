@@ -5,14 +5,24 @@ export const API_BASE_URL =
   (typeof import.meta !== "undefined" && (import.meta as any).env?.VITE_API_BASE_URL) ||
   "http://localhost:5000/api/v1";
 
-let accessToken: string | null = null;
+let accessToken: string | null = typeof window !== "undefined" ? localStorage.getItem("cf_access_token") : null;
 const listeners = new Set<(t: string | null) => void>();
 
 export function setAccessToken(token: string | null) {
   accessToken = token;
+  if (typeof window !== "undefined") {
+    if (token) {
+      localStorage.setItem("cf_access_token", token);
+    } else {
+      localStorage.removeItem("cf_access_token");
+    }
+  }
   listeners.forEach((l) => l(token));
 }
 export function getAccessToken(): string | null {
+  if (!accessToken && typeof window !== "undefined") {
+    accessToken = localStorage.getItem("cf_access_token");
+  }
   return accessToken;
 }
 export function subscribeToken(cb: (t: string | null) => void) {
@@ -97,8 +107,9 @@ export async function apiRequest<T = unknown>(path: string, opts: RequestOptions
   } else if (body !== undefined) {
     finalBody = body as BodyInit;
   }
-  if (!skipAuth && accessToken) {
-    finalHeaders["Authorization"] = `Bearer ${accessToken}`;
+  const tokenToUse = getAccessToken();
+  if (!skipAuth && tokenToUse) {
+    finalHeaders["Authorization"] = `Bearer ${tokenToUse}`;
   }
 
   const res = await fetch(buildUrl(path, query), {
