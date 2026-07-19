@@ -59,6 +59,7 @@ function ResumeEditor() {
   const [softSkillsInput, setSoftSkillsInput] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [isEnhancingSkills, setIsEnhancingSkills] = useState(false);
+  const [hasAutoTailored, setHasAutoTailored] = useState(false);
 
   const handleEnhanceSkills = async () => {
     setIsEnhancingSkills(true);
@@ -97,6 +98,62 @@ function ResumeEditor() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (resume && mounted && !hasAutoTailored) {
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const autoRole = params.get("autoTailorRole") || params.get("tailorRole");
+        const autoJd = params.get("autoTailorJd") || params.get("jd");
+
+        if (autoRole || autoJd) {
+          setHasAutoTailored(true);
+          const roleToUse = autoRole || resume.title || "Software Engineer";
+          const jdToUse = autoJd || "";
+          setTargetRole(roleToUse);
+          if (autoJd) setJobDescription(autoJd);
+
+          toast.info(`✨ Auto-tailoring resume for ${roleToUse}...`);
+          setIsTailoring(true);
+
+          api.post<{
+            summary: string;
+            experience: any[];
+            skills: { technical: string[]; tools: string[]; soft: string[] };
+          }>(`/resume/${id}/tailor`, { targetRole: roleToUse, jobDescription: jdToUse })
+            .then((res: any) => {
+              const tailoredData = res?.data || res;
+              if (tailoredData) {
+                if (tailoredData.summary) setSummary(tailoredData.summary);
+                if (tailoredData.skills) {
+                  setSkills(tailoredData.skills);
+                  setTechSkillsInput((tailoredData.skills.technical || []).join(", "));
+                  setToolsSkillsInput((tailoredData.skills.tools || []).join(", "));
+                  setSoftSkillsInput((tailoredData.skills.soft || []).join(", "));
+                }
+                if (tailoredData.experience && tailoredData.experience.length > 0) {
+                  setExperience(tailoredData.experience.map((e: any) => ({
+                    company: e.company || "",
+                    position: e.position || roleToUse,
+                    startDate: e.startDate || "",
+                    endDate: e.endDate || "Present",
+                    location: e.location || "",
+                    description: Array.isArray(e.bullets) ? e.bullets : (Array.isArray(e.description) ? e.description : [e.description || ""]),
+                  })));
+                }
+                toast.success(`✨ Auto-tailored resume for ${roleToUse}!`);
+              }
+            })
+            .catch((e: any) => {
+              toast.error(e?.message || "AI auto-tailoring encountered an issue.");
+            })
+            .finally(() => {
+              setIsTailoring(false);
+            });
+        }
+      }
+    }
+  }, [resume, mounted, hasAutoTailored, id]);
 
   useEffect(() => {
     if (resume) {

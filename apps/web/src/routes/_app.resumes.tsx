@@ -35,9 +35,25 @@ function ResumesPage() {
   const [title, setTitle] = useState("");
   const [templateId, setTemplateId] = useState("9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d");
   const [mounted, setMounted] = useState(false);
+  const [targetRole, setTargetRole] = useState("");
+  const [targetJd, setTargetJd] = useState("");
 
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const queryRole = params.get("tailorRole") || params.get("role");
+      const queryCompany = params.get("company");
+      const queryJd = params.get("jd");
+
+      if (queryRole || queryCompany) {
+        const fullTitle = queryCompany ? `${queryRole || "Role"} — ${queryCompany}` : queryRole || "";
+        setTitle(fullTitle);
+        if (queryRole) setTargetRole(queryRole);
+        if (queryJd) setTargetJd(queryJd);
+        setOpen(true);
+      }
+    }
   }, []);
 
   if (!mounted || isLoading) {
@@ -47,6 +63,27 @@ function ResumesPage() {
       </div>
     );
   }
+
+  const handleCreate = () => {
+    create.mutate(
+      { title: title || "Untitled resume", templateId },
+      {
+        onSuccess: (newResume: any) => {
+          toast.success("Resume created!");
+          setOpen(false);
+          setTitle("");
+          if (newResume?.id) {
+            const query = new URLSearchParams();
+            if (targetRole) query.set("autoTailorRole", targetRole);
+            if (targetJd) query.set("autoTailorJd", targetJd);
+            const searchStr = query.toString() ? `?${query.toString()}` : "";
+            window.location.href = `/resumes/${newResume.id}${searchStr}`;
+          }
+        },
+        onError: (err: any) => toast.error(err.message || "Failed"),
+      }
+    );
+  };
 
   return (
     <div>
@@ -108,15 +145,12 @@ function ResumesPage() {
             <div className="mt-6 flex justify-end gap-2">
               <Dialog.Close className="rounded-md border border-glass-border px-4 py-2 text-sm hover:bg-white/[0.04]">Cancel</Dialog.Close>
               <button
-                onClick={() =>
-                  create.mutate({ title: title || "Untitled resume", templateId }, {
-                    onSuccess: () => { toast.success("Resume created"); setOpen(false); setTitle(""); },
-                    onError: (err: any) => toast.error(err.message || "Failed"),
-                  })
-                }
-                className="btn-glow btn-glow-hover rounded-md px-4 py-2 text-sm font-semibold"
+                disabled={create.isPending}
+                onClick={handleCreate}
+                className="btn-glow btn-glow-hover rounded-md px-4 py-2 text-sm font-semibold flex items-center gap-1.5 disabled:opacity-50"
               >
-                Create
+                {create.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                <span>Create</span>
               </button>
             </div>
           </Dialog.Content>

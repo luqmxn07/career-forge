@@ -22,12 +22,31 @@ function AtsLayout() {
   return <AtsPage />;
 }
 
+export function getScanTitle(s: any): string {
+  if (s?.role) return `ATS Scan — ${s.role}`;
+  if (s?.jobRole) return `ATS Scan — ${s.jobRole}`;
+  if (s?.title) return s.title;
+  if (s?.jobDescriptionText || s?.jobDescription) {
+    const text = s.jobDescriptionText || s.jobDescription || "";
+    const clean = text
+      .replace(/Job Link:\s*https?:\/\/[^\s]+/gi, "")
+      .replace(/^Key Requirements:\s*/gi, "")
+      .trim();
+    const firstLine = clean.split("\n")[0]?.trim();
+    if (firstLine && firstLine.length > 3 && firstLine.length < 50) {
+      return `ATS Scan — ${firstLine}`;
+    }
+  }
+  return `ATS Scan Report`;
+}
+
 function AtsPage() {
   const { data: scans = [], isLoading: loadingScans } = useAtsScans();
   const { data: resumes = [], isLoading: loadingResumes } = useResumes();
   const create = useCreateAtsScan();
   const navigate = useNavigate();
   const [resumeId, setResumeId] = useState("");
+  const [role, setRole] = useState("");
   const [jd, setJd] = useState("");
   const [mounted, setMounted] = useState(false);
 
@@ -35,10 +54,10 @@ function AtsPage() {
     setMounted(true);
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
+      const queryRole = params.get("role") || params.get("tailorRole");
       const queryJd = params.get("jd");
-      if (queryJd) {
-        setJd(queryJd);
-      }
+      if (queryRole) setRole(queryRole);
+      if (queryJd) setJd(queryJd);
     }
   }, []);
 
@@ -68,7 +87,16 @@ function AtsPage() {
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2">
           <GlassCard>
             <div className="flex items-center gap-2 text-primary"><ScanLine className="h-4 w-4" /><h3 className="font-display font-semibold">New scan</h3></div>
-            <div className="mt-5 space-y-5">
+            <div className="mt-5 space-y-4">
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Target Role / Job Position</span>
+                <input
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  placeholder="e.g. Lead Frontend Developer"
+                  className="w-full rounded-md border border-glass-border bg-input px-3 py-2 text-xs outline-none focus:border-primary"
+                />
+              </label>
               <label className="block">
                 <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Resume</span>
                 <select value={resumeId} onChange={(e) => setResumeId(e.target.value)} className="w-full rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm focus:border-primary focus:ring-glow">
@@ -80,12 +108,12 @@ function AtsPage() {
               </label>
               <label className="block">
                 <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Job description</span>
-                <textarea rows={10} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the full JD here…" className="w-full rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm focus:border-primary focus:ring-glow" />
+                <textarea rows={8} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste the full JD here…" className="w-full rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm focus:border-primary focus:ring-glow" />
               </label>
               <button
                 disabled={!resumeId || !jd || create.isPending}
                 onClick={() =>
-                  create.mutate({ resumeId, jobDescription: jd }, {
+                  create.mutate({ resumeId, jobDescription: jd, jobRole: role } as any, {
                     onSuccess: (data: any) => {
                       toast.success("Scan complete");
                       setJd("");
@@ -114,8 +142,8 @@ function AtsPage() {
                 {scans.map((s: any) => (
                   <li key={s.id}>
                     <Link to="/ats/$id" params={{ id: s.id }} className="flex items-center justify-between rounded-md border border-glass-border bg-white/[0.02] p-3 hover:bg-white/[0.06]">
-                      <div>
-                        <p className="text-sm font-medium truncate">Scan #{s.id.slice(0, 6)}</p>
+                      <div className="min-w-0 pr-2">
+                        <p className="text-sm font-medium truncate">{getScanTitle(s)}</p>
                         <p className="text-xs text-muted-foreground">{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : "Recent"}</p>
                       </div>
                       <ScoreBadge score={s.score ?? 0} />

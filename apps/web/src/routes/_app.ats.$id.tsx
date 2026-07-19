@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
 import { useAtsScan } from "@/features/ats/api/ats";
-import { ScoreBadge } from "./_app.ats";
+import { ScoreBadge, getScanTitle } from "./_app.ats";
 
 export const Route = createFileRoute("/_app/ats/$id")({
   head: () => ({ meta: [{ title: "ATS Result — CareerForge" }] }),
@@ -48,7 +48,7 @@ function AtsDetailPage() {
       <Link to="/ats" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Back to scans
       </Link>
-      <PageHeader title={`Scan #${id.slice(0, 8)}`} description="Detailed ATS match report with recommendations." />
+      <PageHeader title={getScanTitle(s)} description="Detailed ATS match report with recommendations." />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}>
