@@ -125,11 +125,34 @@ function ResumeEditor() {
         </GlassCard>
 
         <GlassCard className="flex flex-col">
+          <style>{`
+            @media print {
+              body * {
+                visibility: hidden !important;
+              }
+              #printable-resume-preview, #printable-resume-preview * {
+                visibility: visible !important;
+              }
+              #printable-resume-preview {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                max-height: none !important;
+                overflow: visible !important;
+                box-shadow: none !important;
+                padding: 20px !important;
+                margin: 0 !important;
+                background: white !important;
+                color: black !important;
+              }
+            }
+          `}</style>
           <div className="flex items-center justify-between">
             <p className="text-xs uppercase tracking-wider text-muted-foreground">Live preview</p>
             {parseError && <span className="text-[11px] text-amber-500 font-medium">{parseError}</span>}
           </div>
-          <div className="scrollbar-thin mt-4 max-h-[620px] overflow-y-auto rounded-lg bg-white p-8 text-zinc-900 shadow-inner">
+          <div id="printable-resume-preview" className="scrollbar-thin mt-4 max-h-[620px] overflow-y-auto rounded-lg bg-white p-8 text-zinc-900 shadow-inner">
             {/* Header */}
             <h2 className="font-display text-2xl font-bold tracking-tight text-zinc-950">
               {personalInfo.fullName || title || "Your Name"}
