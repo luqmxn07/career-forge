@@ -56,7 +56,7 @@ function ResumeEditor() {
   const [techSkillsInput, setTechSkillsInput] = useState("");
   const [toolsSkillsInput, setToolsSkillsInput] = useState("");
   const [softSkillsInput, setSoftSkillsInput] = useState("");
-  const [jobDescriptionInput, setJobDescriptionInput] = useState("");
+  const [jobDescription, setJobDescription] = useState("");
   const [isEnhancingSkills, setIsEnhancingSkills] = useState(false);
 
   const handleEnhanceSkills = async () => {
@@ -68,7 +68,7 @@ function ResumeEditor() {
         soft: string[];
       }>(`/resume/${id}/skills/enhance`, {
         targetRole,
-        jobDescription: jobDescriptionInput,
+        jobDescription,
       });
 
       const data = (res as any)?.data || res;
@@ -108,6 +108,7 @@ function ResumeEditor() {
       }
 
       setTargetRole(parsed.targetRole || resume.title || "Software Engineer");
+      setJobDescription(parsed.jobDescription || "");
       setPersonalInfo({
         fullName: parsed.personalInfo?.fullName || "",
         email: parsed.personalInfo?.email || "",
@@ -182,6 +183,7 @@ function ResumeEditor() {
 
   const constructFullPayload = () => ({
     targetRole,
+    jobDescription,
     personalInfo,
     summary,
     experience,
@@ -209,7 +211,7 @@ function ResumeEditor() {
         summary: string;
         experience: any[];
         skills: { technical: string[]; tools: string[]; soft: string[] };
-      }>(`/resume/${id}/tailor`, { targetRole });
+      }>(`/resume/${id}/tailor`, { targetRole, jobDescription });
 
       const tailoredData = (res as any)?.data || res;
 
@@ -595,13 +597,26 @@ function ResumeEditor() {
                   placeholder="e.g. Full Stack Engineer / Data Analyst"
                 />
               </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground flex items-center justify-between">
+                  <span>Target Job Description / Key Requirements (Optional)</span>
+                  <span className="text-[10.5px] text-emerald-400 font-normal">Used across full AI Resume Tailoring & Auto-Skills</span>
+                </label>
+                <textarea
+                  rows={4}
+                  value={jobDescription}
+                  onChange={(e) => setJobDescription(e.target.value)}
+                  className="w-full rounded-md border border-glass-border bg-input px-3 py-2 text-xs outline-none focus:border-primary resize-y"
+                  placeholder="Paste the target job description, responsibilities, or required skills here..."
+                />
+              </div>
               <button
                 onClick={handleAiTailor}
                 disabled={isTailoring}
                 className="w-full btn-glow flex items-center justify-center gap-2 rounded-md py-2.5 text-xs font-semibold cursor-pointer"
               >
                 {isTailoring ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-amber-300" />}
-                Auto-Enhance Resume for "{targetRole}"
+                Auto-Enhance Entire Resume for "{targetRole}"
               </button>
             </GlassCard>
           )}
@@ -900,7 +915,14 @@ function ResumeEditor() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-glass-border">
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">Skills & Categorized Tech Stack</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Auto-enhance skills for target role & optional job description</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Auto-enhance skills for <strong className="text-foreground">{targetRole}</strong>
+                    {jobDescription ? (
+                      <span className="text-emerald-400 font-semibold"> · (Job Description Provided)</span>
+                    ) : (
+                      <span className="text-muted-foreground"> · (Add Job Description in Target Role tab for deeper matching)</span>
+                    )}
+                  </p>
                 </div>
                 <button
                   type="button"
@@ -915,19 +937,6 @@ function ResumeEditor() {
                   )}
                   <span>{isEnhancingSkills ? "Enhancing..." : "✨ Auto-Enhance Skills"}</span>
                 </button>
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                  Job Description / Role Keywords (Optional context for AI)
-                </label>
-                <textarea
-                  rows={2}
-                  value={jobDescriptionInput}
-                  onChange={(e) => setJobDescriptionInput(e.target.value)}
-                  placeholder="Paste target job description or required skills here to generate 100% role-tailored skill categories..."
-                  className="w-full rounded-md border border-glass-border bg-input px-3 py-2 text-xs outline-none focus:border-primary resize-none"
-                />
               </div>
 
               <div>

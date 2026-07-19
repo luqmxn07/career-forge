@@ -398,6 +398,7 @@ ${ctx.answer}`;
    */
   async tailorResumeForRole(ctx: {
     targetRole: string;
+    jobDescription?: string;
     fullName?: string;
     summary?: string;
     experiences?: any[];
@@ -414,10 +415,10 @@ ${ctx.answer}`;
     const rawSkills = ctx.skills || ctx.resumeContent?.skills || ctx.userProfile?.skills || [];
 
     const systemInstruction = `You are a high-level executive resume writer and career coach.
-Your job is to take a candidate's background and tailor it specifically for the role of "${ctx.targetRole}".
+Your job is to take a candidate's background and tailor it specifically for the role of "${ctx.targetRole}" and the target job description requirements.
 Do NOT just copy-paste raw input. 
-Rewrite the professional summary to sound compelling, metric-driven, and focused on "${ctx.targetRole}".
-Rewrite experience descriptions into strong STAR-method action bullet points (starting with strong action verbs like Designed, Architected, Engineered, Implemented, Scaled).
+Rewrite the professional summary to sound compelling, metric-driven, and tailored to the job description requirements.
+Rewrite experience descriptions into strong STAR-method action bullet points (starting with strong action verbs like Designed, Architected, Engineered, Implemented, Scaled) matching keywords from the job description.
 Categorize skills into technical (programming/frameworks), tools (platforms/IDEs/cloud), and soft skills (leadership, agile).
 
 Return JSON matching this format:
@@ -441,6 +442,9 @@ Return JSON matching this format:
 
     const prompt = `--- TARGET JOB ROLE ---
 ${ctx.targetRole}
+
+--- TARGET JOB DESCRIPTION / KEY REQUIREMENTS ---
+${ctx.jobDescription || "Not provided - tailor for standard role expectations."}
 
 --- CANDIDATE RAW SUMMARY ---
 ${rawSummary}

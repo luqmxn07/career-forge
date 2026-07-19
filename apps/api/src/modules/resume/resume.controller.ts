@@ -172,8 +172,8 @@ export class ResumeController {
     try {
       const userId = req.user!.userId;
       const { id } = req.params;
-      const { targetRole } = req.body;
-      const result = await this.resumeService.tailorResume(id, userId, targetRole || "Software Engineer");
+      const { targetRole, jobDescription } = req.body;
+      const result = await this.resumeService.tailorResume(id, userId, targetRole || "Software Engineer", jobDescription);
       const response: ApiResponse<typeof result> = {
         success: true,
         data: result

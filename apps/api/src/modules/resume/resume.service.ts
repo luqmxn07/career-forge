@@ -362,7 +362,7 @@ export class ResumeService {
   /**
    * Tailors a resume for a target role using AI Gateway.
    */
-  public async tailorResume(id: string, userId: string, targetRole: string) {
+  public async tailorResume(id: string, userId: string, targetRole: string, jobDescription?: string) {
     const resume = await this.getResumeById(id, userId);
 
     let userBackground = null;
@@ -385,6 +385,7 @@ export class ResumeService {
     const gateway = this.aiGatewayService || new AiGatewayService();
     return await gateway.tailorResumeForRole({
       targetRole,
+      jobDescription,
       userProfile: userBackground,
       resumeContent: parsedContent,
     });
