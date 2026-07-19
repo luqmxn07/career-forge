@@ -29,6 +29,14 @@ function SignupPage() {
         className="mt-8 space-y-4"
         onSubmit={(e) => {
           e.preventDefault();
+          if (fullName.trim().length < 2) {
+            toast.error("Full name must be at least 2 characters long");
+            return;
+          }
+          if (password.length < 6) {
+            toast.error("Password must be at least 6 characters long");
+            return;
+          }
           signup.mutate(
             {
               email,
@@ -40,17 +48,24 @@ function SignupPage() {
             },
             {
               onSuccess: () => {
-                toast.success("Account created");
+                toast.success("Account created! Please sign in.");
                 navigate({ to: "/auth/login" });
               },
-              onError: (err: any) => toast.error(err.message || "Signup failed"),
+              onError: (err: any) => {
+                const detailsMsg = err?.data?.error?.details?.[0]?.message;
+                const errorMsg = detailsMsg || err?.data?.error?.message || err?.message || "Signup failed";
+                toast.error(errorMsg);
+              },
             }
           );
         }}
       >
         <FormField label="Full Name" type="text" value={fullName} onChange={setFullName} required placeholder="John Doe" />
         <FormField label="Email" type="email" value={email} onChange={setEmail} required autoComplete="email" placeholder="john@example.com" />
-        <FormField label="Password" type="password" value={password} onChange={setPassword} required autoComplete="new-password" placeholder="••••••••" />
+        <div>
+          <FormField label="Password" type="password" value={password} onChange={setPassword} required autoComplete="new-password" placeholder="••••••••" />
+          <p className="mt-1 text-[11px] text-muted-foreground">Must be at least 6 characters</p>
+        </div>
         <div className="grid gap-4 sm:grid-cols-3">
           <FormField label="Phone" type="tel" value={phoneNumber} onChange={setPhoneNumber} placeholder="+1 (555) 019-2834" />
           <FormField label="Location" type="text" value={location} onChange={setLocation} placeholder="San Francisco, CA" />
