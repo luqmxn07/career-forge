@@ -10,7 +10,7 @@ export interface Profile {
   location?: string;
   age?: string;
   completionScore?: number;
-  education?: Array<{ id?: string; school: string; degree: string; startDate?: string; endDate?: string }>;
+  education?: Array<{ id?: string; institution?: string; school?: string; degree: string; level?: string; board?: string; marks?: string; yearOfPassing?: string; startDate?: string; endDate?: string }>;
   experiences?: Array<{ id?: string; company: string; role: string; startDate?: string; endDate?: string; summary?: string }>;
   skills?: string[];
 }
@@ -32,7 +32,7 @@ export function useUpdateProfile() {
 export function useAddEducation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { institution: string; degree: string; startDate: string; endDate?: string | null; isCurrent?: boolean }) => 
+    mutationFn: (body: { institution: string; degree: string; level?: string; board?: string; marks?: string; yearOfPassing?: string; startDate?: string | null; endDate?: string | null; isCurrent?: boolean }) => 
       api.post("/profile/education", body),
     onSuccess: () => qc.invalidateQueries({ queryKey: profileKey }),
   });

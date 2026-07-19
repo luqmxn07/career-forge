@@ -25,6 +25,10 @@ function ProfilePage() {
   const [showEduForm, setShowEduForm] = useState(false);
   const [eduSchool, setEduSchool] = useState("");
   const [eduDegree, setEduDegree] = useState("");
+  const [eduLevel, setEduLevel] = useState("Undergraduate");
+  const [eduBoard, setEduBoard] = useState("");
+  const [eduMarks, setEduMarks] = useState("");
+  const [eduYearOfPassing, setEduYearOfPassing] = useState("");
   const [eduStartDate, setEduStartDate] = useState("");
   const [eduEndDate, setEduEndDate] = useState("");
   const [eduIsCurrent, setEduIsCurrent] = useState(false);
@@ -40,6 +44,10 @@ function ProfilePage() {
   const resetEduForm = () => {
     setEduSchool("");
     setEduDegree("");
+    setEduLevel("Undergraduate");
+    setEduBoard("");
+    setEduMarks("");
+    setEduYearOfPassing("");
     setEduStartDate("");
     setEduEndDate("");
     setEduIsCurrent(false);
@@ -140,8 +148,8 @@ function ProfilePage() {
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (!eduSchool || !eduDegree || !eduStartDate) {
-                      toast.error("School, Degree and Start Date are required");
+                    if (!eduSchool || !eduDegree) {
+                      toast.error("School/Institution and Degree are required");
                       return;
                     }
                     const formatYearToDate = (yr: string) => {
@@ -152,7 +160,11 @@ function ProfilePage() {
                     addEdu.mutate({
                       institution: eduSchool,
                       degree: eduDegree,
-                      startDate: formatYearToDate(eduStartDate) || "",
+                      level: eduLevel,
+                      board: eduBoard,
+                      marks: eduMarks,
+                      yearOfPassing: eduYearOfPassing,
+                      startDate: formatYearToDate(eduStartDate),
                       endDate: eduIsCurrent ? null : formatYearToDate(eduEndDate),
                       isCurrent: eduIsCurrent
                     }, {
@@ -167,23 +179,27 @@ function ProfilePage() {
                   }}
                   className="mt-4 p-3 border border-glass-border bg-white/[0.01] rounded-md space-y-3"
                 >
-                  <Field label="School / University" value={eduSchool} onChange={setEduSchool} placeholder="e.g. MIT" />
-                  <Field label="Degree" value={eduDegree} onChange={setEduDegree} placeholder="e.g. B.Sc. Computer Science" />
-                  <div className="grid grid-cols-2 gap-2">
-                    <Field label="Start Year" value={eduStartDate} onChange={setEduStartDate} placeholder="e.g. 2018" />
-                    {!eduIsCurrent && (
-                      <Field label="End Year" value={eduEndDate} onChange={setEduEndDate} placeholder="e.g. 2022" />
-                    )}
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-muted-foreground uppercase tracking-wider">Level</label>
+                    <select
+                      value={eduLevel}
+                      onChange={(e) => setEduLevel(e.target.value)}
+                      className="w-full rounded-md border border-glass-border bg-input px-3 py-2 text-xs outline-none focus:border-primary"
+                    >
+                      <option value="Undergraduate">Undergraduate / Degree (B.Tech, B.Sc)</option>
+                      <option value="Postgraduate">Postgraduate (M.Tech, MBA)</option>
+                      <option value="Diploma">Diploma</option>
+                      <option value="Class XII">Class XII (Higher Secondary)</option>
+                      <option value="Class X">Class X (Secondary School)</option>
+                    </select>
                   </div>
-                  <label className="flex items-center gap-2 mt-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={eduIsCurrent}
-                      onChange={(e) => setEduIsCurrent(e.target.checked)}
-                      className="rounded border-glass-border bg-input text-primary outline-none focus:ring-glow"
-                    />
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider">I am currently studying here</span>
-                  </label>
+                  <Field label="School / Institution / College Name" value={eduSchool} onChange={setEduSchool} placeholder="e.g. Heritage Institute of Technology / St. Xavier's" />
+                  <Field label="Degree / Certificate Title" value={eduDegree} onChange={setEduDegree} placeholder="e.g. B.Tech in Computer Science / Higher Secondary" />
+                  <Field label="Board / University" value={eduBoard} onChange={setEduBoard} placeholder="e.g. CBSE / ICSE / MAKAUT / Calcutta University" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Field label="Passout Year" value={eduYearOfPassing} onChange={setEduYearOfPassing} placeholder="e.g. 2024" />
+                    <Field label="Marks / Percentage / CGPA" value={eduMarks} onChange={setEduMarks} placeholder="e.g. 91.5% or 8.8 CGPA" />
+                  </div>
                   <div className="flex gap-2 justify-end pt-2">
                     <button type="button" onClick={resetEduForm} className="btn-glow border border-glass-border rounded-md px-3 py-1.5 text-xs font-semibold">
                       Cancel
@@ -198,8 +214,11 @@ function ProfilePage() {
                   {profile?.education && profile.education.length > 0 ? (
                     profile.education.map((ed, i) => (
                       <li key={i} className="rounded-md border border-glass-border bg-white/[0.02] p-3">
-                        <p className="font-medium">{ed.school}</p>
-                        <p className="text-xs text-muted-foreground">{ed.degree} · {ed.startDate}–{ed.endDate || "Present"}</p>
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium text-xs text-foreground">{ed.level ? `[${ed.level}] ` : ""}{ed.degree}</p>
+                          {ed.yearOfPassing && <span className="text-[11px] text-emerald-400 font-semibold">Passout: {ed.yearOfPassing}</span>}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{ed.institution || ed.school} {ed.board ? `(${ed.board})` : ""} {ed.marks ? `· Marks: ${ed.marks}` : ""}</p>
                       </li>
                     ))
                   ) : (
