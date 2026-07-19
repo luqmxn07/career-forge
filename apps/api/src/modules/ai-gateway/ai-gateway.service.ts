@@ -409,8 +409,8 @@ ${ctx.answer}`;
     experience: any[];
     skills: { technical: string[]; tools: string[]; soft: string[] };
   }> {
-    const rawSummary = ctx.summary || ctx.resumeContent?.summary || ctx.userProfile?.bio || "Not provided";
-    const rawExperiences = ctx.experiences || ctx.resumeContent?.experience || ctx.userProfile?.workExperiences || [];
+    const rawSummary = ctx.summary || ctx.resumeContent?.summary || ctx.userProfile?.profile?.summary || ctx.userProfile?.bio || "Not provided";
+    const rawExperiences = ctx.experiences || ctx.resumeContent?.experience || ctx.userProfile?.experience || ctx.userProfile?.workExperiences || [];
     const rawSkills = ctx.skills || ctx.resumeContent?.skills || ctx.userProfile?.skills || [];
 
     const systemInstruction = `You are a high-level executive resume writer and career coach.

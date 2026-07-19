@@ -365,14 +365,14 @@ export class ResumeService {
   public async tailorResume(id: string, userId: string, targetRole: string) {
     const resume = await this.getResumeById(id, userId);
 
-    let profile = null;
+    let userBackground = null;
     try {
-      profile = await this.prisma.userProfile.findUnique({
-        where: { userId },
-        include: { education: true, workExperiences: true, skills: true },
+      userBackground = await this.prisma.user.findUnique({
+        where: { id: userId },
+        include: { profile: true, education: true, experience: true, skills: true },
       });
     } catch (e) {
-      // Profile is optional
+      // User background is optional
     }
 
     let parsedContent: any = {};
@@ -385,7 +385,7 @@ export class ResumeService {
     const gateway = this.aiGatewayService || new AiGatewayService();
     return await gateway.tailorResumeForRole({
       targetRole,
-      userProfile: profile,
+      userProfile: userBackground,
       resumeContent: parsedContent,
     });
   }
