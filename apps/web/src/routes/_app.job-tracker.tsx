@@ -2,13 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { Plus, Calendar, Tag, Loader2, Sparkles, MapPin, Globe, ExternalLink, Search, CheckCircle2, SlidersHorizontal, Briefcase } from "lucide-react";
+import { Plus, Calendar, Tag, Loader2, Sparkles, MapPin, Globe, ExternalLink, Search, CheckCircle2, SlidersHorizontal, Briefcase, X, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
 import {
   useJobTracker,
   useUpdateJobCard,
   useCreateJobCard,
+  useDeleteJobCard,
   useSearchLiveJobs,
   type JobCard,
   type Stage,
@@ -35,6 +36,11 @@ function JobTrackerPage() {
   const [overStage, setOverStage] = useState<Stage | null>(null);
   const update = useUpdateJobCard();
   const create = useCreateJobCard();
+  const deleteJob = useDeleteJobCard();
+
+  // Selected Card for Liquid Glass Modal
+  const [selectedJob, setSelectedJob] = useState<JobCard | null>(null);
+  const [editingNotes, setEditingNotes] = useState("");
 
   // AI Live Job Aggregator State
   const searchJobs = useSearchLiveJobs();
@@ -58,6 +64,23 @@ function JobTrackerPage() {
       setCards(data);
     }
   }, [data]);
+
+  useEffect(() => {
+    if (selectedJob) {
+      setEditingNotes(selectedJob.notes || selectedJob.description || "");
+    }
+  }, [selectedJob]);
+
+  const getJobUrl = (job: JobCard): string | null => {
+    if (job.url) return job.url;
+    const urlTag = job.tags?.find((t) => t.startsWith("URL:"));
+    if (urlTag) return urlTag.replace(/^URL:/, "");
+    if (job.notes) {
+      const match = job.notes.match(/https?:\/\/[^\s]+/);
+      if (match) return match[0];
+    }
+    return null;
+  };
 
   const handleSearchLiveJobs = async () => {
     if (!searchRole.trim()) {
@@ -88,13 +111,17 @@ function JobTrackerPage() {
   };
 
   const handleTrackDiscoveredJob = (job: DiscoveredJob) => {
+    const notesText = `Job Link: ${job.url}\n\nKey Requirements:\n${job.descriptionSnippet}`;
     const card: JobCard = {
       id: `live-${Date.now()}`,
       position: job.title,
       company: job.company,
       stage: "wishlist",
       salary: job.salary,
-      tags: [job.source, job.isRemote ? "Remote" : job.city || job.location],
+      url: job.url,
+      description: job.descriptionSnippet,
+      notes: notesText,
+      tags: [job.source, job.isRemote ? "Remote" : job.city || job.location, `URL:${job.url}`],
     };
 
     setCards((prev) => [card, ...prev]);
@@ -336,12 +363,18 @@ function JobTrackerPage() {
                       draggable
                       onDragStart={() => setDragId(c.id)}
                       onDragEnd={() => setDragId(null)}
+                      onClick={() => setSelectedJob(c)}
                       whileDrag={{ scale: 1.03, rotate: -1 }}
-                      className={`cursor-grab rounded-md border border-glass-border bg-white/[0.03] p-3 text-xs active:cursor-grabbing hover:border-white/20 transition-all ${
+                      className={`cursor-pointer rounded-md border border-glass-border bg-white/[0.03] p-3 text-xs active:cursor-grabbing hover:border-primary/40 hover:bg-white/[0.06] transition-all ${
                         dragId === c.id ? "opacity-40" : ""
                       }`}
                     >
-                      <p className="font-semibold text-foreground text-xs">{c.position}</p>
+                      <div className="flex items-start justify-between gap-1">
+                        <p className="font-semibold text-foreground text-xs">{c.position}</p>
+                        {getJobUrl(c) && (
+                          <ExternalLink className="h-3 w-3 text-emerald-400 shrink-0 mt-0.5" />
+                        )}
+                      </div>
                       <p className="text-[11px] text-muted-foreground">{c.company}</p>
                       <div className="mt-2 flex flex-wrap items-center gap-1 text-[10px] text-muted-foreground">
                         {c.salary && (
@@ -354,7 +387,7 @@ function JobTrackerPage() {
                             <Calendar className="h-3 w-3" /> {c.deadline}
                           </span>
                         )}
-                        {c.tags?.map((t) => (
+                        {c.tags?.filter(t => !t.startsWith("URL:")).map((t) => (
                           <span key={t} className="inline-flex items-center gap-1 rounded bg-white/[0.06] px-1.5 py-0.5">
                             <Tag className="h-2.5 w-2.5 text-primary" /> {t}
                           </span>
@@ -409,6 +442,168 @@ function JobTrackerPage() {
           );
         })}
       </div>
+
+      {/* Liquid Glassmorphism Modal for Selected Job Details & External Links */}
+      <AnimatePresence>
+        {selectedJob && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedJob(null)}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/20 bg-gradient-to-b from-white/15 via-white/5 to-black/95 p-6 shadow-2xl backdrop-blur-2xl text-foreground space-y-4"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+                <div>
+                  <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">
+                    {selectedJob.stage}
+                  </span>
+                  <h2 className="mt-1.5 font-display text-lg font-bold text-foreground leading-snug">
+                    {selectedJob.position}
+                  </h2>
+                  <p className="text-xs text-muted-foreground font-medium">{selectedJob.company}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedJob(null)}
+                  className="rounded-lg border border-white/10 bg-white/5 p-1.5 text-muted-foreground hover:text-foreground hover:bg-white/10 transition cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Tags & Salary */}
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                {selectedJob.salary && (
+                  <span className="rounded bg-emerald-500/20 px-2 py-0.5 text-emerald-400 font-semibold border border-emerald-500/30">
+                    {selectedJob.salary}
+                  </span>
+                )}
+                {selectedJob.tags?.filter(t => !t.startsWith("URL:")).map((t) => (
+                  <span key={t} className="rounded bg-white/10 px-2 py-0.5 text-xs text-muted-foreground border border-white/10">
+                    {t}
+                  </span>
+                ))}
+              </div>
+
+              {/* External Apply Link Button */}
+              {getJobUrl(selectedJob) ? (
+                <a
+                  href={getJobUrl(selectedJob)!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full btn-glow flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg cursor-pointer transition-all"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Open & Apply on Job Portal</span>
+                </a>
+              ) : (
+                <a
+                  href={`https://www.google.com/search?q=${encodeURIComponent(`${selectedJob.company} ${selectedJob.position} jobs`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold border border-white/15 bg-white/5 hover:bg-white/10 text-foreground cursor-pointer transition-all"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  <span>Search Job Link on Google</span>
+                </a>
+              )}
+
+              {/* Stage Switcher */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Move Stage</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {STAGES.map((s) => (
+                    <button
+                      key={s.key}
+                      onClick={() => {
+                        move(selectedJob.id, s.key);
+                        setSelectedJob({ ...selectedJob, stage: s.key });
+                      }}
+                      className={`px-2.5 py-1 text-xs rounded-md font-medium transition cursor-pointer ${
+                        selectedJob.stage === s.key
+                          ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                          : "bg-white/5 hover:bg-white/10 text-muted-foreground"
+                      }`}
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Notes & Description */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground flex items-center justify-between">
+                  <span>Job Details & Custom Notes</span>
+                  <span className="text-[10px] text-muted-foreground">Auto-saved to your pipeline</span>
+                </label>
+                <textarea
+                  rows={4}
+                  value={editingNotes}
+                  onChange={(e) => setEditingNotes(e.target.value)}
+                  placeholder="Add notes, recruiter contacts, or interview schedules..."
+                  className="w-full rounded-xl border border-white/15 bg-black/40 p-3 text-xs outline-none focus:border-primary resize-y text-foreground"
+                />
+              </div>
+
+              {/* Footer Actions */}
+              <div className="flex items-center justify-between pt-2 border-t border-white/10">
+                <button
+                  onClick={() => {
+                    deleteJob.mutate(selectedJob.id, {
+                      onSuccess: () => {
+                        setCards((prev) => prev.filter((c) => c.id !== selectedJob.id));
+                        setSelectedJob(null);
+                        toast.success("Job entry removed from tracker");
+                      },
+                    });
+                  }}
+                  className="inline-flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 cursor-pointer font-medium"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  <span>Remove Job</span>
+                </button>
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSelectedJob(null)}
+                    className="rounded-lg px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    Close
+                  </button>
+                  <button
+                    onClick={() => {
+                      update.mutate(
+                        { id: selectedJob.id, notes: editingNotes },
+                        {
+                          onSuccess: () => {
+                            setCards((prev) =>
+                              prev.map((c) => (c.id === selectedJob.id ? { ...c, notes: editingNotes } : c))
+                            );
+                            toast.success("Job notes updated!");
+                            setSelectedJob(null);
+                          },
+                        }
+                      );
+                    }}
+                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground cursor-pointer shadow-md"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

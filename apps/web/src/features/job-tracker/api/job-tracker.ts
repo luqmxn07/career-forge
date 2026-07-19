@@ -10,6 +10,9 @@ export interface JobCard {
   salary?: string;
   deadline?: string;
   tags?: string[];
+  url?: string;
+  notes?: string;
+  description?: string;
 }
 
 export interface DiscoveredJob {
@@ -40,6 +43,7 @@ export function useCreateJobCard() {
         stage: body.stage ? body.stage.toUpperCase() : "WISHLIST",
         salary: body.salary,
         deadline: body.deadline,
+        notes: body.notes || (body.url ? `Job URL: ${body.url}` : undefined),
         tags: body.tags,
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["job-tracker"] }),
@@ -54,6 +58,13 @@ export function useUpdateJobCard() {
         role: body.position || undefined,
         stage: body.stage ? body.stage.toUpperCase() : undefined,
       }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["job-tracker"] }),
+  });
+}
+export function useDeleteJobCard() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete<{ message: string }>(`/job-tracker/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["job-tracker"] }),
   });
 }
