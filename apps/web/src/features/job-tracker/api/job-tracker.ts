@@ -32,7 +32,16 @@ export function useJobTracker() {
 export function useCreateJobCard() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: Omit<JobCard, "id">) => api.post<JobCard>("/job-tracker", body),
+    mutationFn: (body: Omit<JobCard, "id">) =>
+      api.post<JobCard>("/job-tracker", {
+        company: body.company,
+        role: body.position,
+        position: body.position,
+        stage: body.stage ? body.stage.toUpperCase() : "WISHLIST",
+        salary: body.salary,
+        deadline: body.deadline,
+        tags: body.tags,
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["job-tracker"] }),
   });
 }
@@ -40,7 +49,11 @@ export function useUpdateJobCard() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...body }: Partial<JobCard> & { id: string }) =>
-      api.patch<JobCard>(`/job-tracker/${id}`, body),
+      api.patch<JobCard>(`/job-tracker/${id}`, {
+        ...body,
+        role: body.position || undefined,
+        stage: body.stage ? body.stage.toUpperCase() : undefined,
+      }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["job-tracker"] }),
   });
 }

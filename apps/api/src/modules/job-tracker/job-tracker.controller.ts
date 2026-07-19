@@ -7,10 +7,20 @@ export class JobTrackerController {
   create = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user.userId;
-      const result = await this.jobTrackerService.createJobEntry(userId, req.body);
+      const payload = {
+        ...req.body,
+        role: req.body.role || req.body.position || "Software Engineer",
+        stage: typeof req.body.stage === "string" ? req.body.stage.toUpperCase() : "WISHLIST",
+      };
+      const result = await this.jobTrackerService.createJobEntry(userId, payload);
+      const responseData = {
+        ...result,
+        position: result.role,
+        stage: result.stage.toLowerCase(),
+      };
       res.status(201).json({
         success: true,
-        data: result
+        data: responseData
       });
     } catch (error) {
       next(error);
@@ -21,9 +31,14 @@ export class JobTrackerController {
     try {
       const userId = (req as any).user.userId;
       const result = await this.jobTrackerService.getJobEntries(userId);
+      const mapped = result.map((entry) => ({
+        ...entry,
+        position: entry.role,
+        stage: entry.stage.toLowerCase(),
+      }));
       res.status(200).json({
         success: true,
-        data: result
+        data: mapped
       });
     } catch (error) {
       next(error);
@@ -37,7 +52,11 @@ export class JobTrackerController {
       const result = await this.jobTrackerService.getJobEntry(id, userId);
       res.status(200).json({
         success: true,
-        data: result
+        data: {
+          ...result,
+          position: result.role,
+          stage: result.stage.toLowerCase(),
+        }
       });
     } catch (error) {
       next(error);
@@ -48,10 +67,19 @@ export class JobTrackerController {
     try {
       const userId = (req as any).user.userId;
       const { id } = req.params;
-      const result = await this.jobTrackerService.updateJobEntry(id, userId, req.body);
+      const payload = {
+        ...req.body,
+        role: req.body.role || req.body.position,
+        stage: req.body.stage ? (req.body.stage as string).toUpperCase() : undefined,
+      };
+      const result = await this.jobTrackerService.updateJobEntry(id, userId, payload);
       res.status(200).json({
         success: true,
-        data: result
+        data: {
+          ...result,
+          position: result.role,
+          stage: result.stage.toLowerCase(),
+        }
       });
     } catch (error) {
       next(error);

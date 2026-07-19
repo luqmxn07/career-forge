@@ -102,7 +102,7 @@ function JobTrackerPage() {
 
     create.mutate(card, {
       onSuccess: () => toast.success(`Added ${job.title} at ${job.company} to Wishlist!`),
-      onError: () => toast.error("Failed to save job to tracker"),
+      onError: (e: any) => toast.error(e?.message || "Failed to save job to tracker"),
     });
   };
 

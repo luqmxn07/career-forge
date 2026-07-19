@@ -25,7 +25,7 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
-  OMNIROUTE_URL: z.string().optional().default("http://localhost:3000/v1")
+  OMNIROUTE_URL: z.string().optional().default("http://localhost:20128/v1")
 });
 
 const result = envSchema.safeParse(process.env);
