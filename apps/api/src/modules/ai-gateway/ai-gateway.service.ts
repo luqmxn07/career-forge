@@ -56,19 +56,49 @@ export const InterviewAnswerGradingSchema = z.object({
 export type InterviewAnswerGrading = z.infer<typeof InterviewAnswerGradingSchema>;
 
 export class AiGatewayService {
+  private readonly omnirouteUrl = env.OMNIROUTE_URL || "http://localhost:3000/v1";
   private readonly geminiKey = env.GEMINI_API_KEY;
   private readonly openaiKey = env.OPENAI_API_KEY;
 
   /**
-   * Universal fetch caller with retry and failover fallback
+   * Universal fetch caller with retry and failover fallback across OmniRoute, Gemini, and OpenAI
    */
   private async callLlm(
     prompt: string,
     systemInstruction: string,
     schema?: z.ZodSchema
   ): Promise<string> {
-    const runAttempt = async (provider: "gemini" | "openai"): Promise<string> => {
-      if (provider === "gemini") {
+    const runAttempt = async (provider: "omniroute" | "gemini" | "openai"): Promise<string> => {
+      if (provider === "omniroute") {
+        logger.info(`[AI Gateway] Attempting call with OmniRoute AI Gateway (${this.omnirouteUrl})...`);
+        const url = `${this.omnirouteUrl.replace(/\/$/, "")}/chat/completions`;
+
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "auto",
+            messages: [
+              { role: "system", content: systemInstruction },
+              { role: "user", content: prompt }
+            ],
+            response_format: schema ? { type: "json_object" } : { type: "text" }
+          })
+        });
+
+        if (!response.ok) {
+          const body = await response.text();
+          throw new Error(`OmniRoute API returned status ${response.status}: ${body}`);
+        }
+
+        const data = await response.json();
+        const outputText = data.choices?.[0]?.message?.content;
+        if (!outputText) throw new Error("OmniRoute API output is empty");
+
+        return outputText;
+      } else if (provider === "gemini") {
         if (!this.geminiKey) throw new Error("GEMINI_API_KEY is not configured");
         
         logger.info("[AI Gateway] Attempting call with Google Gemini API...");
@@ -137,8 +167,9 @@ export class AiGatewayService {
       }
     };
 
-    // Retry configuration
-    const providers: Array<"gemini" | "openai"> = [];
+    // Retry configuration: OmniRoute first (90+ free providers), fallback to Gemini, then OpenAI
+    const providers: Array<"omniroute" | "gemini" | "openai"> = [];
+    if (this.omnirouteUrl) providers.push("omniroute");
     if (this.geminiKey) providers.push("gemini");
     if (this.openaiKey) providers.push("openai");
 
@@ -160,7 +191,7 @@ export class AiGatewayService {
             runAttempt(provider),
             new Promise<string>((_, reject) => {
               controller.signal.addEventListener("abort", () => {
-                reject(new Error("AI Provider call timed out (6s budget exceeded)"));
+                reject(new Error(`AI Provider (${provider}) call timed out (6s budget exceeded)`));
               });
             })
           ]);

@@ -24,7 +24,8 @@ const envSchema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
-  GEMINI_API_KEY: z.string().optional()
+  GEMINI_API_KEY: z.string().optional(),
+  OMNIROUTE_URL: z.string().optional().default("http://localhost:3000/v1")
 });
 
 const result = envSchema.safeParse(process.env);
