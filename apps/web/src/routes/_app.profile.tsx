@@ -19,18 +19,6 @@ function ProfilePage() {
   const addExp = useAddExperience();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted || isLoading) {
-    return (
-      <div className="flex h-96 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   const [form, setForm] = useState({ fullName: "", summary: "", phoneNumber: "", location: "", age: "" });
 
   // Education form state
@@ -66,6 +54,11 @@ function ProfilePage() {
     setExpIsCurrent(false);
     setShowExpForm(false);
   };
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     if (profile) setForm({
       fullName: profile.fullName ?? "",
@@ -75,6 +68,14 @@ function ProfilePage() {
       age: profile.age ?? "",
     });
   }, [profile]);
+
+  if (!mounted || isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const completion = profile?.completionScore ?? 62;
 
