@@ -59,14 +59,14 @@ function NotificationsPage() {
               transition={{ delay: i * 0.04 }}
             >
               <GlassCard className="flex items-start gap-4">
-                <div className={`mt-1 grid h-9 w-9 place-items-center rounded-lg ${n.isRead || n.read ? "bg-white/[0.04] text-muted-foreground" : "bg-primary/15 text-primary ring-glow"}`}>
+                <div className={`mt-1 grid h-9 w-9 place-items-center rounded-lg ${(n as any).isRead || (n as any).read ? "bg-white/[0.04] text-muted-foreground" : "bg-primary/15 text-primary ring-glow"}`}>
                   <Bell className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-semibold">{n.title}</p>
-                  {(n.body || n.message) && <p className="mt-0.5 text-sm text-muted-foreground">{n.body || n.message}</p>}
+                  {((n as any).body || (n as any).message) && <p className="mt-0.5 text-sm text-muted-foreground">{(n as any).body || (n as any).message}</p>}
                 </div>
-                {!(n.isRead || n.read) && (
+                {!((n as any).isRead || (n as any).read) && (
                   <button onClick={() => markRead.mutate(n.id)} className="rounded-md border border-glass-border p-2 text-muted-foreground hover:text-foreground">
                     <Check className="h-3.5 w-3.5" />
                   </button>

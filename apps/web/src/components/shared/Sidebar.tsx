@@ -28,7 +28,7 @@ export function Sidebar() {
   const toggle = useUIStore((s) => s.toggleSidebar);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  const navItems = items.filter((item) => item.to !== "/admin" || user?.role === "ADMIN");
+  const navItems = items.filter((item) => item.to !== "/admin" || (user?.role as any) === "admin" || (user?.role as any) === "ADMIN");
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) {

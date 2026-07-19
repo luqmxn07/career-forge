@@ -36,7 +36,7 @@ function AdminPage() {
     );
   }
 
-  if (user?.role !== "ADMIN") {
+  if ((user?.role as any) !== "ADMIN" && (user?.role as any) !== "admin") {
     return (
       <div className="mx-auto max-w-md py-12 text-center">
         <GlassCard>

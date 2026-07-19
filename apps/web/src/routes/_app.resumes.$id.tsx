@@ -47,6 +47,7 @@ function ResumeEditor() {
     fieldOfStudy: string;
     yearOfPassing: string;
     marks: string;
+    isStudying?: boolean;
   }>>([]);
   const [skills, setSkills] = useState<{
     technical: string[];

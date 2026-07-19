@@ -1038,11 +1038,12 @@ function JobTrackerSection() {
   const isAuthenticated = !!token;
   const { data: stats } = useDashboardStats();
 
-  const cWish = stats?.kanban?.wishlist !== undefined ? stats.kanban.wishlist : 2;
-  const cApp = stats?.kanban?.applied !== undefined ? stats.kanban.applied : 2;
-  const cInt = stats?.kanban?.interview !== undefined ? stats.kanban.interview : 2;
-  const cOff = stats?.kanban?.offer !== undefined ? stats.kanban.offer : 1;
-  const cRej = stats?.kanban?.rejected !== undefined ? stats.kanban.rejected : 1;
+  const sAny = stats as any;
+  const cWish = sAny?.kanban?.wishlist !== undefined ? sAny.kanban.wishlist : 2;
+  const cApp = sAny?.kanban?.applied !== undefined ? sAny.kanban.applied : 2;
+  const cInt = sAny?.kanban?.interview !== undefined ? sAny.kanban.interview : 2;
+  const cOff = sAny?.kanban?.offer !== undefined ? sAny.kanban.offer : 1;
+  const cRej = sAny?.kanban?.rejected !== undefined ? sAny.kanban.rejected : 1;
 
   const kanbanCols = [
     {
@@ -1201,17 +1202,20 @@ function Analytics() {
   const isAuthenticated = !!token;
   const { data: stats } = useDashboardStats();
 
+  const sAny = stats as any;
   const totalApps =
-    isAuthenticated && stats?.kanban
-      ? stats.kanban.wishlist +
-        stats.kanban.applied +
-        stats.kanban.interview +
-        stats.kanban.offer +
-        stats.kanban.rejected
+    isAuthenticated && sAny?.kanban
+      ? sAny.kanban.wishlist +
+        sAny.kanban.applied +
+        sAny.kanban.interview +
+        sAny.kanban.offer +
+        sAny.kanban.rejected
       : 128;
   const score =
-    isAuthenticated && stats?.atsAverageScore !== undefined ? stats.atsAverageScore : 96;
-  const interviewsCount = isAuthenticated && stats?.interviews !== undefined ? stats.interviews : 8;
+    isAuthenticated && (sAny?.atsAverageScore !== undefined || sAny?.averageAtsScore !== undefined)
+      ? (sAny.atsAverageScore ?? sAny.averageAtsScore)
+      : 96;
+  const interviewsCount = isAuthenticated && sAny?.interviews !== undefined ? sAny.interviews : 8;
 
   return (
     <section className="relative py-32">
