@@ -134,17 +134,23 @@ function ResumeEditor() {
                 visibility: visible !important;
               }
               #printable-resume-preview {
-                position: absolute !important;
+                position: fixed !important;
                 left: 0 !important;
                 top: 0 !important;
                 width: 100% !important;
+                height: auto !important;
                 max-height: none !important;
                 overflow: visible !important;
                 box-shadow: none !important;
-                padding: 20px !important;
+                padding: 0 !important;
                 margin: 0 !important;
                 background: white !important;
                 color: black !important;
+                z-index: 999999 !important;
+              }
+              @page {
+                size: auto;
+                margin: 12mm;
               }
             }
           `}</style>
