@@ -928,10 +928,17 @@ function ResumeEditor() {
                     {projects.map((proj, idx) => (
                       <div key={idx} className="text-[11px]">
                         <div className="flex items-center justify-between font-bold text-slate-950">
-                          <span>{proj.title} {proj.tech ? `<span className="font-normal text-slate-500">(${proj.tech})</span>` : ""}</span>
+                          <span>
+                            {proj.title}
+                            {proj.tech && (
+                              <span className="font-normal text-slate-500"> ({proj.tech})</span>
+                            )}
+                          </span>
                           {proj.link && <span className="text-[10px] text-sky-600 font-normal">{proj.link}</span>}
                         </div>
-                        {proj.description && <p className="mt-0.5 text-slate-700">{proj.description}</p>}
+                        {proj.description && (
+                          <div className="mt-0.5 text-slate-700 whitespace-pre-line">{proj.description}</div>
+                        )}
                       </div>
                     ))}
                   </div>
