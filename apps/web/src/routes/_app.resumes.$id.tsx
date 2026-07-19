@@ -69,13 +69,39 @@ function ResumeEditor() {
               {update.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />} Save
             </button>
             <button
-              onClick={() => compile.mutate(undefined, {
-                onSuccess: (d) => { toast.success("PDF ready"); if (d?.downloadUrl) window.open(d.downloadUrl, "_blank"); },
-                onError: (e: any) => toast.error(e.message || "Compile failed"),
-              })}
+              onClick={() => {
+                const compilePromise = new Promise((resolve, reject) => {
+                  compile.mutate(undefined, {
+                    onSuccess: (d) => {
+                      if (d?.downloadUrl) {
+                        window.open(d.downloadUrl, "_blank");
+                        resolve(d);
+                      } else {
+                        reject(new Error("PDF download URL unavailable"));
+                      }
+                    },
+                    onError: (err: any) => {
+                      window.print();
+                      reject(err);
+                    }
+                  });
+                });
+                toast.promise(compilePromise, {
+                  loading: "Rendering PDF via Headless Chrome...",
+                  success: "PDF compiled and ready!",
+                  error: (e: any) => e?.message || "Render fallback triggered: Print window opened",
+                });
+              }}
               className="btn-glow btn-glow-hover inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-semibold"
             >
               {compile.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />} Compile PDF
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-2 rounded-md border border-glass-border bg-white/[0.03] px-3 py-2 text-sm text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
+              title="Print or save as PDF directly from browser"
+            >
+              Print / Save PDF
             </button>
           </div>
         }

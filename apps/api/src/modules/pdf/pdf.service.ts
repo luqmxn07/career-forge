@@ -1,4 +1,5 @@
 import puppeteer from "puppeteer";
+import { execSync } from "child_process";
 import { logger } from "../../utils/logger.js";
 import { ExternalServiceError } from "../../errors/index.js";
 import { uploadBuffer } from "../../utils/storage.js";
@@ -13,17 +14,36 @@ export class PdfService {
     let browser;
     try {
       const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_PATH || undefined;
-      browser = await puppeteer.launch({
-        headless: true,
-        ...(executablePath ? { executablePath } : {}),
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--single-process",
-          "--no-zygote"
-        ]
-      });
+      try {
+        browser = await puppeteer.launch({
+          headless: true,
+          ...(executablePath ? { executablePath } : {}),
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--single-process",
+            "--no-zygote"
+          ]
+        });
+      } catch (launchErr: any) {
+        if (launchErr?.message?.includes("Could not find Chrome")) {
+          logger.warn("Chrome missing at runtime. Installing Chrome dynamically via npx...");
+          execSync("npx -y puppeteer browsers install chrome", { stdio: "inherit" });
+          browser = await puppeteer.launch({
+            headless: true,
+            args: [
+              "--no-sandbox",
+              "--disable-setuid-sandbox",
+              "--disable-dev-shm-usage",
+              "--single-process",
+              "--no-zygote"
+            ]
+          });
+        } else {
+          throw launchErr;
+        }
+      }
       
       const page = await browser.newPage();
       
