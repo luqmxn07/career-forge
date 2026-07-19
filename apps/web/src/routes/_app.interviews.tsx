@@ -129,14 +129,22 @@ function InterviewsPage() {
                 <div className="sm:col-span-2">
                   <button
                     disabled={!resumeId || !title || create.isPending}
-                    onClick={() => create.mutate({ resumeId, jobTitle: title, jobDescription: jd }, {
+                    onClick={() => create.mutate({
+                      type: "JD",
+                      difficulty: "Mid",
+                      sourceResumeId: resumeId,
+                      resumeId,
+                      jobTitle: title,
+                      jobDescription: jd,
+                      jobDescriptionText: jd,
+                    } as any, {
                       onSuccess: (data: any) => {
                         toast.success("Session created");
                         if (data?.id) {
                           navigate({ to: "/interviews/$id", params: { id: data.id } });
                         }
                       },
-                      onError: (e: any) => toast.error(e.message || "Failed"),
+                      onError: (e: any) => toast.error(e.message || "Failed to create interview session"),
                     })}
                     className="btn-glow btn-glow-hover inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-semibold disabled:opacity-50"
                   >
