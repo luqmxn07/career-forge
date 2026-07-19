@@ -384,10 +384,17 @@ export class ResumeService {
   }
 
   /**
-   * Tailors a resume for a target role using AI Gateway.
+   * Tailors a resume for a target role using AI Gateway and auto-saves to database.
    */
   public async tailorResume(id: string, userId: string, targetRole: string, jobDescription?: string) {
     const resume = await this.getResumeById(id, userId);
+
+    // Deduct AI credits for resume tailoring (10 credits)
+    const TAILOR_CREDIT_COST = 10;
+    try {
+      const { container } = await import("../../config/di-container.js");
+      await container.creditsService.deductCredits(userId, TAILOR_CREDIT_COST, "RESUME_TAILORING");
+    } catch (e) {}
 
     let userBackground = null;
     try {
@@ -395,9 +402,7 @@ export class ResumeService {
         where: { id: userId },
         include: { profile: true, education: true, experience: true, skills: true },
       });
-    } catch (e) {
-      // User background is optional
-    }
+    } catch (e) {}
 
     let parsedContent: any = {};
     try {
@@ -407,12 +412,38 @@ export class ResumeService {
     }
 
     const gateway = this.aiGatewayService || new AiGatewayService();
-    return await gateway.tailorResumeForRole({
+    const tailored = await gateway.tailorResumeForRole({
       targetRole,
       jobDescription,
       userProfile: userBackground,
       resumeContent: parsedContent,
     });
+
+    // Merge tailored summary, experience STAR bullets, and skills into existing content
+    const existingSkills = Array.isArray(parsedContent.skills) ? parsedContent.skills : [];
+    const newSkills = [
+      ...existingSkills,
+      ...(tailored.skills?.technical || []),
+      ...(tailored.skills?.tools || [])
+    ];
+    // Deduplicate skills
+    const uniqueSkills = Array.from(new Set(newSkills.map(s => (typeof s === "string" ? s : s.name)))).filter(Boolean);
+
+    const mergedContent = {
+      ...parsedContent,
+      summary: tailored.summary || parsedContent.summary,
+      skills: uniqueSkills,
+      experience: tailored.experience?.length ? tailored.experience : parsedContent.experience
+    };
+
+    // Auto-save the AI tailored content directly to the resume in DB
+    await this.resumeRepository.update(id, { content: mergedContent });
+    await this.resumeRepository.createVersion(id, mergedContent, `AI Tailored for role: ${targetRole}`);
+
+    return {
+      ...tailored,
+      updatedContent: mergedContent
+    };
   }
 
   /**
