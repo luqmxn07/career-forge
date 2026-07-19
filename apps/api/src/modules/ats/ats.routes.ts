@@ -13,6 +13,7 @@ export const createAtsRouter = (atsController: AtsController): Router => {
   router.post("/", validate({ body: scanResumeSchema }), atsController.runScan);
   router.get("/", atsController.getScans);
   router.get("/:id", atsController.getScan);
+  router.delete("/:id", atsController.deleteScan);
 
   return router;
 };

@@ -1,10 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { ArrowLeft, CheckCircle2, XCircle, Lightbulb, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, Lightbulb, Loader2, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
-import { useAtsScan } from "@/features/ats/api/ats";
+import { useAtsScan, useDeleteAtsScan } from "@/features/ats/api/ats";
 import { ScoreBadge, getScanTitle } from "./_app.ats";
 
 export const Route = createFileRoute("/_app/ats/$id")({
@@ -26,6 +27,8 @@ const MOCK = {
 function AtsDetailPage() {
   const { id } = Route.useParams();
   const { data, isLoading } = useAtsScan(id);
+  const deleteScan = useDeleteAtsScan();
+  const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -41,13 +44,34 @@ function AtsDetailPage() {
   }
 
   const s = data ?? (MOCK as any);
-  const gauge = s.score ?? MOCK.score;
+  const gauge = s.overallScore ?? s.score ?? MOCK.score;
+
+  const handleDelete = async () => {
+    if (confirm("Are you sure you want to delete this ATS scan?")) {
+      try {
+        await deleteScan.mutateAsync(id);
+        toast.success("Scan deleted");
+        navigate({ to: "/ats" });
+      } catch (err: any) {
+        toast.error(err.message || "Failed to delete scan");
+      }
+    }
+  };
 
   return (
     <div>
-      <Link to="/ats" className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" /> Back to scans
-      </Link>
+      <div className="mb-4 flex items-center justify-between">
+        <Link to="/ats" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" /> Back to scans
+        </Link>
+        <button
+          onClick={handleDelete}
+          disabled={deleteScan.isPending}
+          className="inline-flex items-center gap-1.5 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive/20 transition"
+        >
+          <Trash2 className="h-3.5 w-3.5" /> Delete scan
+        </button>
+      </div>
       <PageHeader title={getScanTitle(s)} description="Detailed ATS match report with recommendations." />
 
       <div className="grid gap-4 lg:grid-cols-3">

@@ -7,9 +7,9 @@ export class AtsController {
   runScan = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userId = (req as any).user.userId;
-      const { resumeId, jobDescription } = req.body;
+      const { resumeId, jobDescription, jobRole, role } = req.body;
 
-      const scanResult = await this.atsService.scanResume(userId, resumeId, jobDescription);
+      const scanResult = await this.atsService.scanResume(userId, resumeId, jobDescription, jobRole || role);
       
       res.status(201).json({
         success: true,
@@ -30,6 +30,22 @@ export class AtsController {
       res.status(200).json({
         success: true,
         data: scan
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  deleteScan = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = (req as any).user.userId;
+      const { id } = req.params;
+
+      await this.atsService.deleteScan(userId, id);
+
+      res.status(200).json({
+        success: true,
+        message: "ATS scan deleted"
       });
     } catch (error) {
       next(error);

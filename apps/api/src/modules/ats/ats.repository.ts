@@ -35,6 +35,12 @@ export class AtsRepository {
     });
   }
 
+  async deleteScan(id: string): Promise<AtsScan> {
+    return this.prisma.atsScan.delete({
+      where: { id }
+    });
+  }
+
   async findScansByUser(userId: string): Promise<AtsScan[]> {
     return this.prisma.atsScan.findMany({
       where: { userId },

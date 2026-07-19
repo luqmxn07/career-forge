@@ -2,10 +2,10 @@ import { createFileRoute, Link, useNavigate, Outlet, useRouterState } from "@tan
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { ScanLine, Loader2, Zap, Briefcase } from "lucide-react";
+import { ScanLine, Loader2, Zap, Briefcase, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
-import { useAtsScans, useCreateAtsScan } from "@/features/ats/api/ats";
+import { useAtsScans, useCreateAtsScan, useDeleteAtsScan } from "@/features/ats/api/ats";
 import { useResumes } from "@/features/resume/api/resume";
 import { useJobTracker } from "@/features/job-tracker/api/job-tracker";
 
@@ -31,11 +31,17 @@ export function getScanTitle(s: any): string {
     const text = s.jobDescriptionText || s.jobDescription || "";
     const clean = text
       .replace(/Job Link:\s*https?:\/\/[^\s]+/gi, "")
+      .replace(/https?:\/\/[^\s]+/gi, "")
       .replace(/^Key Requirements:\s*/gi, "")
+      .replace(/^\s*[\r\n]/gm, "")
       .trim();
-    const firstLine = clean.split("\n")[0]?.trim();
-    if (firstLine && firstLine.length > 3 && firstLine.length < 50) {
-      return `ATS Scan — ${firstLine}`;
+    const lines = clean.split("\n").map((l: string) => l.trim()).filter((l: string) => l.length > 0);
+    const roleLine = lines.find((l: string) => /^Target Role|^Role|^Position/i.test(l)) || lines[0];
+    if (roleLine) {
+      const cleanLine = roleLine.replace(/^(Target Role|Role|Position):\s*/i, "").trim();
+      if (cleanLine.length > 2 && cleanLine.length < 60) {
+        return `ATS Scan — ${cleanLine}`;
+      }
     }
   }
   return `ATS Scan Report`;
@@ -46,6 +52,7 @@ function AtsPage() {
   const { data: resumes = [], isLoading: loadingResumes } = useResumes();
   const { data: jobCards = [] } = useJobTracker();
   const create = useCreateAtsScan();
+  const deleteScan = useDeleteAtsScan();
   const navigate = useNavigate();
   const [resumeId, setResumeId] = useState("");
   const [role, setRole] = useState("");
@@ -183,14 +190,30 @@ function AtsPage() {
             ) : (
               <ul className="mt-3 space-y-2">
                 {scans.map((s: any) => (
-                  <li key={s.id}>
-                    <Link to="/ats/$id" params={{ id: s.id }} className="flex items-center justify-between rounded-md border border-glass-border bg-white/[0.02] p-3 hover:bg-white/[0.06]">
-                      <div className="min-w-0 pr-2">
-                        <p className="text-sm font-medium truncate">{getScanTitle(s)}</p>
-                        <p className="text-xs text-muted-foreground">{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : "Recent"}</p>
-                      </div>
-                      <ScoreBadge score={s.score ?? 0} />
+                  <li key={s.id} className="group relative flex items-center justify-between rounded-md border border-glass-border bg-white/[0.02] p-3 hover:bg-white/[0.06] transition">
+                    <Link to="/ats/$id" params={{ id: s.id }} className="min-w-0 flex-1 pr-2">
+                      <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">{getScanTitle(s)}</p>
+                      <p className="text-xs text-muted-foreground">{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : "Recent"}</p>
                     </Link>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <ScoreBadge score={s.overallScore ?? s.score ?? 0} />
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (confirm("Delete this ATS scan?")) {
+                            deleteScan.mutate(s.id, {
+                              onSuccess: () => toast.success("Scan deleted"),
+                              onError: (err: any) => toast.error(err.message || "Failed to delete scan"),
+                            });
+                          }
+                        }}
+                        className="rounded p-1.5 text-muted-foreground hover:bg-destructive/20 hover:text-destructive transition"
+                        title="Delete scan"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>

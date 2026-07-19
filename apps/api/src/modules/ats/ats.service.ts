@@ -18,14 +18,20 @@ export class AtsService {
   /**
    * Run the ATS hybrid analysis pipeline
    */
-  async scanResume(userId: string, resumeId: string, jdText: string): Promise<AtsScan> {
+  async scanResume(userId: string, resumeId: string, jdText: string, jobRole?: string): Promise<AtsScan> {
     const resume = await this.resumeRepository.findById(resumeId);
     if (!resume || resume.userId !== userId) {
       throw new NotFoundError("Resume not found or not owned by user");
     }
 
+    // Embed jobRole at the beginning of jobDescriptionText if provided
+    let fullJdText = jdText.trim();
+    if (jobRole && jobRole.trim() && !fullJdText.toLowerCase().includes(jobRole.trim().toLowerCase())) {
+      fullJdText = `Target Role: ${jobRole.trim()}\n\n${fullJdText}`;
+    }
+
     // Hash the Job Description for cache check
-    const jdHash = crypto.createHash("md5").update(jdText.trim()).digest("hex");
+    const jdHash = crypto.createHash("md5").update(fullJdText).digest("hex");
 
     // 1. Check for recent cache hit (within 60s)
     const recentScan = await this.atsRepository.findRecentScan(resumeId, jdHash);
@@ -107,6 +113,11 @@ export class AtsService {
       throw new NotFoundError("ATS scan not found");
     }
     return scan;
+  }
+
+  async deleteScan(userId: string, id: string): Promise<void> {
+    const scan = await this.getScan(userId, id);
+    await this.atsRepository.deleteScan(scan.id);
   }
 
   async getScansByUser(userId: string): Promise<AtsScan[]> {

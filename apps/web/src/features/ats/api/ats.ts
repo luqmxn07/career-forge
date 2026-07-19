@@ -24,7 +24,16 @@ export function useAtsScan(id: string | undefined) {
 export function useCreateAtsScan() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (body: { resumeId: string; jobDescription: string }) => api.post<AtsScan>("/ats", body),
+    mutationFn: (body: { resumeId: string; jobDescription: string; jobRole?: string }) =>
+      api.post<AtsScan>("/ats", body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["ats"] }),
+  });
+}
+
+export function useDeleteAtsScan() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.delete(`/ats/${id}`),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["ats"] }),
   });
 }
