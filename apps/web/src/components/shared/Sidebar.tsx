@@ -7,6 +7,8 @@ import {
 import { useUIStore } from "@/stores/ui-store";
 import { cn } from "@/lib/utils";
 
+import { useAuthStore } from "@/stores/auth-store";
+
 const items = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/profile", label: "Profile", icon: User },
@@ -20,10 +22,13 @@ const items = [
 ] as const;
 
 export function Sidebar() {
+  const user = useAuthStore((s) => s.user);
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
   const setCollapsed = useUIStore((s) => s.setSidebarCollapsed);
   const toggle = useUIStore((s) => s.toggleSidebar);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  const navItems = items.filter((item) => item.to !== "/admin" || user?.role === "ADMIN");
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth < 1024) {
@@ -77,7 +82,7 @@ export function Sidebar() {
         </div>
 
         <nav className="mt-6 flex-1 space-y-1 px-2 overflow-y-auto scrollbar-thin">
-          {items.map(({ to, label, icon: Icon }) => {
+          {navItems.map(({ to, label, icon: Icon }) => {
             const active = pathname === to || pathname.startsWith(to + "/");
             return (
               <Link

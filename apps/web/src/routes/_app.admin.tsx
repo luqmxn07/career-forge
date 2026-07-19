@@ -17,6 +17,7 @@ export const Route = createFileRoute("/_app/admin")({
 });
 
 function AdminPage() {
+  const user = useAuthStore((s) => s.user);
   const mfaVerified = useAuthStore((s) => s.mfaVerified);
   const setMfa = useAuthStore((s) => s.setMfaVerified);
   const mfa = useMfaVerify();
@@ -31,6 +32,18 @@ function AdminPage() {
     return (
       <div className="flex h-96 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (user?.role !== "ADMIN") {
+    return (
+      <div className="mx-auto max-w-md py-12 text-center">
+        <GlassCard>
+          <Shield className="mx-auto h-8 w-8 text-destructive" />
+          <h2 className="mt-4 font-display text-xl font-bold">Access Denied</h2>
+          <p className="mt-2 text-xs text-muted-foreground">The Admin portal is restricted to system administrators.</p>
+        </GlassCard>
       </div>
     );
   }
