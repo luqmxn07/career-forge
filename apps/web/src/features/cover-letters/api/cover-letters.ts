@@ -29,7 +29,10 @@ export function useCreateCoverLetter() {
   return useMutation({
     mutationFn: (body: { resumeId?: string; jobDescription: string; company?: string; role?: string }) =>
       api.post<CoverLetter>("/cover-letters", body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["cover-letters"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cover-letters"] });
+      qc.invalidateQueries({ queryKey: ["credits"] });
+    },
   });
 }
 export function useDeleteCoverLetter() {

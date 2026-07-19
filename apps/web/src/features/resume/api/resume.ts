@@ -31,6 +31,7 @@ export function useUpdateResume(id: string) {
   });
 }
 export function useCompileResume(id: string) {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: async () => {
       const { jobId } = await api.post<{ jobId: string }>(`/resume/${id}/export`);
@@ -52,6 +53,21 @@ export function useCompileResume(id: string) {
       
       const downloadUrl = await checkStatus();
       return { downloadUrl };
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["credits"] });
+    },
+  });
+}
+
+export function useTailorResume(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { targetRole: string; jobDescription?: string }) =>
+      api.post<any>(`/resume/${id}/tailor`, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["resume", id] });
+      qc.invalidateQueries({ queryKey: ["credits"] });
     },
   });
 }

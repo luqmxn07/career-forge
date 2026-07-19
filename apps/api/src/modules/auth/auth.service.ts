@@ -48,6 +48,14 @@ export class AuthService {
 
     logger.info(`User registered successfully: ${user.email} (${user.id})`);
 
+    // Allocate initial 100 welcome credits to user's ledger immediately on signup
+    try {
+      const { container } = await import("../../config/di-container.js");
+      await container.creditsService.allocateCredits(user.id, 100, "WELCOME_BONUS");
+    } catch (e) {
+      logger.warn("Failed to allocate initial welcome credits on signup:", e);
+    }
+
     // In a real app, send verification email here asynchronously
     const verificationToken = this.generateEmailVerificationToken(user.id);
     logger.debug(`Verification token generated for user ${user.id}: ${verificationToken}`);

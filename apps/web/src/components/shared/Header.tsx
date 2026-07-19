@@ -8,16 +8,19 @@ import { useNotifications, useMarkAllRead } from "@/features/notifications/api/n
 import { useLogout } from "@/features/auth/api/auth";
 import { cn } from "@/lib/utils";
 
+import { useCredits } from "@/features/credits/api/credits";
+
 export function Header() {
   const user = useAuthStore((s) => s.user);
   const toggle = useUIStore((s) => s.toggleSidebar);
   const navigate = useNavigate();
   const { data: notifications = [] } = useNotifications();
+  const { data: liveBalance } = useCredits();
   const markAll = useMarkAllRead();
   const logout = useLogout();
   const unread = notifications.filter((n) => !n.isRead && !n.read).length;
   const isAdmin = user?.role?.toLowerCase() === "admin" || user?.email === "aricpaul2007@gmail.com";
-  const credits = user?.credits ?? (isAdmin ? 999999 : 100);
+  const credits = isAdmin ? 999999 : (typeof liveBalance === "number" ? liveBalance : (user?.credits ?? 100));
   const creditsMax = 100;
   const pct = isAdmin ? 100 : Math.max(0, Math.min(100, (credits / creditsMax) * 100));
 

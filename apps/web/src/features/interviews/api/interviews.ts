@@ -24,7 +24,10 @@ export function useCreateInterview() {
   return useMutation({
     mutationFn: (body: { resumeId: string; jobTitle: string; jobDescription: string }) =>
       api.post<Interview>("/interviews", body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["interviews"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["interviews"] });
+      qc.invalidateQueries({ queryKey: ["credits"] });
+    },
   });
 }
 export function useSubmitAnswer(id: string) {

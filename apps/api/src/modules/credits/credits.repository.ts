@@ -11,7 +11,10 @@ export class CreditsRepository {
     const client = tx || this.prisma;
     const lastTx = await client.aiCreditLedger.findFirst({
       where: { userId },
-      orderBy: { createdAt: "desc" }
+      orderBy: [
+        { createdAt: "desc" },
+        { id: "desc" }
+      ]
     });
     return lastTx ? lastTx.balanceAfter : null;
   }

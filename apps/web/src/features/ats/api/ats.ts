@@ -26,7 +26,10 @@ export function useCreateAtsScan() {
   return useMutation({
     mutationFn: (body: { resumeId: string; jobDescription: string; jobRole?: string }) =>
       api.post<AtsScan>("/ats", body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["ats"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ats"] });
+      qc.invalidateQueries({ queryKey: ["credits"] });
+    },
   });
 }
 
