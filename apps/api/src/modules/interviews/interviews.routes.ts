@@ -9,10 +9,18 @@ export const createInterviewsRouter = (interviewsController: InterviewsControlle
 
   router.use(authMiddleware);
 
-  router.post("/sessions", validate({ body: startSessionSchema }), interviewsController.start);
-  router.post("/sessions/:id/answers", validate({ body: submitAnswerSchema }), interviewsController.submitAnswer);
-  router.get("/sessions/:id", interviewsController.getSessionDetail);
+  // Session routes
+  router.get("/", interviewsController.getSessions);
   router.get("/sessions", interviewsController.getSessions);
+  router.post("/", validate({ body: startSessionSchema }), interviewsController.start);
+  router.post("/sessions", validate({ body: startSessionSchema }), interviewsController.start);
+
+  // Detail & Answer routes
+  router.get("/:id", interviewsController.getSessionDetail);
+  router.get("/sessions/:id", interviewsController.getSessionDetail);
+  router.post("/:id/answer", validate({ body: submitAnswerSchema }), interviewsController.submitAnswer);
+  router.post("/:id/answers", validate({ body: submitAnswerSchema }), interviewsController.submitAnswer);
+  router.post("/sessions/:id/answers", validate({ body: submitAnswerSchema }), interviewsController.submitAnswer);
 
   return router;
 };
