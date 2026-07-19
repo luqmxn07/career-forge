@@ -63,15 +63,15 @@ export function Sidebar() {
         )}
       >
         <div className="flex items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" className="h-9 w-9 object-contain" alt="CareerForge Logo" />
+          <Link to="/" className="flex items-center gap-2 group cursor-pointer hover:opacity-90 transition-opacity" title="Go to Home Page">
+            <img src="/logo.png" className="h-9 w-9 object-contain group-hover:scale-105 transition-transform" alt="CareerForge Logo" />
             {(!collapsed || (typeof window !== "undefined" && window.innerWidth < 1024)) && (
               <div>
-                <p className="font-display text-sm font-semibold leading-tight">CareerForge</p>
+                <p className="font-display text-sm font-semibold leading-tight group-hover:text-primary transition-colors">CareerForge</p>
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground">AI Suite</p>
               </div>
             )}
-          </div>
+          </Link>
           <button
             onClick={() => setCollapsed(true)}
             className="grid h-8 w-8 place-items-center rounded-md text-muted-foreground hover:bg-white/[0.06] hover:text-foreground lg:hidden"

@@ -31,10 +31,10 @@ export function Header() {
         <Menu className="h-5 w-5" />
       </button>
 
-      <div className="flex items-center gap-2 lg:hidden">
+      <Link to="/" className="flex items-center gap-2 lg:hidden cursor-pointer hover:opacity-90 transition-opacity" title="Go to Home Page">
         <img src="/logo.png" className="h-8 w-8 object-contain" alt="CareerForge Logo" />
         <span className="font-display font-semibold">CareerForge</span>
-      </div>
+      </Link>
 
       <nav className="ml-4 hidden items-center gap-1 md:flex">
         {[
