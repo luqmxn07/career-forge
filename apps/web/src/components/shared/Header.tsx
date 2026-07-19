@@ -85,6 +85,43 @@ export function Header() {
           )}
         </div>
 
+        {/* Theme Switcher */}
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <button
+              className="grid h-9 w-9 place-items-center rounded-md border border-glass-border bg-white/[0.03] text-muted-foreground hover:text-foreground transition-colors"
+              aria-label="Switch Theme"
+              title="Switch Theme"
+            >
+              <Sparkles className="h-4 w-4 text-primary" />
+            </button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              align="end"
+              sideOffset={8}
+              className="glass-panel z-50 w-48 rounded-lg border border-glass-border p-1.5 shadow-2xl space-y-1"
+            >
+              <p className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Select Theme</p>
+              {[
+                { id: "dark", label: "🌙 Dark Glass", icon: "✨" },
+                { id: "cyber-violet", label: "👾 Cyber Violet", icon: "💜" },
+                { id: "emerald-glow", label: "🌿 Emerald Neon", icon: "💚" },
+                { id: "pure-light", label: "☀️ Pure Light", icon: "🤍" },
+              ].map((t) => (
+                <DropdownMenu.Item
+                  key={t.id}
+                  onSelect={() => useUIStore.getState().setTheme(t.id as any)}
+                  className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-xs cursor-pointer hover:bg-white/[0.06] text-foreground font-medium"
+                >
+                  <span>{t.label}</span>
+                  {useUIStore.getState().theme === t.id && <span className="text-primary font-bold">✓</span>}
+                </DropdownMenu.Item>
+              ))}
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Root>
+
         {/* Notifications */}
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>

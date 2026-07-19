@@ -63,7 +63,7 @@
 :root {
   color-scheme: dark;
   --radius: 0.75rem;
-  /* Charcoal / zinc dark base */
+  /* Dark Glass (Default) */
   --background: hsl(228 14% 6%);
   --foreground: hsl(210 20% 96%);
   --card: hsl(228 14% 9%);
@@ -119,6 +119,67 @@
   --brand-cyan: oklch(0.82 0.14 210);
 }
 
+/* 👾 Theme: Cyber Violet (Midnight Purple) */
+html.theme-cyber-violet, body.theme-cyber-violet {
+  color-scheme: dark;
+  --background: hsl(265 30% 6%);
+  --foreground: hsl(270 20% 96%);
+  --card: hsl(265 25% 10%);
+  --card-foreground: hsl(270 20% 96%);
+  --popover: hsl(265 25% 10%);
+  --primary: hsl(270 100% 65%);
+  --primary-glow: hsl(290 100% 70%);
+  --primary-foreground: hsl(265 40% 6%);
+  --border: hsl(265 20% 20%);
+  --glass: hsl(265 30% 12% / 0.6);
+  --glass-border: hsl(270 50% 90% / 0.12);
+  --gradient-primary: linear-gradient(135deg, hsl(270 100% 65%), hsl(290 100% 70%));
+  --gradient-surface: radial-gradient(1200px 600px at 10% -10%, hsl(270 100% 65% / 0.15), transparent 60%),
+                      radial-gradient(900px 500px at 100% 0%, hsl(310 100% 60% / 0.1), transparent 55%);
+}
+
+/* 🌿 Theme: Emerald Neon (Matrix Tech) */
+html.theme-emerald-glow, body.theme-emerald-glow {
+  color-scheme: dark;
+  --background: hsl(160 30% 5%);
+  --foreground: hsl(155 20% 96%);
+  --card: hsl(160 25% 9%);
+  --card-foreground: hsl(155 20% 96%);
+  --popover: hsl(160 25% 9%);
+  --primary: hsl(158 90% 52%);
+  --primary-glow: hsl(140 100% 60%);
+  --primary-foreground: hsl(160 40% 6%);
+  --border: hsl(160 20% 18%);
+  --glass: hsl(160 30% 10% / 0.6);
+  --glass-border: hsl(155 50% 90% / 0.12);
+  --gradient-primary: linear-gradient(135deg, hsl(158 90% 52%), hsl(140 100% 60%));
+  --gradient-surface: radial-gradient(1200px 600px at 10% -10%, hsl(158 90% 52% / 0.15), transparent 60%),
+                      radial-gradient(900px 500px at 100% 0%, hsl(180 100% 50% / 0.1), transparent 55%);
+}
+
+/* ☀️ Theme: Pure Light (High Contrast Clean) */
+html.theme-pure-light, body.theme-pure-light {
+  color-scheme: light;
+  --background: hsl(210 20% 98%);
+  --foreground: hsl(228 24% 12%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(228 24% 12%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(228 24% 12%);
+  --primary: hsl(215 100% 50%);
+  --primary-glow: hsl(215 100% 65%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(210 16% 93%);
+  --secondary-foreground: hsl(228 24% 12%);
+  --muted: hsl(210 16% 92%);
+  --muted-foreground: hsl(220 12% 42%);
+  --border: hsl(214 20% 88%);
+  --glass: hsl(0 0% 100% / 0.85);
+  --glass-border: hsl(214 20% 80% / 0.6);
+  --gradient-primary: linear-gradient(135deg, hsl(215 100% 50%), hsl(225 100% 60%));
+  --gradient-surface: radial-gradient(1200px 600px at 10% -10%, hsl(215 100% 50% / 0.08), transparent 60%),
+                      radial-gradient(900px 500px at 100% 0%, hsl(280 80% 60% / 0.05), transparent 55%);
+}
 
 @layer base {
   * {
@@ -133,6 +194,7 @@
     font-family: var(--font-sans);
     font-feature-settings: "cv02","cv03","cv04","cv11";
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
   body {
     background-image: var(--gradient-surface);
