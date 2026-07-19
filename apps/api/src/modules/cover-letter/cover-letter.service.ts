@@ -24,10 +24,11 @@ export class CoverLetterService {
     data: {
       resumeId?: string;
       jobDescription: string;
-      company: string;
-      role: string;
-      tone: string;
+      company?: string;
+      role?: string;
+      tone?: string;
     }
+  ): Promise<CoverLetter> {
     const targetCompany = data.company && data.company.trim() ? data.company : "Target Company";
     const targetRole = data.role && data.role.trim() ? data.role : "Target Role";
     const targetTone = data.tone || "Professional";
