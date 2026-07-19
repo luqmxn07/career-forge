@@ -12,12 +12,16 @@ export class PdfService {
     logger.info("Executing direct HTML-to-PDF conversion using Puppeteer");
     let browser;
     try {
+      const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || process.env.CHROME_PATH || undefined;
       browser = await puppeteer.launch({
         headless: true,
+        ...(executablePath ? { executablePath } : {}),
         args: [
           "--no-sandbox",
           "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage"
+          "--disable-dev-shm-usage",
+          "--single-process",
+          "--no-zygote"
         ]
       });
       
