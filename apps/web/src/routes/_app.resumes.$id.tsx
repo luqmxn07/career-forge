@@ -114,6 +114,7 @@ function ResumeEditor() {
         fieldOfStudy: ed.fieldOfStudy || "",
         yearOfPassing: ed.yearOfPassing || ed.endDate || "",
         marks: ed.marks || ed.gpa || "",
+        isStudying: !!(ed.isStudying || ed.isCurrent || (typeof ed.yearOfPassing === "string" && ed.yearOfPassing.toLowerCase().includes("pursu"))),
       })));
 
       // Skills normalization
@@ -398,15 +399,20 @@ function ResumeEditor() {
 
   ${education.length > 0 ? `
     <div class="section-title">Education</div>
-    ${education.map((edu) => `
-      <div class="timeline-row">
-        <div class="timeline-date">${edu.yearOfPassing ? `Passout: ${edu.yearOfPassing}` : (edu.level || "Education")}</div>
-        <div class="timeline-body">
-          <div class="item-heading">${edu.level ? `[${edu.level}] ` : ""}${edu.degree}${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}</div>
-          <div class="item-sub">${edu.institution}${edu.board ? ` (${edu.board})` : ""}${edu.marks ? ` · Marks/CGPA: ${edu.marks}` : ""}</div>
+    ${education.map((edu) => {
+      const dateText = edu.isStudying
+        ? (edu.yearOfPassing ? `Pursuing (Exp: ${edu.yearOfPassing})` : "Currently Pursuing")
+        : (edu.yearOfPassing ? `Passout: ${edu.yearOfPassing}` : (edu.level || "Education"));
+      return `
+        <div class="timeline-row">
+          <div class="timeline-date">${dateText}</div>
+          <div class="timeline-body">
+            <div class="item-heading">${edu.level ? `[${edu.level}] ` : ""}${edu.degree}${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}</div>
+            <div class="item-sub">${edu.institution}${edu.board ? ` (${edu.board})` : ""}${edu.marks ? ` · Marks/CGPA: ${edu.marks}` : ""}${edu.isStudying ? " · (Currently Pursuing)" : ""}</div>
+          </div>
         </div>
-      </div>
-    `).join("")}
+      `;
+    }).join("")}
   ` : ""}
 
   ${projects.length > 0 ? `
@@ -797,8 +803,31 @@ function ResumeEditor() {
                         className="w-full rounded-md border border-glass-border bg-input px-2.5 py-1.5 text-xs outline-none focus:border-primary"
                       />
                     </div>
+                    <div className="col-span-2 flex items-center justify-between rounded-md border border-glass-border bg-input/50 px-3 py-2">
+                      <label htmlFor={`isStudying-${idx}`} className="text-xs font-medium text-foreground cursor-pointer flex items-center gap-2 select-none">
+                        <input
+                          id={`isStudying-${idx}`}
+                          type="checkbox"
+                          checked={!!edu.isStudying}
+                          onChange={(e) => {
+                            const updated = [...education];
+                            updated[idx].isStudying = e.target.checked;
+                            setEducation(updated);
+                          }}
+                          className="h-4 w-4 rounded border-glass-border text-emerald-500 focus:ring-emerald-500 cursor-pointer"
+                        />
+                        <span>Currently Studying / Pursuing this degree</span>
+                      </label>
+                      {edu.isStudying && (
+                        <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                          Currently Pursuing
+                        </span>
+                      )}
+                    </div>
                     <div>
-                      <label className="mb-1 block text-xs font-medium text-muted-foreground">Year of Passing</label>
+                      <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                        {edu.isStudying ? "Expected Year of Passing" : "Year of Passing"}
+                      </label>
                       <input
                         value={edu.yearOfPassing}
                         onChange={(e) => {
@@ -806,7 +835,7 @@ function ResumeEditor() {
                           updated[idx].yearOfPassing = e.target.value;
                           setEducation(updated);
                         }}
-                        placeholder="e.g. 2024"
+                        placeholder={edu.isStudying ? "e.g. 2026 (Expected)" : "e.g. 2024"}
                         className="w-full rounded-md border border-glass-border bg-input px-2.5 py-1.5 text-xs outline-none focus:border-primary"
                       />
                     </div>
@@ -828,7 +857,7 @@ function ResumeEditor() {
               ))}
 
               <button
-                onClick={() => setEducation([...education, { institution: "", degree: "B.Tech", level: "Undergraduate", board: "", fieldOfStudy: "", yearOfPassing: "", marks: "" }])}
+                onClick={() => setEducation([...education, { institution: "", degree: "B.Tech", level: "Undergraduate", board: "", fieldOfStudy: "", yearOfPassing: "", marks: "", isStudying: false }])}
                 className="w-full rounded-md border border-dashed border-glass-border p-3 text-xs text-muted-foreground hover:bg-white/[0.02] flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Plus className="h-4 w-4" /> Add Education Entry (Class X / XII / Degree)
@@ -1038,17 +1067,24 @@ function ResumeEditor() {
                 <div className="mt-4">
                   <h3 className="text-[12.5px] font-bold text-slate-900 border-b border-slate-300 pb-1 mb-2.5">Education</h3>
                   <div className="space-y-2.5">
-                    {education.map((edu, idx) => (
-                      <div key={idx} className="flex gap-4 text-[11px]">
-                        <div className="w-[120px] shrink-0 font-medium text-slate-600">
-                          {edu.yearOfPassing ? `Passout: ${edu.yearOfPassing}` : (edu.level || "Education")}
+                    {education.map((edu, idx) => {
+                      const dateLabel = edu.isStudying
+                        ? (edu.yearOfPassing ? `Pursuing (Exp: ${edu.yearOfPassing})` : "Currently Pursuing")
+                        : (edu.yearOfPassing ? `Passout: ${edu.yearOfPassing}` : (edu.level || "Education"));
+                      return (
+                        <div key={idx} className="flex gap-4 text-[11px]">
+                          <div className="w-[120px] shrink-0 font-medium text-slate-600">
+                            {dateLabel}
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-bold text-slate-900">{edu.level ? `[${edu.level}] ` : ""}{edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}</div>
+                            <div className="italic text-slate-600">
+                              {edu.institution}{edu.board ? ` (${edu.board})` : ""}{edu.marks ? ` · Marks/CGPA: ${edu.marks}` : ""}{edu.isStudying && <span className="font-semibold text-emerald-600"> · (Currently Pursuing)</span>}
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1">
-                          <div className="font-bold text-slate-900">{edu.level ? `[${edu.level}] ` : ""}{edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}</div>
-                          <div className="italic text-slate-600">{edu.institution}{edu.board ? ` (${edu.board})` : ""}{edu.marks ? ` · Marks/CGPA: ${edu.marks}` : ""}</div>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
