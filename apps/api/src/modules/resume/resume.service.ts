@@ -16,9 +16,18 @@ export class ResumeService {
 
   /**
    * Asserts whether a user is allowed to create another resume.
-   * Free tier limits users to a maximum of 2 active resumes.
+   * Free tier limits users to a maximum of 10 active resumes; Admins are unlimited.
    */
   private async validateUserLimits(userId: string): Promise<void> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { role: true, email: true }
+    });
+
+    if (user?.role === "ADMIN") {
+      return; // Admins have unlimited resumes
+    }
+
     const subscription = await this.prisma.subscription.findUnique({
       where: { userId }
     });
@@ -26,8 +35,8 @@ export class ResumeService {
 
     if (tier === "FREE") {
       const activeCount = await this.resumeRepository.countActiveByUserId(userId);
-      if (activeCount >= 2) {
-        throw new AuthorizationError("Free tier is limited to a maximum of 2 active resumes. Upgrade to Premium for unlimited resumes.");
+      if (activeCount >= 10) {
+        throw new AuthorizationError("Free tier is limited to 10 active resumes. Delete older resumes to create new ones.");
       }
     }
   }
