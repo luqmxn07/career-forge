@@ -367,7 +367,7 @@ export class ResumeService {
 
     let profile = null;
     try {
-      profile = await this.prisma.profile.findUnique({
+      profile = await this.prisma.userProfile.findUnique({
         where: { userId },
         include: { education: true, workExperiences: true, skills: true },
       });

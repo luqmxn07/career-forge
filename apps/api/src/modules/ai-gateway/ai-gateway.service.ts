@@ -402,11 +402,17 @@ ${ctx.answer}`;
     summary?: string;
     experiences?: any[];
     skills?: any[];
+    userProfile?: any;
+    resumeContent?: any;
   }): Promise<{
     summary: string;
     experience: any[];
     skills: { technical: string[]; tools: string[]; soft: string[] };
   }> {
+    const rawSummary = ctx.summary || ctx.resumeContent?.summary || ctx.userProfile?.bio || "Not provided";
+    const rawExperiences = ctx.experiences || ctx.resumeContent?.experience || ctx.userProfile?.workExperiences || [];
+    const rawSkills = ctx.skills || ctx.resumeContent?.skills || ctx.userProfile?.skills || [];
+
     const systemInstruction = `You are a high-level executive resume writer and career coach.
 Your job is to take a candidate's background and tailor it specifically for the role of "${ctx.targetRole}".
 Do NOT just copy-paste raw input. 
@@ -437,13 +443,13 @@ Return JSON matching this format:
 ${ctx.targetRole}
 
 --- CANDIDATE RAW SUMMARY ---
-${ctx.summary || "Not provided"}
+${rawSummary}
 
 --- CANDIDATE EXPERIENCES ---
-${JSON.stringify(ctx.experiences || [], null, 2)}
+${JSON.stringify(rawExperiences, null, 2)}
 
 --- CANDIDATE SKILLS ---
-${JSON.stringify(ctx.skills || [], null, 2)}`;
+${JSON.stringify(rawSkills, null, 2)}`;
 
     try {
       const rawJson = await this.callLlm(prompt, systemInstruction);
