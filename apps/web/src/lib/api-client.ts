@@ -135,6 +135,7 @@ export async function apiRequest<T = unknown>(path: string, opts: RequestOptions
   if (!res.ok) {
     const msg =
       (payload && typeof payload === "object" && "message" in payload && (payload as any).message) ||
+      (payload && typeof payload === "object" && "error" in payload && (payload as any).error?.message) ||
       res.statusText ||
       "Request failed";
     throw new ApiError(String(msg), res.status, payload);

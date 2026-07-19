@@ -6,15 +6,11 @@ export const signupSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters long")
-    .regex(
-      passwordRegex,
-      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-    ),
+    .min(6, "Password must be at least 6 characters long"),
   fullName: z.string().min(2, "Full name must be at least 2 characters long"),
   phoneNumber: z.string().optional(),
   location: z.string().optional(),
-  age: z.string().optional()
+  age: z.union([z.string(), z.number()]).optional()
 });
 
 export const loginSchema = z.object({
@@ -31,11 +27,7 @@ export const resetPasswordSchema = z.object({
   token: z.string().min(1, "Token is required"),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters long")
-    .regex(
-      passwordRegex,
-      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
-    )
+    .min(6, "Password must be at least 6 characters long")
 });
 
 export type SignupDto = z.infer<typeof signupSchema>;
