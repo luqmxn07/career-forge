@@ -115,9 +115,9 @@ function CoverLettersPage() {
               </select>
               <textarea rows={9} value={jd} onChange={(e) => setJd(e.target.value)} placeholder="Paste JD…" className="w-full rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm" />
               <button
-                disabled={!resumeId || !jd || create.isPending}
+                disabled={!jd || create.isPending}
                 onClick={() => create.mutate({
-                  resumeId,
+                  resumeId: resumeId || (resumes && resumes[0]?.id) || "",
                   jobDescription: jd,
                   company: selectedCompany || "Target Company",
                   role: selectedRole || "Target Role",

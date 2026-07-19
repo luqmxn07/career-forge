@@ -72,7 +72,7 @@ function InterviewDetail() {
                     <span className="text-xs uppercase tracking-widest text-muted-foreground">Q{i + 1}</span>
                     {q.score != null && <span className="rounded-full bg-emerald/15 px-2 py-0.5 text-[11px] text-emerald">{q.score}</span>}
                   </div>
-                  <p className="mt-1.5 line-clamp-2 text-sm">{q.prompt}</p>
+                  <p className="mt-1.5 line-clamp-2 text-sm">{q.prompt || q.question}</p>
                 </button>
               </li>
             ))}
@@ -82,7 +82,7 @@ function InterviewDetail() {
         <motion.div key={active} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2 space-y-4">
           <GlassCard>
             <p className="text-xs uppercase tracking-wider text-muted-foreground">Question {active + 1}</p>
-            <p className="mt-2 font-display text-xl">{questions[active]?.prompt || "Select a question"}</p>
+            <p className="mt-2 font-display text-xl">{questions[active]?.prompt || questions[active]?.question || "Select a question"}</p>
           </GlassCard>
 
           <GlassCard>

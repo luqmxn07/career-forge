@@ -140,8 +140,11 @@ function InterviewsPage() {
                     } as any, {
                       onSuccess: (data: any) => {
                         toast.success("Session created");
-                        if (data?.id) {
-                          navigate({ to: "/interviews/$id", params: { id: data.id } });
+                        const sessionId = data?.id || data?.session?.id || data?.data?.id;
+                        if (sessionId) {
+                          navigate({ to: "/interviews/$id", params: { id: sessionId } });
+                        } else {
+                          toast.error("Session ID not returned");
                         }
                       },
                       onError: (e: any) => toast.error(e.message || "Failed to create interview session"),
@@ -197,8 +200,8 @@ function InterviewsPage() {
                 {sessions.map((s: any) => (
                   <li key={s.id}>
                     <Link to="/interviews/$id" params={{ id: s.id }} className="flex items-center justify-between rounded-md border border-glass-border bg-white/[0.02] p-3 hover:bg-white/[0.06]">
-                      <p className="text-sm font-medium truncate">{s.jobTitle}</p>
-                      <span className="rounded-full bg-primary/15 px-2.5 py-1 text-xs font-semibold text-primary">{s.score ?? 0}</span>
+                      <p className="text-sm font-medium truncate">{s.jobTitle || s.type || "Interview Session"}</p>
+                      <span className="rounded-full bg-primary/15 px-2.5 py-1 text-xs font-semibold text-primary">{s.status || "ACTIVE"}</span>
                     </Link>
                   </li>
                 ))}
