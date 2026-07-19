@@ -65,6 +65,7 @@ function ResumesPage() {
   }
 
   const handleCreate = () => {
+    const roleForTailoring = targetRole || title;
     create.mutate(
       { title: title || "Untitled resume", templateId },
       {
@@ -74,7 +75,7 @@ function ResumesPage() {
           setTitle("");
           if (newResume?.id) {
             const query = new URLSearchParams();
-            if (targetRole) query.set("autoTailorRole", targetRole);
+            if (roleForTailoring) query.set("autoTailorRole", roleForTailoring);
             if (targetJd) query.set("autoTailorJd", targetJd);
             const searchStr = query.toString() ? `?${query.toString()}` : "";
             window.location.href = `/resumes/${newResume.id}${searchStr}`;

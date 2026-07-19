@@ -165,8 +165,12 @@ function ResumeEditor() {
         parsed = {};
       }
 
-      setTargetRole(parsed.targetRole || resume.title || "Software Engineer");
-      setJobDescription(parsed.jobDescription || "");
+      const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+      const urlRole = urlParams?.get("autoTailorRole") || urlParams?.get("tailorRole") || urlParams?.get("role");
+      const urlJd = urlParams?.get("autoTailorJd") || urlParams?.get("jd");
+
+      setTargetRole(urlRole || parsed.targetRole || resume.title || "Software Engineer");
+      setJobDescription(urlJd || parsed.jobDescription || "");
       setPersonalInfo({
         fullName: parsed.personalInfo?.fullName || "",
         email: parsed.personalInfo?.email || "",
