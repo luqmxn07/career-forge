@@ -23,7 +23,7 @@ export class ProfileService {
       summary: data.profile?.summary || "",
       phoneNumber: data.profile?.phoneNumber || "",
       location: data.profile?.location || "",
-      age: data.age || data.profile?.age || "",
+      age: data.profile?.age || "",
       avatarUrl: data.profile?.avatarUrl || "",
       education: data.education.map((edu: any) => ({
         id: edu.id,
