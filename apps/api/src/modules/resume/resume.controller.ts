@@ -183,4 +183,23 @@ export class ResumeController {
       next(error);
     }
   };
+
+  /**
+   * Auto enhances skills for a target role & job description.
+   */
+  public enhanceSkills = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+      const { id } = req.params;
+      const { targetRole, jobDescription } = req.body;
+      const result = await this.resumeService.enhanceSkills(id, userId, targetRole || "Software Engineer", jobDescription);
+      const response: ApiResponse<typeof result> = {
+        success: true,
+        data: result
+      };
+      res.json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

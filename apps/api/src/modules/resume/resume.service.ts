@@ -389,4 +389,25 @@ export class ResumeService {
       resumeContent: parsedContent,
     });
   }
+
+  /**
+   * Enhances skills specifically for a job role and optional job description context.
+   */
+  public async enhanceSkills(id: string, userId: string, targetRole: string, jobDescription?: string) {
+    const resume = await this.getResumeById(id, userId);
+
+    let parsedContent: any = {};
+    try {
+      parsedContent = typeof resume.content === "string" ? JSON.parse(resume.content) : (resume.content || {});
+    } catch (e) {
+      parsedContent = {};
+    }
+
+    const gateway = this.aiGatewayService || new AiGatewayService();
+    return await gateway.enhanceSkillsForRole({
+      targetRole,
+      jobDescription,
+      currentSkills: parsedContent.skills,
+    });
+  }
 }

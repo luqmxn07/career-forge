@@ -486,4 +486,50 @@ ${JSON.stringify(rawSkills, null, 2)}`;
       };
     }
   }
+
+  /**
+   * Enhances & categorizes skills for a target role & optional job description
+   */
+  async enhanceSkillsForRole(ctx: {
+    targetRole: string;
+    jobDescription?: string;
+    currentSkills?: { technical?: string[]; tools?: string[]; soft?: string[] };
+  }): Promise<{ technical: string[]; tools: string[]; soft: string[] }> {
+    const systemInstruction = `You are a tech recruiter and ATS resume optimization expert.
+Analyze the target job role "${ctx.targetRole}" and optional job description context.
+Extract and suggest high-impact, modern technical skills, tools/platforms, and core competencies (soft skills) that boost ATS matching score for this exact role.
+
+Return JSON matching this exact structure:
+{
+  "technical": ["React", "TypeScript", "Node.js", "GraphQL"],
+  "tools": ["Git", "Docker", "AWS", "VS Code"],
+  "soft": ["Problem Solving", "Agile Execution", "System Architecture"]
+}`;
+
+    const prompt = `--- TARGET ROLE ---
+${ctx.targetRole}
+
+--- OPTIONAL JOB DESCRIPTION / KEYWORDS ---
+${ctx.jobDescription || "Not specified - infer best industry skills for this role."}
+
+--- EXISTING CANDIDATE SKILLS ---
+${JSON.stringify(ctx.currentSkills || {}, null, 2)}`;
+
+    try {
+      const rawJson = await this.callLlm(prompt, systemInstruction);
+      const parsed = JSON.parse(rawJson);
+      return {
+        technical: Array.isArray(parsed.technical) ? parsed.technical : ["TypeScript", "React", "Node.js", "REST APIs"],
+        tools: Array.isArray(parsed.tools) ? parsed.tools : ["Git", "Docker", "Postman", "VS Code"],
+        soft: Array.isArray(parsed.soft) ? parsed.soft : ["Problem Solving", "Agile Execution", "Team Collaboration"]
+      };
+    } catch (e) {
+      logger.warn("[AI Gateway] Rule-based fallback for skills enhancement:", e);
+      return {
+        technical: ["TypeScript", "React", "Node.js", "Python", "SQL", "RESTful APIs"],
+        tools: ["Git", "GitHub", "Docker", "VS Code", "Postman", "Linux"],
+        soft: ["Analytical Thinking", "Problem Solving", "Team Collaboration", "Agile Execution"]
+      };
+    }
+  }
 }

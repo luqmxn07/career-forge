@@ -56,6 +56,36 @@ function ResumeEditor() {
   const [techSkillsInput, setTechSkillsInput] = useState("");
   const [toolsSkillsInput, setToolsSkillsInput] = useState("");
   const [softSkillsInput, setSoftSkillsInput] = useState("");
+  const [jobDescriptionInput, setJobDescriptionInput] = useState("");
+  const [isEnhancingSkills, setIsEnhancingSkills] = useState(false);
+
+  const handleEnhanceSkills = async () => {
+    setIsEnhancingSkills(true);
+    try {
+      const res = await api.post<{
+        technical: string[];
+        tools: string[];
+        soft: string[];
+      }>(`/resume/${id}/skills/enhance`, {
+        targetRole,
+        jobDescription: jobDescriptionInput,
+      });
+
+      const data = (res as any)?.data || res;
+      if (data) {
+        setSkills(data);
+        if (data.technical) setTechSkillsInput((data.technical || []).join(", "));
+        if (data.tools) setToolsSkillsInput((data.tools || []).join(", "));
+        if (data.soft) setSoftSkillsInput((data.soft || []).join(", "));
+        toast.success(`✨ Skills enhanced for ${targetRole}!`);
+      }
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to enhance skills.");
+    } finally {
+      setIsEnhancingSkills(false);
+    }
+  };
+
   const [projects, setProjects] = useState<Array<{
     title: string;
     tech: string;
@@ -867,7 +897,39 @@ function ResumeEditor() {
           {/* TAB 6: Skills & Tech Stacks */}
           {activeTab === "skills" && (
             <GlassCard className="space-y-4">
-              <h3 className="text-sm font-semibold text-foreground">Skills & Categorized Tech Stack</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-glass-border">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">Skills & Categorized Tech Stack</h3>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Auto-enhance skills for target role & optional job description</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleEnhanceSkills}
+                  disabled={isEnhancingSkills}
+                  className="rounded-md bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all shadow-md shrink-0"
+                >
+                  {isEnhancingSkills ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-3.5 w-3.5 text-emerald-200" />
+                  )}
+                  <span>{isEnhancingSkills ? "Enhancing..." : "✨ Auto-Enhance Skills"}</span>
+                </button>
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  Job Description / Role Keywords (Optional context for AI)
+                </label>
+                <textarea
+                  rows={2}
+                  value={jobDescriptionInput}
+                  onChange={(e) => setJobDescriptionInput(e.target.value)}
+                  placeholder="Paste target job description or required skills here to generate 100% role-tailored skill categories..."
+                  className="w-full rounded-md border border-glass-border bg-input px-3 py-2 text-xs outline-none focus:border-primary resize-none"
+                />
+              </div>
+
               <div>
                 <label className="mb-1 block text-xs font-medium text-muted-foreground">Technical Skills (Comma separated)</label>
                 <input
