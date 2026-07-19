@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { ScanLine, Loader2, Zap } from "lucide-react";
@@ -17,8 +17,22 @@ function AtsPage() {
   const { data: scans = [] } = useAtsScans();
   const { data: resumes = [] } = useResumes();
   const create = useCreateAtsScan();
+  const navigate = useNavigate();
   const [resumeId, setResumeId] = useState("");
   const [jd, setJd] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const list = scans.length ? scans : [
     { id: "s1", resumeId: "demo-1", score: 88, createdAt: "Today" } as any,
@@ -55,7 +69,13 @@ function AtsPage() {
                 disabled={!resumeId || !jd || create.isPending}
                 onClick={() =>
                   create.mutate({ resumeId, jobDescription: jd }, {
-                    onSuccess: () => { toast.success("Scan complete"); setJd(""); },
+                    onSuccess: (data: any) => {
+                      toast.success("Scan complete");
+                      setJd("");
+                      if (data?.id) {
+                        navigate({ to: "/ats/$id", params: { id: data.id } });
+                      }
+                    },
                     onError: (e: any) => toast.error(e.message || "Scan failed"),
                   })
                 }

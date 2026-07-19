@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
 import { useNotifications, useMarkRead, useMarkAllRead } from "@/features/notifications/api/notifications";
@@ -17,9 +18,22 @@ const MOCK = [
 ];
 
 function NotificationsPage() {
-  const { data: notifs = [] } = useNotifications();
+  const { data: notifs = [], isLoading } = useNotifications();
   const markRead = useMarkRead();
   const markAll = useMarkAllRead();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
   const list = notifs.length ? notifs : MOCK;
 
   return (

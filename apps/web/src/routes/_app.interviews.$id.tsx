@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, Send, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -21,10 +21,23 @@ const MOCK_QS = [
 
 function InterviewDetail() {
   const { id } = Route.useParams();
-  const { data } = useInterview(id);
+  const { data, isLoading } = useInterview(id);
   const submit = useSubmitAnswer(id);
   const [answer, setAnswer] = useState("");
-  const [active, setActive] = useState(2);
+  const [active, setActive] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const questions = data?.questions?.length ? data.questions : (MOCK_QS as any);
   const scores = questions.filter((q: any) => q.score != null).map((q: any) => q.score);
@@ -69,7 +82,7 @@ function InterviewDetail() {
         <motion.div key={active} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="lg:col-span-2 space-y-4">
           <GlassCard>
             <p className="text-xs uppercase tracking-wider text-muted-foreground">Question {active + 1}</p>
-            <p className="mt-2 font-display text-xl">{questions[active].prompt}</p>
+            <p className="mt-2 font-display text-xl">{questions[active]?.prompt || "Select a question"}</p>
           </GlassCard>
 
           <GlassCard>
@@ -93,7 +106,7 @@ function InterviewDetail() {
             </div>
           </GlassCard>
 
-          {questions[active].feedback && (
+          {questions[active]?.feedback && (
             <GlassCard>
               <p className="text-xs uppercase tracking-wider text-muted-foreground">AI Feedback</p>
               <p className="mt-2 text-sm">{questions[active].feedback}</p>

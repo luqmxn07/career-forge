@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { AreaChart, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { FileText, ScanLine, MessageSquare, Zap, Briefcase, ArrowRight, Loader2 } from "lucide-react";
@@ -14,8 +15,13 @@ export const Route = createFileRoute("/_app/dashboard")({
 
 function DashboardPage() {
   const { data, isLoading } = useDashboardStats();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

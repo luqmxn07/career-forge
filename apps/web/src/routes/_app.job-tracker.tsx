@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { Plus, Calendar, Tag } from "lucide-react";
+import { Plus, Calendar, Tag, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
 import { useJobTracker, useUpdateJobCard, useCreateJobCard, type JobCard, type Stage } from "@/features/job-tracker/api/job-tracker";
@@ -30,7 +30,7 @@ const DEMO: JobCard[] = [
 ];
 
 function JobTrackerPage() {
-  const { data } = useJobTracker();
+  const { data, isLoading } = useJobTracker();
   const [cards, setCards] = useState<JobCard[]>(data?.length ? data : DEMO);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<Stage | null>(null);
@@ -38,6 +38,25 @@ function JobTrackerPage() {
   const create = useCreateJobCard();
   const [adding, setAdding] = useState<Stage | null>(null);
   const [newTitle, setNewTitle] = useState({ company: "", position: "" });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (data?.length) {
+      setCards(data);
+    }
+  }, [data]);
+
+  if (!mounted || isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   function move(id: string, stage: Stage) {
     setCards((cs) => cs.map((c) => (c.id === id ? { ...c, stage } : c)));

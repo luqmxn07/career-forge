@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, CheckCircle2, XCircle, Lightbulb } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, CheckCircle2, XCircle, Lightbulb, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
@@ -24,7 +25,21 @@ const MOCK = {
 
 function AtsDetailPage() {
   const { id } = Route.useParams();
-  const { data } = useAtsScan(id);
+  const { data, isLoading } = useAtsScan(id);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   const s = data ?? (MOCK as any);
   const gauge = s.score ?? MOCK.score;
 

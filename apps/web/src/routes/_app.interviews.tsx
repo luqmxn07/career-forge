@@ -1,5 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { MessageSquare, Loader2, Zap } from "lucide-react";
@@ -17,9 +17,23 @@ function InterviewsPage() {
   const { data: sessions = [] } = useInterviews();
   const { data: resumes = [] } = useResumes();
   const create = useCreateInterview();
+  const navigate = useNavigate();
   const [resumeId, setResumeId] = useState("");
   const [title, setTitle] = useState("");
   const [jd, setJd] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const list = sessions.length ? sessions : [
     { id: "i1", jobTitle: "Senior FE — Vercel", score: 88 } as any,
@@ -51,7 +65,12 @@ function InterviewsPage() {
                 <button
                   disabled={!resumeId || !title || create.isPending}
                   onClick={() => create.mutate({ resumeId, jobTitle: title, jobDescription: jd }, {
-                    onSuccess: () => toast.success("Session created"),
+                    onSuccess: (data: any) => {
+                      toast.success("Session created");
+                      if (data?.id) {
+                        navigate({ to: "/interviews/$id", params: { id: data.id } });
+                      }
+                    },
                     onError: (e: any) => toast.error(e.message || "Failed"),
                   })}
                   className="btn-glow btn-glow-hover inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-semibold disabled:opacity-50"

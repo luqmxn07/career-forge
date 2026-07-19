@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Sparkles, Loader2, Zap } from "lucide-react";
 import { motion } from "framer-motion";
@@ -19,6 +19,19 @@ function CoverLettersPage() {
   const create = useCreateCoverLetter();
   const [resumeId, setResumeId] = useState("");
   const [jd, setJd] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const list = letters.length ? letters : [
     { id: "cl1", resumeId: "demo-1", body: "Dear Hiring Team...", createdAt: "2d" } as any,
@@ -47,7 +60,10 @@ function CoverLettersPage() {
               <button
                 disabled={!resumeId || !jd || create.isPending}
                 onClick={() => create.mutate({ resumeId, jobDescription: jd }, {
-                  onSuccess: () => toast.success("Cover letter drafted"),
+                  onSuccess: () => {
+                    toast.success("Cover letter drafted");
+                    setJd("");
+                  },
                   onError: (e: any) => toast.error(e.message || "Failed"),
                 })}
                 className="btn-glow btn-glow-hover inline-flex items-center gap-2 rounded-md px-5 py-2.5 text-sm font-semibold disabled:opacity-50"

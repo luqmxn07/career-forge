@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { GraduationCap, Briefcase, User, Save, Plus, X } from "lucide-react";
+import { GraduationCap, Briefcase, User, Save, Plus, X, Loader2 } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
 import { useProfile, useUpdateProfile, useAddEducation, useAddExperience } from "@/features/profile/api/profile";
@@ -13,10 +13,23 @@ export const Route = createFileRoute("/_app/profile")({
 });
 
 function ProfilePage() {
-  const { data: profile } = useProfile();
+  const { data: profile, isLoading } = useProfile();
   const update = useUpdateProfile();
   const addEdu = useAddEducation();
   const addExp = useAddExperience();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const [form, setForm] = useState({ fullName: "", summary: "", phoneNumber: "", location: "", age: "" });
 
