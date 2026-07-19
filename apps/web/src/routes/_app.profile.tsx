@@ -14,6 +14,8 @@ import {
   useAddExperience,
   useUpdateExperience,
   useDeleteExperience,
+  useAddSkill,
+  useDeleteSkill,
 } from "@/features/profile/api/profile";
 
 export const Route = createFileRoute("/_app/profile")({
@@ -30,9 +32,18 @@ function ProfilePage() {
   const addExp = useAddExperience();
   const updateExp = useUpdateExperience();
   const deleteExp = useDeleteExperience();
+  const addSkill = useAddSkill();
+  const deleteSkill = useDeleteSkill();
   const [mounted, setMounted] = useState(false);
 
   const [form, setForm] = useState({ fullName: "", summary: "", phoneNumber: "", location: "", age: "" });
+
+  // Skills state
+  const [newSkillInput, setNewSkillInput] = useState("");
+  const rawSkills = profile?.skills || [];
+  const userSkills: string[] = Array.isArray(rawSkills)
+    ? rawSkills.map((s: any) => (typeof s === "string" ? s : s.name)).filter(Boolean)
+    : [];
 
   // Education form state
   const [showEduForm, setShowEduForm] = useState(false);
@@ -473,11 +484,98 @@ function ProfilePage() {
           </GlassCard>
 
           <GlassCard className="mt-4">
-            <h3 className="font-display font-semibold">Skills</h3>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {(profile?.skills ?? ["React", "TypeScript", "Node.js", "GraphQL", "Postgres"]).map((s) => (
-                <span key={s} className="rounded-full border border-glass-border bg-white/[0.03] px-2.5 py-1 text-xs">{s}</span>
-              ))}
+            <div className="flex items-center justify-between">
+              <h3 className="font-display font-semibold text-primary flex items-center gap-1.5">
+                ⚡ Skills & Competencies
+              </h3>
+              <span className="text-[10px] text-muted-foreground font-mono">
+                {userSkills.length} {userSkills.length === 1 ? "skill" : "skills"}
+              </span>
+            </div>
+
+            {/* Add Skill Input Form */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!newSkillInput.trim()) return;
+                const skillsToAdd = newSkillInput
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter((s) => s.length > 0);
+
+                skillsToAdd.forEach((skillName) => {
+                  addSkill.mutate({ name: skillName }, {
+                    onSuccess: () => {
+                      toast.success(`Added ${skillName}`);
+                      setNewSkillInput("");
+                    },
+                    onError: (err: any) => toast.error(err.message || `Failed to add ${skillName}`),
+                  });
+                });
+              }}
+              className="mt-3 flex gap-2"
+            >
+              <input
+                value={newSkillInput}
+                onChange={(e) => setNewSkillInput(e.target.value)}
+                placeholder="Type skill & press Enter (e.g. React, Python, Docker)"
+                className="flex-1 rounded-md border border-glass-border bg-input px-3 py-1.5 text-xs outline-none focus:border-primary"
+              />
+              <button
+                type="submit"
+                disabled={!newSkillInput.trim() || addSkill.isPending}
+                className="btn-glow bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 rounded-md px-3 py-1.5 text-xs font-semibold disabled:opacity-50 flex items-center gap-1 cursor-pointer"
+              >
+                {addSkill.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
+                <span>Add</span>
+              </button>
+            </form>
+
+            {/* Render Active Skills */}
+            <div className="mt-3.5 flex flex-wrap gap-1.5">
+              {userSkills.length > 0 ? (
+                userSkills.map((s: string) => (
+                  <span
+                    key={s}
+                    className="group flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs text-primary-foreground font-medium transition hover:border-rose-500/50 hover:bg-rose-500/10"
+                  >
+                    <span>{s}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        deleteSkill.mutate(s, {
+                          onSuccess: () => toast.success(`Removed ${s}`),
+                          onError: (err: any) => toast.error(err.message || "Failed to remove skill"),
+                        });
+                      }}
+                      className="text-muted-foreground hover:text-rose-400 transition-colors cursor-pointer"
+                      title={`Remove ${s}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))
+              ) : (
+                <div className="w-full py-2 space-y-2">
+                  <p className="text-xs text-muted-foreground italic text-center">No skills added yet. Click suggestions to quick-add:</p>
+                  <div className="flex flex-wrap gap-1.5 justify-center">
+                    {["React", "TypeScript", "Node.js", "Python", "Git", "SQL", "Problem Solving"].map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => {
+                          addSkill.mutate({ name: s }, {
+                            onSuccess: () => toast.success(`Added ${s}`),
+                          });
+                        }}
+                        className="rounded-full border border-dashed border-glass-border bg-white/[0.02] hover:bg-primary/20 hover:border-primary/40 px-2 py-0.5 text-[11px] text-muted-foreground hover:text-primary transition cursor-pointer"
+                      >
+                        + {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </GlassCard>
         </motion.div>

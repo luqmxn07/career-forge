@@ -80,3 +80,19 @@ export function useDeleteExperience() {
     onSuccess: () => qc.invalidateQueries({ queryKey: profileKey }),
   });
 }
+
+export function useAddSkill() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { name: string; category?: string }) => api.post("/profile/skills", body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKey }),
+  });
+}
+
+export function useDeleteSkill() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (name: string) => api.delete(`/profile/skills/${encodeURIComponent(name)}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKey }),
+  });
+}
