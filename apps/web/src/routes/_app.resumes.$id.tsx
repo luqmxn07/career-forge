@@ -312,6 +312,14 @@ function ResumeEditor() {
     printWindow.document.write(htmlContent);
     printWindow.document.close();
 
+    printWindow.addEventListener("afterprint", () => {
+      try {
+        printWindow.close();
+      } catch (e) {
+        // Ignored
+      }
+    });
+
     setTimeout(() => {
       printWindow.focus();
       printWindow.print();
