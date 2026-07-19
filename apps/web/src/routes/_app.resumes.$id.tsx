@@ -53,6 +53,9 @@ function ResumeEditor() {
     tools: string[];
     soft: string[];
   }>({ technical: [], tools: [], soft: [] });
+  const [techSkillsInput, setTechSkillsInput] = useState("");
+  const [toolsSkillsInput, setToolsSkillsInput] = useState("");
+  const [softSkillsInput, setSoftSkillsInput] = useState("");
   const [projects, setProjects] = useState<Array<{
     title: string;
     tech: string;
@@ -114,19 +117,24 @@ function ResumeEditor() {
       })));
 
       // Skills normalization
+      let techList: string[] = [];
+      let toolsList: string[] = [];
+      let softList: string[] = [];
+
       if (parsed.skills && typeof parsed.skills === "object" && !Array.isArray(parsed.skills)) {
-        setSkills({
-          technical: parsed.skills.technical || [],
-          tools: parsed.skills.tools || [],
-          soft: parsed.skills.soft || [],
-        });
+        techList = parsed.skills.technical || [];
+        toolsList = parsed.skills.tools || [];
+        softList = parsed.skills.soft || [];
       } else if (Array.isArray(parsed.skills)) {
-        setSkills({
-          technical: parsed.skills.map((s: any) => typeof s === "string" ? s : s.name),
-          tools: ["Git", "GitHub", "VS Code", "Postman"],
-          soft: ["Problem Solving", "Team Collaboration"],
-        });
+        techList = parsed.skills.map((s: any) => typeof s === "string" ? s : s.name);
+        toolsList = ["Git", "GitHub", "VS Code", "Postman"];
+        softList = ["Problem Solving", "Team Collaboration"];
       }
+
+      setSkills({ technical: techList, tools: toolsList, soft: softList });
+      setTechSkillsInput(techList.join(", "));
+      setToolsSkillsInput(toolsList.join(", "));
+      setSoftSkillsInput(softList.join(", "));
 
       // Projects
       setProjects(parsed.projects || []);
@@ -177,7 +185,12 @@ function ResumeEditor() {
 
       if (res?.data) {
         if (res.data.summary) setSummary(res.data.summary);
-        if (res.data.skills) setSkills(res.data.skills);
+        if (res.data.skills) {
+          setSkills(res.data.skills);
+          setTechSkillsInput((res.data.skills.technical || []).join(", "));
+          setToolsSkillsInput((res.data.skills.tools || []).join(", "));
+          setSoftSkillsInput((res.data.skills.soft || []).join(", "));
+        }
         if (res.data.experience && res.data.experience.length > 0) {
           setExperience(res.data.experience.map((e: any) => ({
             company: e.company || "",
@@ -674,8 +687,15 @@ function ResumeEditor() {
               <div>
                 <label className="mb-1 block text-xs font-medium text-muted-foreground">Technical Skills (Comma separated)</label>
                 <input
-                  value={skills.technical.join(", ")}
-                  onChange={(e) => setSkills({ ...skills, technical: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+                  value={techSkillsInput}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setTechSkillsInput(val);
+                    setSkills((prev) => ({
+                      ...prev,
+                      technical: val.split(",").map((s) => s.trim()).filter(Boolean),
+                    }));
+                  }}
                   placeholder="TypeScript, React, Node.js, Python, PostgreSQL"
                   className="w-full rounded-md border border-glass-border bg-input px-3 py-2 text-xs outline-none focus:border-primary"
                 />
@@ -683,8 +703,15 @@ function ResumeEditor() {
               <div>
                 <label className="mb-1 block text-xs font-medium text-muted-foreground">Tools & Cloud Platforms (Comma separated)</label>
                 <input
-                  value={skills.tools.join(", ")}
-                  onChange={(e) => setSkills({ ...skills, tools: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+                  value={toolsSkillsInput}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setToolsSkillsInput(val);
+                    setSkills((prev) => ({
+                      ...prev,
+                      tools: val.split(",").map((s) => s.trim()).filter(Boolean),
+                    }));
+                  }}
                   placeholder="Docker, Git, AWS, Vercel, Postman"
                   className="w-full rounded-md border border-glass-border bg-input px-3 py-2 text-xs outline-none focus:border-primary"
                 />
@@ -692,8 +719,15 @@ function ResumeEditor() {
               <div>
                 <label className="mb-1 block text-xs font-medium text-muted-foreground">Core Competencies (Comma separated)</label>
                 <input
-                  value={skills.soft.join(", ")}
-                  onChange={(e) => setSkills({ ...skills, soft: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })}
+                  value={softSkillsInput}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSoftSkillsInput(val);
+                    setSkills((prev) => ({
+                      ...prev,
+                      soft: val.split(",").map((s) => s.trim()).filter(Boolean),
+                    }));
+                  }}
                   placeholder="System Design, Problem Solving, Agile Execution"
                   className="w-full rounded-md border border-glass-border bg-input px-3 py-2 text-xs outline-none focus:border-primary"
                 />
