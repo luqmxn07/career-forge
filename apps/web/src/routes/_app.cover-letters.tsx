@@ -32,6 +32,12 @@ function CoverLettersPage() {
     }
   }, []);
 
+  useEffect(() => {
+    if (resumes && resumes.length > 0 && !resumeId) {
+      setResumeId(resumes[0].id);
+    }
+  }, [resumes, resumeId]);
+
   if (!mounted || loadingLetters || loadingResumes) {
     return (
       <div className="flex h-96 items-center justify-center">

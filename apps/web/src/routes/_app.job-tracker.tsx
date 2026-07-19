@@ -82,6 +82,14 @@ function JobTrackerPage() {
     return null;
   };
 
+  const getCleanJd = (job: JobCard, notes: string): string => {
+    if (job.description) return job.description;
+    if (!notes) return "";
+    let cleaned = notes.replace(/Job Link:\s*https?:\/\/[^\s]+/gi, "").trim();
+    cleaned = cleaned.replace(/^Key Requirements:\s*/gi, "").trim();
+    return cleaned || notes;
+  };
+
   const handleSearchLiveJobs = async () => {
     if (!searchRole.trim()) {
       toast.error("Please enter a job title or target role!");
@@ -527,7 +535,7 @@ function JobTrackerPage() {
                     to="/resumes"
                     search={{
                       tailorRole: selectedJob.position,
-                      jd: editingNotes || selectedJob.description || "",
+                      jd: getCleanJd(selectedJob, editingNotes),
                     }}
                     className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 p-2 text-xs font-semibold text-primary transition cursor-pointer"
                   >
@@ -540,7 +548,7 @@ function JobTrackerPage() {
                     search={{
                       role: selectedJob.position,
                       company: selectedJob.company,
-                      jd: editingNotes || selectedJob.description || "",
+                      jd: getCleanJd(selectedJob, editingNotes),
                     }}
                     className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 p-2 text-xs font-semibold text-emerald-400 transition cursor-pointer"
                   >
@@ -552,7 +560,7 @@ function JobTrackerPage() {
                     to="/ats"
                     search={{
                       role: selectedJob.position,
-                      jd: editingNotes || selectedJob.description || "",
+                      jd: getCleanJd(selectedJob, editingNotes),
                     }}
                     className="flex items-center gap-2 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 p-2 text-xs font-semibold text-sky-400 transition cursor-pointer"
                   >
@@ -565,7 +573,7 @@ function JobTrackerPage() {
                     search={{
                       role: selectedJob.position,
                       company: selectedJob.company,
-                      jd: editingNotes || selectedJob.description || "",
+                      jd: getCleanJd(selectedJob, editingNotes),
                     }}
                     className="flex items-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 p-2 text-xs font-semibold text-purple-300 transition cursor-pointer"
                   >
@@ -639,6 +647,7 @@ function JobTrackerPage() {
                     Close
                   </button>
                   <button
+                    disabled={update.isPending}
                     onClick={() => {
                       update.mutate(
                         { id: selectedJob.id, notes: editingNotes },
@@ -647,15 +656,16 @@ function JobTrackerPage() {
                             setCards((prev) =>
                               prev.map((c) => (c.id === selectedJob.id ? { ...c, notes: editingNotes } : c))
                             );
-                            toast.success("Job notes updated!");
+                            toast.success("✨ Changes saved successfully!");
                             setSelectedJob(null);
                           },
                         }
                       );
                     }}
-                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground cursor-pointer shadow-md"
+                    className="rounded-lg bg-primary px-4 py-1.5 text-xs font-semibold text-primary-foreground cursor-pointer shadow-md flex items-center gap-1.5 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
                   >
-                    Save Changes
+                    {update.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                    <span>{update.isPending ? "Saving..." : "Save Changes"}</span>
                   </button>
                 </div>
               </div>
