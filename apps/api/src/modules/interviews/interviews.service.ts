@@ -330,4 +330,3 @@ export class InterviewsService {
     await this.interviewsRepository.deleteSession(id);
   }
 }
-}
