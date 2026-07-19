@@ -18,12 +18,13 @@ export class ProfileService {
 
     return {
       id: data.profile?.id,
-      fullName: data.profile?.fullName,
-      summary: data.profile?.summary,
-      phoneNumber: data.profile?.phoneNumber,
-      location: data.profile?.location,
-      age: data.profile?.age,
-      avatarUrl: data.profile?.avatarUrl,
+      email: data.user?.email || "",
+      fullName: data.profile?.fullName || data.user?.email?.split("@")[0] || "",
+      summary: data.profile?.summary || "",
+      phoneNumber: data.profile?.phoneNumber || "",
+      location: data.profile?.location || "",
+      age: data.age || data.profile?.age || "",
+      avatarUrl: data.profile?.avatarUrl || "",
       education: data.education.map((edu: any) => ({
         id: edu.id,
         institution: edu.institution,

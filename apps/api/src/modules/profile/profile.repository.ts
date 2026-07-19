@@ -4,8 +4,24 @@ export class ProfileRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async getProfileData(userId: string) {
-    const [profile, education, experience, skills, languages, socialLinks] = await Promise.all([
-      this.prisma.userProfile.findUnique({ where: { userId } }),
+    let profile = await this.prisma.userProfile.findUnique({ where: { userId } });
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!profile && user) {
+      const defaultName = user.email ? user.email.split("@")[0] : "User";
+      try {
+        profile = await this.prisma.userProfile.create({
+          data: {
+            userId,
+            fullName: defaultName,
+          }
+        });
+      } catch (e) {
+        profile = await this.prisma.userProfile.findUnique({ where: { userId } });
+      }
+    }
+
+    const [education, experience, skills, languages, socialLinks] = await Promise.all([
       this.prisma.education.findMany({ where: { userId }, orderBy: { sortOrder: "asc" } }),
       this.prisma.experience.findMany({ where: { userId }, orderBy: { sortOrder: "asc" } }),
       this.prisma.skill.findMany({ where: { userId } }),
@@ -14,6 +30,7 @@ export class ProfileRepository {
     ]);
 
     return {
+      user,
       profile,
       education,
       experience,
@@ -24,9 +41,18 @@ export class ProfileRepository {
   }
 
   async updateProfile(userId: string, data: Partial<Omit<UserProfile, "id" | "userId" | "updatedAt">>): Promise<UserProfile> {
-    return this.prisma.userProfile.update({
+    return this.prisma.userProfile.upsert({
       where: { userId },
-      data
+      update: data,
+      create: {
+        userId,
+        fullName: data.fullName || "User",
+        phoneNumber: data.phoneNumber,
+        location: data.location,
+        age: data.age,
+        summary: data.summary,
+        avatarUrl: data.avatarUrl,
+      }
     });
   }
 

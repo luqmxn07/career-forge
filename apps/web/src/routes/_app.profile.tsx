@@ -68,13 +68,16 @@ function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    if (profile) setForm({
-      fullName: profile.fullName ?? "",
-      summary: profile.summary ?? "",
-      phoneNumber: profile.phoneNumber ?? "",
-      location: profile.location ?? "",
-      age: profile.age ?? "",
-    });
+    if (profile) {
+      const pData = (profile as any)?.data || profile;
+      setForm({
+        fullName: pData.fullName ?? "",
+        summary: pData.summary ?? "",
+        phoneNumber: pData.phoneNumber ?? "",
+        location: pData.location ?? "",
+        age: pData.age ?? "",
+      });
+    }
   }, [profile]);
 
   if (!mounted || isLoading) {

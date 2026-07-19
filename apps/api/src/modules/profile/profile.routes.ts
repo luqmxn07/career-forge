@@ -21,6 +21,7 @@ export const createProfileRouter = (profileController: ProfileController): Route
 
   router.get("/", profileController.getProfile);
   router.patch("/", validate({ body: updateProfileSchema }), profileController.updateProfile);
+  router.put("/", validate({ body: updateProfileSchema }), profileController.updateProfile);
 
   // Education routes
   router.post("/education", validate({ body: educationSchema }), profileController.addEducation);
