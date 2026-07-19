@@ -156,8 +156,8 @@ function SectionEyebrow({
   children: ReactNode;
 }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full glass px-3 py-1.5 text-xs uppercase tracking-[0.18em] text-white/70">
-      <Icon className="h-3.5 w-3.5 text-white/70" />
+    <div className="inline-flex items-center gap-2 rounded-full glass px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary border border-glass-border shadow-sm">
+      <Icon className="h-3.5 w-3.5 text-primary" />
       {children}
     </div>
   );
@@ -442,14 +442,14 @@ function Hero() {
             <SectionEyebrow icon={Sparkles}>Introducing CareerForge 2.0</SectionEyebrow>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <h1 className="mt-6 font-display text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.98] tracking-tight text-white">
+            <h1 className="mt-6 font-display text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.98] tracking-tight text-foreground">
               Forge Your Career
               <br />
-              <span className="text-gradient italic">With AI</span>
+              <span className="text-gradient-primary italic">With AI</span>
             </h1>
           </FadeIn>
           <FadeIn delay={0.2}>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/70">
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
               The career operating system that writes ATS-ready resumes, crafts tailored cover
               letters, coaches you through interviews, and tracks every opportunity — so you land
               the offer.
