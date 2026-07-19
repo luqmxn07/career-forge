@@ -5,10 +5,13 @@ import { CreateResumeDto, UpdateResumeDto } from "./resume.dto.js";
 import { logger } from "../../utils/logger.js";
 import { pdfQueue } from "../pdf/pdf.queue.js";
 
+import { AiGatewayService } from "../ai-gateway/ai-gateway.service.js";
+
 export class ResumeService {
   constructor(
     private resumeRepository: ResumeRepository,
-    private prisma: PrismaClient
+    private prisma: PrismaClient,
+    private aiGatewayService?: AiGatewayService
   ) {}
 
   /**
@@ -354,5 +357,36 @@ export class ResumeService {
     }
 
     return { status: "pending" };
+  }
+
+  /**
+   * Tailors a resume for a target role using AI Gateway.
+   */
+  public async tailorResume(id: string, userId: string, targetRole: string) {
+    const resume = await this.getResumeById(id, userId);
+
+    let profile = null;
+    try {
+      profile = await this.prisma.profile.findUnique({
+        where: { userId },
+        include: { education: true, workExperiences: true, skills: true },
+      });
+    } catch (e) {
+      // Profile is optional
+    }
+
+    let parsedContent: any = {};
+    try {
+      parsedContent = typeof resume.content === "string" ? JSON.parse(resume.content) : (resume.content || {});
+    } catch (e) {
+      parsedContent = {};
+    }
+
+    const gateway = this.aiGatewayService || new AiGatewayService();
+    return await gateway.tailorResumeForRole({
+      targetRole,
+      userProfile: profile,
+      resumeContent: parsedContent,
+    });
   }
 }

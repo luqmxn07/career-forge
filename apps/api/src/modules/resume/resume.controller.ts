@@ -164,4 +164,23 @@ export class ResumeController {
       next(error);
     }
   };
+
+  /**
+   * Tailors a resume for a target job role using AI.
+   */
+  public tailorResume = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userId = req.user!.userId;
+      const { id } = req.params;
+      const { targetRole } = req.body;
+      const result = await this.resumeService.tailorResume(id, userId, targetRole || "Software Engineer");
+      const response: ApiResponse<typeof result> = {
+        success: true,
+        data: result
+      };
+      res.json(response);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

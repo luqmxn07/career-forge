@@ -23,6 +23,7 @@ export const createResumeRouter = (resumeController: ResumeController): Router =
   router.delete("/:id", resumeController.deleteResume);
   router.post("/:id/export", resumeController.exportResume);
   router.get("/:id/export/:jobId", resumeController.getExportStatus);
+  router.post("/:id/tailor", resumeController.tailorResume);
 
   return router;
 };
