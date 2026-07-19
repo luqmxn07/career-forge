@@ -67,56 +67,71 @@ export class ResumeService {
       throw new NotFoundError("Template not found");
     }
 
-    // Load profile elements to auto-fill resume content
-    const [profile, education, experiences, skills, languages] = await Promise.all([
+    // Load profile elements & latest existing resume to auto-fill resume content
+    const [profile, education, experiences, skills, languages, latestResume] = await Promise.all([
       this.prisma.userProfile.findUnique({ where: { userId } }),
       this.prisma.education.findMany({ where: { userId }, orderBy: { sortOrder: "asc" } }),
       this.prisma.experience.findMany({ where: { userId }, orderBy: { sortOrder: "asc" } }),
       this.prisma.skill.findMany({ where: { userId } }),
-      this.prisma.language.findMany({ where: { userId } })
+      this.prisma.language.findMany({ where: { userId } }),
+      this.prisma.resume.findFirst({
+        where: { userId, deletedAt: null },
+        orderBy: { updatedAt: "desc" }
+      })
     ]);
     const userObj = await this.prisma.user.findUnique({ where: { id: userId } });
 
+    let prevContent: any = {};
+    if (latestResume?.content) {
+      try {
+        prevContent = typeof latestResume.content === "string" ? JSON.parse(latestResume.content) : (latestResume.content || {});
+      } catch (e) {
+        prevContent = {};
+      }
+    }
+
     const mergedContent = {
       personalInfo: {
-        fullName: profile?.fullName || userObj?.email.split("@")[0] || "",
-        email: userObj?.email || "",
-        phoneNumber: profile?.phoneNumber || "",
-        location: profile?.location || "",
-        age: profile?.age || "",
-        ...(data.content?.personalInfo || {})
+        fullName: data.content?.personalInfo?.fullName || prevContent.personalInfo?.fullName || profile?.fullName || userObj?.email.split("@")[0] || "",
+        email: data.content?.personalInfo?.email || prevContent.personalInfo?.email || userObj?.email || "",
+        phoneNumber: data.content?.personalInfo?.phoneNumber || data.content?.personalInfo?.phone || prevContent.personalInfo?.phoneNumber || prevContent.personalInfo?.phone || profile?.phoneNumber || "",
+        location: data.content?.personalInfo?.location || prevContent.personalInfo?.location || profile?.location || "",
+        website: data.content?.personalInfo?.website || prevContent.personalInfo?.website || "",
       },
-      summary: data.content?.summary || profile?.summary || "",
+      summary: data.content?.summary || prevContent.summary || profile?.summary || "",
       experience: (data.content?.experience && data.content.experience.length > 0)
         ? data.content.experience
+        : (prevContent.experience && prevContent.experience.length > 0)
+        ? prevContent.experience
         : experiences.map(e => ({
             company: e.company,
-            role: e.title,
+            position: e.title,
             location: e.location || "",
             startDate: e.startDate ? e.startDate.toISOString() : "",
             endDate: e.endDate ? e.endDate.toISOString() : "",
-            isCurrent: e.isCurrent,
-            description: e.description || ""
+            description: e.description ? [e.description] : []
           })),
       education: (data.content?.education && data.content.education.length > 0)
         ? data.content.education
+        : (prevContent.education && prevContent.education.length > 0)
+        ? prevContent.education
         : education.map(ed => ({
-            school: ed.institution,
+            institution: ed.institution,
             degree: ed.degree,
             fieldOfStudy: ed.fieldOfStudy || "",
-            startDate: ed.startDate ? ed.startDate.toISOString() : "",
-            endDate: ed.endDate ? ed.endDate.toISOString() : "",
-            isCurrent: ed.isCurrent,
-            gpa: ed.gpa || "",
-            description: ed.description || ""
+            yearOfPassing: ed.endDate ? ed.endDate.toISOString() : "",
+            marks: ed.gpa || ""
           })),
-      skills: (data.content?.skills && data.content.skills.length > 0)
+      skills: (data.content?.skills && (Array.isArray(data.content.skills) ? data.content.skills.length > 0 : true))
         ? data.content.skills
+        : (prevContent.skills)
+        ? prevContent.skills
         : skills.map(s => s.name),
-      languages: (data.content?.languages && data.content.languages.length > 0)
-        ? data.content.languages
-        : languages.map(l => ({ name: l.name, proficiency: l.proficiency })),
-      projects: data.content?.projects || []
+      projects: (data.content?.projects && data.content.projects.length > 0)
+        ? data.content.projects
+        : (prevContent.projects && prevContent.projects.length > 0)
+        ? prevContent.projects
+        : []
     };
 
     const resume = await this.resumeRepository.create(userId, {

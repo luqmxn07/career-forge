@@ -4,7 +4,7 @@ import { ArrowLeft, Download, Loader2, Save, Sparkles, Plus, Trash2 } from "luci
 import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
-import { useResume, useUpdateResume } from "@/features/resume/api/resume";
+import { useResume, useUpdateResume, useResumes } from "@/features/resume/api/resume";
 import { api } from "@/lib/api-client";
 
 export const Route = createFileRoute("/_app/resumes/$id")({
@@ -15,6 +15,7 @@ export const Route = createFileRoute("/_app/resumes/$id")({
 function ResumeEditor() {
   const { id } = Route.useParams();
   const { data: resume, isLoading } = useResume(id);
+  const { data: allResumes = [] } = useResumes();
   const update = useUpdateResume(id);
   const [title, setTitle] = useState("");
   const [activeTab, setActiveTab] = useState<"role" | "personal" | "summary" | "experience" | "education" | "skills" | "projects">("role");
@@ -165,23 +166,41 @@ function ResumeEditor() {
         parsed = {};
       }
 
+      const otherResume = (allResumes || []).find((r: any) => r.id !== id && r.content);
+      let otherParsed: any = {};
+      if (otherResume) {
+        try {
+          otherParsed = typeof otherResume.content === "string" ? JSON.parse(otherResume.content) : (otherResume.content || {});
+        } catch (e) {
+          otherParsed = {};
+        }
+      }
+
       const urlParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
       const urlRole = urlParams?.get("autoTailorRole") || urlParams?.get("tailorRole") || urlParams?.get("role");
       const urlJd = urlParams?.get("autoTailorJd") || urlParams?.get("jd");
 
       setTargetRole(urlRole || parsed.targetRole || resume.title || "Software Engineer");
-      setJobDescription(urlJd || parsed.jobDescription || "");
+      setJobDescription(urlJd || parsed.jobDescription || otherParsed.jobDescription || "");
+
+      const infoToUse = (parsed.personalInfo && (parsed.personalInfo.fullName || parsed.personalInfo.email))
+        ? parsed.personalInfo
+        : (otherParsed.personalInfo || {});
+
       setPersonalInfo({
-        fullName: parsed.personalInfo?.fullName || "",
-        email: parsed.personalInfo?.email || "",
-        phone: parsed.personalInfo?.phoneNumber || parsed.personalInfo?.phone || "",
-        location: parsed.personalInfo?.location || "",
-        website: parsed.personalInfo?.website || "",
+        fullName: infoToUse.fullName || "",
+        email: infoToUse.email || "",
+        phone: infoToUse.phoneNumber || infoToUse.phone || "",
+        location: infoToUse.location || "",
+        website: infoToUse.website || "",
       });
-      setSummary(parsed.summary || "");
+      setSummary(parsed.summary || otherParsed.summary || "");
       
       // Experience normalization
-      const rawExp = parsed.experience || [];
+      const rawExp = (parsed.experience && parsed.experience.length > 0)
+        ? parsed.experience
+        : (otherParsed.experience || []);
+
       setExperience(rawExp.map((e: any) => ({
         company: e.company || "",
         position: e.position || e.role || e.title || "",
@@ -198,7 +217,10 @@ function ResumeEditor() {
       })));
 
       // Education normalization
-      const rawEdu = parsed.education || [];
+      const rawEdu = (parsed.education && parsed.education.length > 0)
+        ? parsed.education
+        : (otherParsed.education || []);
+
       setEducation(rawEdu.map((ed: any) => ({
         institution: ed.institution || ed.school || "",
         degree: ed.degree || "",
@@ -211,16 +233,20 @@ function ResumeEditor() {
       })));
 
       // Skills normalization
+      const skillsToUse = (parsed.skills && (typeof parsed.skills === "object" ? Object.keys(parsed.skills).length > 0 : parsed.skills.length > 0))
+        ? parsed.skills
+        : (otherParsed.skills || {});
+
       let techList: string[] = [];
       let toolsList: string[] = [];
       let softList: string[] = [];
 
-      if (parsed.skills && typeof parsed.skills === "object" && !Array.isArray(parsed.skills)) {
-        techList = parsed.skills.technical || [];
-        toolsList = parsed.skills.tools || [];
-        softList = parsed.skills.soft || [];
-      } else if (Array.isArray(parsed.skills)) {
-        techList = parsed.skills.map((s: any) => typeof s === "string" ? s : s.name);
+      if (skillsToUse && typeof skillsToUse === "object" && !Array.isArray(skillsToUse)) {
+        techList = skillsToUse.technical || [];
+        toolsList = skillsToUse.tools || [];
+        softList = skillsToUse.soft || [];
+      } else if (Array.isArray(skillsToUse)) {
+        techList = skillsToUse.map((s: any) => typeof s === "string" ? s : s.name);
         toolsList = ["Git", "GitHub", "VS Code", "Postman"];
         softList = ["Problem Solving", "Team Collaboration"];
       }
