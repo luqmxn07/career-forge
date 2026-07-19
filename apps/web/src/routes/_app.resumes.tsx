@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet, useMatch } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -14,8 +14,9 @@ export const Route = createFileRoute("/_app/resumes")({
 });
 
 function ResumesLayout() {
-  const isIndex = useMatch({ from: "/_app/resumes/", shouldThrow: false });
-  if (!isIndex) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isExactIndex = pathname === "/resumes" || pathname === "/resumes/";
+  if (!isExactIndex) {
     return <Outlet />;
   }
   return <ResumesPage />;

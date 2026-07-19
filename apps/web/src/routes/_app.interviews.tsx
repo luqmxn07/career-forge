@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, Outlet, useMatch } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, Outlet, useRouterState } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -14,8 +14,9 @@ export const Route = createFileRoute("/_app/interviews")({
 });
 
 function InterviewsLayout() {
-  const isIndex = useMatch({ from: "/_app/interviews/", shouldThrow: false });
-  if (!isIndex) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isExactIndex = pathname === "/interviews" || pathname === "/interviews/";
+  if (!isExactIndex) {
     return <Outlet />;
   }
   return <InterviewsPage />;
