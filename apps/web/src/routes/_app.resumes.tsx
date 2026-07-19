@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useMatch } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -10,8 +10,16 @@ import { useResumes, useCreateResume, useCompileResume } from "@/features/resume
 
 export const Route = createFileRoute("/_app/resumes")({
   head: () => ({ meta: [{ title: "Resumes — CareerForge" }] }),
-  component: ResumesPage,
+  component: ResumesLayout,
 });
+
+function ResumesLayout() {
+  const isIndex = useMatch({ from: "/_app/resumes/", shouldThrow: false });
+  if (!isIndex) {
+    return <Outlet />;
+  }
+  return <ResumesPage />;
+}
 
 const templates = [
   { id: "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb7d", name: "Minimal", desc: "Clean single-column, ATS-safe" },

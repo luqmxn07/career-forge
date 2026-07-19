@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, Outlet, useMatch } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -10,8 +10,16 @@ import { useResumes } from "@/features/resume/api/resume";
 
 export const Route = createFileRoute("/_app/interviews")({
   head: () => ({ meta: [{ title: "Interview Simulator — CareerForge" }] }),
-  component: InterviewsPage,
+  component: InterviewsLayout,
 });
+
+function InterviewsLayout() {
+  const isIndex = useMatch({ from: "/_app/interviews/", shouldThrow: false });
+  if (!isIndex) {
+    return <Outlet />;
+  }
+  return <InterviewsPage />;
+}
 
 function InterviewsPage() {
   const { data: sessions = [], isLoading: loadingSessions } = useInterviews();

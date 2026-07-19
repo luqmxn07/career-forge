@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, Outlet, useMatch } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -10,8 +10,16 @@ import { useResumes } from "@/features/resume/api/resume";
 
 export const Route = createFileRoute("/_app/ats")({
   head: () => ({ meta: [{ title: "ATS Scanner — CareerForge" }] }),
-  component: AtsPage,
+  component: AtsLayout,
 });
+
+function AtsLayout() {
+  const isIndex = useMatch({ from: "/_app/ats/", shouldThrow: false });
+  if (!isIndex) {
+    return <Outlet />;
+  }
+  return <AtsPage />;
+}
 
 function AtsPage() {
   const { data: scans = [], isLoading: loadingScans } = useAtsScans();
