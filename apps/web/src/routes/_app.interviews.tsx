@@ -14,8 +14,8 @@ export const Route = createFileRoute("/_app/interviews")({
 });
 
 function InterviewsPage() {
-  const { data: sessions = [] } = useInterviews();
-  const { data: resumes = [] } = useResumes();
+  const { data: sessions = [], isLoading: loadingSessions } = useInterviews();
+  const { data: resumes = [], isLoading: loadingResumes } = useResumes();
   const create = useCreateInterview();
   const navigate = useNavigate();
   const [resumeId, setResumeId] = useState("");
@@ -27,18 +27,13 @@ function InterviewsPage() {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
+  if (!mounted || loadingSessions || loadingResumes) {
     return (
       <div className="flex h-96 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
-
-  const list = sessions.length ? sessions : [
-    { id: "i1", jobTitle: "Senior FE — Vercel", score: 88 } as any,
-    { id: "i2", jobTitle: "PM — Notion", score: 74 } as any,
-  ];
 
   return (
     <div>
@@ -55,7 +50,7 @@ function InterviewsPage() {
             <div className="mt-5 grid gap-4 sm:grid-cols-2">
               <select value={resumeId} onChange={(e) => setResumeId(e.target.value)} className="rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm sm:col-span-1">
                 <option value="">Resume…</option>
-                {(resumes.length ? resumes : [{ id: "demo-1", title: "Senior FE" }]).map((r: any) => (
+                {resumes.map((r: any) => (
                   <option key={r.id} value={r.id}>{r.title}</option>
                 ))}
               </select>
@@ -85,16 +80,20 @@ function InterviewsPage() {
         <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }}>
           <GlassCard>
             <h3 className="font-display font-semibold">Sessions</h3>
-            <ul className="mt-3 space-y-2">
-              {list.map((s: any) => (
-                <li key={s.id}>
-                  <Link to="/interviews/$id" params={{ id: s.id }} className="flex items-center justify-between rounded-md border border-glass-border bg-white/[0.02] p-3 hover:bg-white/[0.06]">
-                    <p className="text-sm font-medium truncate">{s.jobTitle}</p>
-                    <span className="rounded-full bg-primary/15 px-2.5 py-1 text-xs font-semibold text-primary">{s.score ?? 0}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {sessions.length === 0 ? (
+              <p className="mt-3 text-xs text-muted-foreground">No interview sessions yet.</p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {sessions.map((s: any) => (
+                  <li key={s.id}>
+                    <Link to="/interviews/$id" params={{ id: s.id }} className="flex items-center justify-between rounded-md border border-glass-border bg-white/[0.02] p-3 hover:bg-white/[0.06]">
+                      <p className="text-sm font-medium truncate">{s.jobTitle}</p>
+                      <span className="rounded-full bg-primary/15 px-2.5 py-1 text-xs font-semibold text-primary">{s.score ?? 0}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </GlassCard>
         </motion.div>
       </div>

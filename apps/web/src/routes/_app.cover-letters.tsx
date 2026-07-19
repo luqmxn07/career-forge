@@ -14,8 +14,8 @@ export const Route = createFileRoute("/_app/cover-letters")({
 });
 
 function CoverLettersPage() {
-  const { data: letters = [] } = useCoverLetters();
-  const { data: resumes = [] } = useResumes();
+  const { data: letters = [], isLoading: loadingLetters } = useCoverLetters();
+  const { data: resumes = [], isLoading: loadingResumes } = useResumes();
   const create = useCreateCoverLetter();
   const [resumeId, setResumeId] = useState("");
   const [jd, setJd] = useState("");
@@ -25,17 +25,13 @@ function CoverLettersPage() {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
+  if (!mounted || loadingLetters || loadingResumes) {
     return (
       <div className="flex h-96 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
-
-  const list = letters.length ? letters : [
-    { id: "cl1", resumeId: "demo-1", body: "Dear Hiring Team...", createdAt: "2d" } as any,
-  ];
 
   return (
     <div>
@@ -52,7 +48,7 @@ function CoverLettersPage() {
             <div className="mt-5 space-y-4">
               <select value={resumeId} onChange={(e) => setResumeId(e.target.value)} className="w-full rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm">
                 <option value="">Select resume…</option>
-                {(resumes.length ? resumes : [{ id: "demo-1", title: "Senior FE — Stripe" }]).map((r: any) => (
+                {resumes.map((r: any) => (
                   <option key={r.id} value={r.id}>{r.title}</option>
                 ))}
               </select>
@@ -77,14 +73,18 @@ function CoverLettersPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
           <GlassCard>
             <h3 className="font-display font-semibold">Recent</h3>
-            <ul className="mt-3 space-y-2">
-              {list.map((l: any) => (
-                <li key={l.id} className="rounded-md border border-glass-border bg-white/[0.02] p-3 text-sm">
-                  <p className="font-medium">Letter #{l.id.slice(0, 6)}</p>
-                  <p className="mt-1 line-clamp-3 text-xs text-muted-foreground">{l.body}</p>
-                </li>
-              ))}
-            </ul>
+            {letters.length === 0 ? (
+              <p className="mt-3 text-xs text-muted-foreground">No cover letters generated yet.</p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {letters.map((l: any) => (
+                  <li key={l.id} className="rounded-md border border-glass-border bg-white/[0.02] p-3 text-sm">
+                    <p className="font-medium">Letter #{l.id.slice(0, 6)}</p>
+                    <p className="mt-1 line-clamp-3 text-xs text-muted-foreground">{l.body}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </GlassCard>
         </motion.div>
       </div>

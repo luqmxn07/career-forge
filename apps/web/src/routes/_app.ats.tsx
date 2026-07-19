@@ -14,8 +14,8 @@ export const Route = createFileRoute("/_app/ats")({
 });
 
 function AtsPage() {
-  const { data: scans = [] } = useAtsScans();
-  const { data: resumes = [] } = useResumes();
+  const { data: scans = [], isLoading: loadingScans } = useAtsScans();
+  const { data: resumes = [], isLoading: loadingResumes } = useResumes();
   const create = useCreateAtsScan();
   const navigate = useNavigate();
   const [resumeId, setResumeId] = useState("");
@@ -26,18 +26,13 @@ function AtsPage() {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
+  if (!mounted || loadingScans || loadingResumes) {
     return (
       <div className="flex h-96 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
-
-  const list = scans.length ? scans : [
-    { id: "s1", resumeId: "demo-1", score: 88, createdAt: "Today" } as any,
-    { id: "s2", resumeId: "demo-2", score: 74, createdAt: "Yesterday" } as any,
-  ];
 
   return (
     <div>
@@ -56,7 +51,7 @@ function AtsPage() {
                 <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Resume</span>
                 <select value={resumeId} onChange={(e) => setResumeId(e.target.value)} className="w-full rounded-md border border-glass-border bg-input px-3 py-2.5 text-sm focus:border-primary focus:ring-glow">
                   <option value="">Select a resume…</option>
-                  {(resumes.length ? resumes : [{ id: "demo-1", title: "Senior FE — Stripe" }]).map((r: any) => (
+                  {resumes.map((r: any) => (
                     <option key={r.id} value={r.id}>{r.title}</option>
                   ))}
                 </select>
@@ -90,19 +85,23 @@ function AtsPage() {
         <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }}>
           <GlassCard>
             <h3 className="font-display font-semibold">Recent scans</h3>
-            <ul className="mt-3 space-y-2">
-              {list.map((s: any) => (
-                <li key={s.id}>
-                  <Link to="/ats/$id" params={{ id: s.id }} className="flex items-center justify-between rounded-md border border-glass-border bg-white/[0.02] p-3 hover:bg-white/[0.06]">
-                    <div>
-                      <p className="text-sm font-medium truncate">Scan #{s.id.slice(0, 6)}</p>
-                      <p className="text-xs text-muted-foreground">{s.createdAt}</p>
-                    </div>
-                    <ScoreBadge score={s.score ?? 0} />
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            {scans.length === 0 ? (
+              <p className="mt-3 text-xs text-muted-foreground">No recent scans yet.</p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {scans.map((s: any) => (
+                  <li key={s.id}>
+                    <Link to="/ats/$id" params={{ id: s.id }} className="flex items-center justify-between rounded-md border border-glass-border bg-white/[0.02] p-3 hover:bg-white/[0.06]">
+                      <div>
+                        <p className="text-sm font-medium truncate">Scan #{s.id.slice(0, 6)}</p>
+                        <p className="text-xs text-muted-foreground">{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : "Recent"}</p>
+                      </div>
+                      <ScoreBadge score={s.score ?? 0} />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </GlassCard>
         </motion.div>
       </div>

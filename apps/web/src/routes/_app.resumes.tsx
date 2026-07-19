@@ -20,7 +20,7 @@ const templates = [
 ];
 
 function ResumesPage() {
-  const { data: resumes = [] } = useResumes();
+  const { data: resumes = [], isLoading } = useResumes();
   const create = useCreateResume();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -31,18 +31,13 @@ function ResumesPage() {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
+  if (!mounted || isLoading) {
     return (
       <div className="flex h-96 items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
-
-  const list = resumes.length ? resumes : [
-    { id: "demo-1", title: "Senior Frontend — Stripe", updatedAt: "2h ago" } as any,
-    { id: "demo-2", title: "PM — Notion", updatedAt: "Yesterday" } as any,
-  ];
 
   return (
     <div>
@@ -56,11 +51,22 @@ function ResumesPage() {
         }
       />
 
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {list.map((r, i) => (
-          <ResumeCard key={r.id} r={r} i={i} />
-        ))}
-      </div>
+      {resumes.length === 0 ? (
+        <GlassCard className="py-12 text-center">
+          <FileText className="mx-auto h-10 w-10 text-muted-foreground/50" />
+          <h3 className="mt-4 font-display text-lg font-semibold">No resumes created yet</h3>
+          <p className="mt-1 text-xs text-muted-foreground">Craft your first ATS-optimized resume to get started.</p>
+          <button onClick={() => setOpen(true)} className="btn-glow btn-glow-hover mt-4 inline-flex items-center gap-2 rounded-md px-4 py-2 text-xs font-semibold">
+            <Plus className="h-4 w-4" /> Build a resume
+          </button>
+        </GlassCard>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {resumes.map((r, i) => (
+            <ResumeCard key={r.id} r={r} i={i} />
+          ))}
+        </div>
+      )}
 
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Portal>

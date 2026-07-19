@@ -31,7 +31,7 @@ const DEMO: JobCard[] = [
 
 function JobTrackerPage() {
   const { data, isLoading } = useJobTracker();
-  const [cards, setCards] = useState<JobCard[]>(data?.length ? data : DEMO);
+  const [cards, setCards] = useState<JobCard[]>(data ?? []);
   const [dragId, setDragId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<Stage | null>(null);
   const update = useUpdateJobCard();
@@ -45,7 +45,7 @@ function JobTrackerPage() {
   }, []);
 
   useEffect(() => {
-    if (data?.length) {
+    if (data) {
       setCards(data);
     }
   }, [data]);
