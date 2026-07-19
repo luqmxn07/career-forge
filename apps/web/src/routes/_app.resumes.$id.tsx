@@ -223,87 +223,235 @@ function ResumeEditor() {
 <head>
   <meta charset="utf-8">
   <title>${title || personalInfo.fullName || "Resume"}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
   <style>
-    @page { size: A4; margin: 12mm; }
-    body { font-family: 'Inter', sans-serif; color: #09090b; margin: 0; padding: 0; background: #ffffff; -webkit-print-color-adjust: exact; }
-    .header { border-bottom: 2px solid #0284c7; padding-bottom: 12px; margin-bottom: 16px; }
-    .name { font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 700; color: #0284c7; margin: 0; }
-    .role-badge { font-size: 13px; font-weight: 600; color: #475569; margin-top: 2px; }
-    .contact { margin-top: 6px; font-size: 11px; color: #64748b; display: flex; gap: 10px; flex-wrap: wrap; }
-    .section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #0284c7; margin-top: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px; }
-    .content-text { margin-top: 6px; font-size: 11.5px; line-height: 1.5; color: #334155; }
-    .item-header { display: flex; justify-content: space-between; font-weight: 600; font-size: 12px; color: #0f172a; margin-top: 8px; }
-    .item-sub { font-size: 11px; color: #64748b; }
-    .item-date { font-size: 11px; font-weight: 400; color: #64748b; }
-    ul { margin: 4px 0 0 0; padding-left: 18px; font-size: 11.5px; color: #334155; }
-    li { margin-bottom: 3px; }
-    .skills-category { margin-top: 6px; font-size: 11px; }
-    .skills-label { font-weight: 600; color: #0f172a; }
-    .skill-pill { background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px; padding: 2px 6px; font-size: 10.5px; color: #334155; display: inline-block; margin: 2px; }
+    @page {
+      size: A4 portrait;
+      margin: 12mm 15mm;
+    }
+    @media print {
+      html, body {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: #ffffff !important;
+        -webkit-print-color-adjust: exact;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b;
+      margin: 0;
+      padding: 0;
+      font-size: 11px;
+      line-height: 1.45;
+      background: #ffffff;
+    }
+    .header {
+      margin-bottom: 8px;
+    }
+    .name {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .role-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #475569;
+      margin-top: 3px;
+      margin-bottom: 8px;
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3px 24px;
+      font-size: 10.5px;
+      color: #334155;
+    }
+    .contact-item {
+      display: flex;
+      gap: 6px;
+    }
+    .contact-label {
+      font-weight: 600;
+      color: #0f172a;
+      min-width: 50px;
+    }
+    .divider {
+      border-bottom: 1px solid #cbd5e1;
+      margin: 10px 0 12px 0;
+    }
+    .summary-p {
+      font-size: 11px;
+      color: #334155;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 3px;
+      margin-top: 14px;
+      margin-bottom: 10px;
+      page-break-after: avoid;
+    }
+    .timeline-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 12px;
+      page-break-inside: avoid;
+    }
+    .timeline-date {
+      width: 130px;
+      flex-shrink: 0;
+      font-size: 10.5px;
+      color: #475569;
+      font-weight: 500;
+      padding-top: 1px;
+    }
+    .timeline-body {
+      flex: 1;
+    }
+    .item-heading {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .item-sub {
+      font-size: 11px;
+      font-style: italic;
+      color: #475569;
+      margin-top: 1px;
+    }
+    .item-link {
+      font-size: 10.5px;
+      color: #0284c7;
+      text-decoration: none;
+      word-break: break-all;
+    }
+    ul.bullet-list {
+      margin: 4px 0 0 0;
+      padding-left: 14px;
+      color: #334155;
+    }
+    ul.bullet-list li {
+      margin-bottom: 3px;
+      line-height: 1.45;
+    }
+    .skills-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 6px;
+      font-size: 11px;
+      page-break-inside: avoid;
+    }
+    .skills-cat {
+      width: 130px;
+      flex-shrink: 0;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .skills-list {
+      flex: 1;
+      color: #334155;
+    }
   </style>
 </head>
 <body>
   <div class="header">
     <div class="name">${personalInfo.fullName || title || "Your Name"}</div>
-    <div class="role-badge">${targetRole}</div>
-    <div class="contact">
-      ${personalInfo.location ? `<span>📍 ${personalInfo.location}</span>` : ""}
-      ${personalInfo.email ? `<span>✉️ ${personalInfo.email}</span>` : ""}
-      ${personalInfo.phone ? `<span>📞 ${personalInfo.phone}</span>` : ""}
-      ${personalInfo.website ? `<span>🌐 ${personalInfo.website}</span>` : ""}
+    <div class="role-title">${targetRole}</div>
+    <div class="contact-grid">
+      ${personalInfo.phone ? `<div class="contact-item"><span class="contact-label">Phone</span> <span>${personalInfo.phone}</span></div>` : ""}
+      ${personalInfo.email ? `<div class="contact-item"><span class="contact-label">E-mail</span> <span>${personalInfo.email}</span></div>` : ""}
+      ${personalInfo.location ? `<div class="contact-item"><span class="contact-label">Location</span> <span>${personalInfo.location}</span></div>` : ""}
+      ${personalInfo.website ? `<div class="contact-item"><span class="contact-label">Portfolio</span> <span>${personalInfo.website}</span></div>` : ""}
     </div>
   </div>
 
-  ${summary ? `<div class="section-title">Professional Summary</div><div class="content-text">${summary}</div>` : ""}
+  <div class="divider"></div>
 
-  ${skills.technical.length > 0 || skills.tools.length > 0 || skills.soft.length > 0 ? `
-    <div class="section-title">Skills & Tech Stack</div>
-    ${skills.technical.length > 0 ? `<div class="skills-category"><span class="skills-label">Technical: </span>${skills.technical.map(s => `<span class="skill-pill">${s}</span>`).join("")}</div>` : ""}
-    ${skills.tools.length > 0 ? `<div class="skills-category"><span class="skills-label">Tools & Platforms: </span>${skills.tools.map(t => `<span class="skill-pill">${t}</span>`).join("")}</div>` : ""}
-    ${skills.soft.length > 0 ? `<div class="skills-category"><span class="skills-label">Core Competencies: </span>${skills.soft.map(sf => `<span class="skill-pill">${sf}</span>`).join("")}</div>` : ""}
-  ` : ""}
+  ${summary ? `<div class="summary-p">${summary}</div>` : ""}
 
   ${experience.length > 0 ? `
-    <div class="section-title">Work Experience</div>
+    <div class="section-title">Experience</div>
     ${experience.map((exp) => `
-      <div class="item-header">
-        <span>${exp.position || targetRole} · ${exp.company}</span>
-        <span class="item-date">${exp.startDate || ""} ${exp.startDate || exp.endDate ? "—" : ""} ${exp.endDate || "Present"}</span>
+      <div class="timeline-row">
+        <div class="timeline-date">${exp.startDate || ""} ${exp.startDate || exp.endDate ? "—" : ""} ${exp.endDate || "Present"}</div>
+        <div class="timeline-body">
+          <div class="item-heading">${exp.position || targetRole}</div>
+          <div class="item-sub">${exp.company}${exp.location ? ` · ${exp.location}` : ""}</div>
+          ${exp.description && exp.description.length > 0 ? `
+            <ul class="bullet-list">
+              ${exp.description.map((b: string) => `<li>${b.replace(/^[-\*\s]+/, "")}</li>`).join("")}
+            </ul>
+          ` : ""}
+        </div>
       </div>
-      ${exp.description && exp.description.length > 0 ? `
-        <ul>
-          ${exp.description.map((bullet: string) => `<li>${bullet.replace(/^[-\*\s]+/, "")}</li>`).join("")}
-        </ul>
-      ` : ""}
     `).join("")}
   ` : ""}
 
   ${education.length > 0 ? `
-    <div class="section-title">Education & Qualifications</div>
+    <div class="section-title">Education</div>
     ${education.map((edu) => `
-      <div class="item-header">
-        <span>${edu.level ? `[${edu.level}] ` : ""}${edu.degree} ${edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ""}</span>
-        <span class="item-date">${edu.yearOfPassing ? `Passout: ${edu.yearOfPassing}` : ""}</span>
-      </div>
-      <div class="item-sub">
-        ${edu.institution} ${edu.board ? `(${edu.board})` : ""} ${edu.marks ? `· Marks/CGPA: ${edu.marks}` : ""}
+      <div class="timeline-row">
+        <div class="timeline-date">${edu.yearOfPassing ? `Passout: ${edu.yearOfPassing}` : (edu.level || "Education")}</div>
+        <div class="timeline-body">
+          <div class="item-heading">${edu.level ? `[${edu.level}] ` : ""}${edu.degree}${edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}</div>
+          <div class="item-sub">${edu.institution}${edu.board ? ` (${edu.board})` : ""}${edu.marks ? ` · Marks/CGPA: ${edu.marks}` : ""}</div>
+        </div>
       </div>
     `).join("")}
   ` : ""}
 
   ${projects.length > 0 ? `
-    <div class="section-title">Key Projects</div>
-    ${projects.map((p) => `
-      <div class="item-header">
-        <span>${p.title} ${p.tech ? `<span style="font-weight:400;color:#64748b">(${p.tech})</span>` : ""}</span>
-        ${p.link ? `<span class="item-date">${p.link}</span>` : ""}
-      </div>
-      ${p.description ? `<div class="content-text">${p.description}</div>` : ""}
-    `).join("")}
+    <div class="section-title">Projects</div>
+    ${projects.map((p) => {
+      const bullets = p.description ? p.description.split(/(?:•|\n)+/).map((s: string) => s.trim()).filter(Boolean) : [];
+      return `
+        <div class="timeline-row">
+          <div class="timeline-date">Key Project</div>
+          <div class="timeline-body">
+            <div class="item-heading">${p.title}${p.tech ? ` <span style="font-weight:400;color:#64748b">(${p.tech})</span>` : ""}</div>
+            ${p.link ? `<div class="item-link">${p.link}</div>` : ""}
+            ${bullets.length > 0 ? `
+              <ul class="bullet-list">
+                ${bullets.map((b: string) => `<li>${b.replace(/^[-\*\s]+/, "")}</li>`).join("")}
+              </ul>
+            ` : ""}
+          </div>
+        </div>
+      `;
+    }).join("")}
   ` : ""}
+
+  ${skills.technical.length > 0 || skills.tools.length > 0 || skills.soft.length > 0 ? `
+    <div class="section-title">Skills & Competencies</div>
+    ${skills.technical.length > 0 ? `
+      <div class="skills-row">
+        <div class="skills-cat">Technical Skills</div>
+        <div class="skills-list">${skills.technical.join(", ")}</div>
+      </div>
+    ` : ""}
+    ${skills.tools.length > 0 ? `
+      <div class="skills-row">
+        <div class="skills-cat">Tools & Platforms</div>
+        <div class="skills-list">${skills.tools.join(", ")}</div>
+      </div>
+    ` : ""}
+    ${skills.soft.length > 0 ? `
+      <div class="skills-row">
+        <div class="skills-cat">Core Competencies</div>
+        <div class="skills-list">${skills.soft.join(", ")}</div>
+      </div>
+    ` : ""}
+  ` : ""}
+
 </body>
 </html>
     `;
@@ -833,67 +981,52 @@ function ResumeEditor() {
               <span className="text-[11px] text-muted-foreground font-mono">{targetRole}</span>
             </div>
 
-            <div id="printable-resume-preview" className="scrollbar-thin mt-4 max-h-[660px] overflow-y-auto rounded-lg bg-white p-6 text-slate-900 shadow-xl border border-slate-200">
+            <div id="printable-resume-preview" className="scrollbar-thin mt-4 max-h-[660px] overflow-y-auto rounded-lg bg-white p-6 text-slate-900 shadow-xl border border-slate-200 text-xs leading-relaxed">
               {/* Executive Header */}
-              <div className="border-b-2 border-sky-600 pb-3">
+              <div>
                 <h2 className="font-display text-2xl font-bold tracking-tight text-slate-950">
                   {personalInfo.fullName || title || "Your Full Name"}
                 </h2>
-                <p className="text-xs font-bold text-sky-600 uppercase tracking-wider mt-0.5">
+                <p className="text-sm font-semibold text-slate-600 mt-0.5">
                   {targetRole}
                 </p>
-                <div className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-[11px] text-slate-500">
-                  {personalInfo.location && <span>📍 {personalInfo.location}</span>}
-                  {personalInfo.email && <span>✉️ {personalInfo.email}</span>}
-                  {personalInfo.phone && <span>📞 {personalInfo.phone}</span>}
-                  {personalInfo.website && <span>🌐 {personalInfo.website}</span>}
+
+                <div className="mt-2.5 grid grid-cols-2 gap-x-6 gap-y-1 text-[11px] text-slate-700">
+                  {personalInfo.phone && <div><strong className="text-slate-900">Phone:</strong> {personalInfo.phone}</div>}
+                  {personalInfo.email && <div><strong className="text-slate-900">E-mail:</strong> {personalInfo.email}</div>}
+                  {personalInfo.location && <div><strong className="text-slate-900">Location:</strong> {personalInfo.location}</div>}
+                  {personalInfo.website && <div><strong className="text-slate-900">Portfolio:</strong> {personalInfo.website}</div>}
                 </div>
               </div>
 
+              <div className="my-3 border-b border-slate-300" />
+
               {/* Summary */}
               {summary && (
-                <div className="mt-4">
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-sky-700 border-b border-slate-200 pb-1">Professional Summary</h3>
-                  <p className="mt-1.5 text-[11px] leading-relaxed text-slate-700">{summary}</p>
-                </div>
-              )}
-
-              {/* Skills */}
-              {(skills.technical.length > 0 || skills.tools.length > 0 || skills.soft.length > 0) && (
-                <div className="mt-4">
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-sky-700 border-b border-slate-200 pb-1">Skills & Tech Stack</h3>
-                  <div className="mt-1.5 space-y-1 text-[11px]">
-                    {skills.technical.length > 0 && (
-                      <div><strong className="text-slate-900">Technical:</strong> {skills.technical.join(" · ")}</div>
-                    )}
-                    {skills.tools.length > 0 && (
-                      <div><strong className="text-slate-900">Tools & Platforms:</strong> {skills.tools.join(" · ")}</div>
-                    )}
-                    {skills.soft.length > 0 && (
-                      <div><strong className="text-slate-900">Core Competencies:</strong> {skills.soft.join(" · ")}</div>
-                    )}
-                  </div>
-                </div>
+                <p className="text-[11px] leading-relaxed text-slate-700 mb-4">{summary}</p>
               )}
 
               {/* Experience */}
               {experience.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-sky-700 border-b border-slate-200 pb-1">Work Experience</h3>
-                  <div className="mt-2 space-y-3">
+                  <h3 className="text-[12.5px] font-bold text-slate-900 border-b border-slate-300 pb-1 mb-2.5">Experience</h3>
+                  <div className="space-y-3">
                     {experience.map((exp, idx) => (
-                      <div key={idx} className="text-[11px]">
-                        <div className="flex items-center justify-between font-bold text-slate-950">
-                          <span>{exp.position || targetRole} · {exp.company}</span>
-                          <span className="text-[10px] text-slate-500 font-normal">{exp.startDate} {exp.startDate || exp.endDate ? "—" : ""} {exp.endDate || "Present"}</span>
+                      <div key={idx} className="flex gap-4 text-[11px]">
+                        <div className="w-[120px] shrink-0 font-medium text-slate-600">
+                          {exp.startDate} {exp.startDate || exp.endDate ? "—" : ""} {exp.endDate || "Present"}
                         </div>
-                        {exp.description && exp.description.length > 0 && (
-                          <ul className="mt-1 list-disc pl-4 space-y-0.5 text-slate-700">
-                            {exp.description.map((bullet, bIdx) => (
-                              <li key={bIdx}>{bullet.replace(/^[-\*\s]+/, "")}</li>
-                            ))}
-                          </ul>
-                        )}
+                        <div className="flex-1">
+                          <div className="font-bold text-slate-900">{exp.position || targetRole}</div>
+                          <div className="italic text-slate-600">{exp.company}{exp.location ? ` · ${exp.location}` : ""}</div>
+                          {exp.description && exp.description.length > 0 && (
+                            <ul className="mt-1 list-disc pl-4 space-y-0.5 text-slate-700">
+                              {exp.description.map((bullet, bIdx) => (
+                                <li key={bIdx}>{bullet.replace(/^[-\*\s]+/, "")}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -903,16 +1036,16 @@ function ResumeEditor() {
               {/* Education (Class X / XII / Degree) */}
               {education.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-sky-700 border-b border-slate-200 pb-1">Education & Qualifications</h3>
-                  <div className="mt-2 space-y-2.5">
+                  <h3 className="text-[12.5px] font-bold text-slate-900 border-b border-slate-300 pb-1 mb-2.5">Education</h3>
+                  <div className="space-y-2.5">
                     {education.map((edu, idx) => (
-                      <div key={idx} className="text-[11px]">
-                        <div className="flex items-center justify-between font-bold text-slate-950">
-                          <span>{edu.level ? `[${edu.level}] ` : ""}{edu.degree} {edu.fieldOfStudy ? `in ${edu.fieldOfStudy}` : ""}</span>
-                          <span className="text-[10px] text-slate-500 font-normal">{edu.yearOfPassing ? `Passout: ${edu.yearOfPassing}` : ""}</span>
+                      <div key={idx} className="flex gap-4 text-[11px]">
+                        <div className="w-[120px] shrink-0 font-medium text-slate-600">
+                          {edu.yearOfPassing ? `Passout: ${edu.yearOfPassing}` : (edu.level || "Education")}
                         </div>
-                        <div className="text-[10.5px] text-slate-600">
-                          {edu.institution} {edu.board ? `(${edu.board})` : ""} {edu.marks ? `· Marks/CGPA: ${edu.marks}` : ""}
+                        <div className="flex-1">
+                          <div className="font-bold text-slate-900">{edu.level ? `[${edu.level}] ` : ""}{edu.degree}{edu.fieldOfStudy ? ` in ${edu.fieldOfStudy}` : ""}</div>
+                          <div className="italic text-slate-600">{edu.institution}{edu.board ? ` (${edu.board})` : ""}{edu.marks ? ` · Marks/CGPA: ${edu.marks}` : ""}</div>
                         </div>
                       </div>
                     ))}
@@ -923,24 +1056,57 @@ function ResumeEditor() {
               {/* Projects */}
               {projects.length > 0 && (
                 <div className="mt-4">
-                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-sky-700 border-b border-slate-200 pb-1">Key Projects</h3>
-                  <div className="mt-2 space-y-2">
-                    {projects.map((proj, idx) => (
-                      <div key={idx} className="text-[11px]">
-                        <div className="flex items-center justify-between font-bold text-slate-950">
-                          <span>
-                            {proj.title}
-                            {proj.tech && (
-                              <span className="font-normal text-slate-500"> ({proj.tech})</span>
+                  <h3 className="text-[12.5px] font-bold text-slate-900 border-b border-slate-300 pb-1 mb-2.5">Projects</h3>
+                  <div className="space-y-3">
+                    {projects.map((proj, idx) => {
+                      const bullets = proj.description ? proj.description.split(/(?:•|\n)+/).map((s: string) => s.trim()).filter(Boolean) : [];
+                      return (
+                        <div key={idx} className="flex gap-4 text-[11px]">
+                          <div className="w-[120px] shrink-0 font-medium text-slate-600">Key Project</div>
+                          <div className="flex-1">
+                            <div className="font-bold text-slate-900">
+                              {proj.title}
+                              {proj.tech && <span className="font-normal text-slate-500"> ({proj.tech})</span>}
+                            </div>
+                            {proj.link && <div className="text-sky-600 break-all text-[10.5px]">{proj.link}</div>}
+                            {bullets.length > 0 && (
+                              <ul className="mt-1 list-disc pl-4 space-y-0.5 text-slate-700">
+                                {bullets.map((b, bIdx) => (
+                                  <li key={bIdx}>{b.replace(/^[-\*\s]+/, "")}</li>
+                                ))}
+                              </ul>
                             )}
-                          </span>
-                          {proj.link && <span className="text-[10px] text-sky-600 font-normal">{proj.link}</span>}
+                          </div>
                         </div>
-                        {proj.description && (
-                          <div className="mt-0.5 text-slate-700 whitespace-pre-line">{proj.description}</div>
-                        )}
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Skills & Competencies */}
+              {(skills.technical.length > 0 || skills.tools.length > 0 || skills.soft.length > 0) && (
+                <div className="mt-4">
+                  <h3 className="text-[12.5px] font-bold text-slate-900 border-b border-slate-300 pb-1 mb-2.5">Skills & Competencies</h3>
+                  <div className="space-y-1.5 text-[11px]">
+                    {skills.technical.length > 0 && (
+                      <div className="flex gap-4">
+                        <div className="w-[120px] shrink-0 font-bold text-slate-900">Technical Skills</div>
+                        <div className="flex-1 text-slate-700">{skills.technical.join(", ")}</div>
                       </div>
-                    ))}
+                    )}
+                    {skills.tools.length > 0 && (
+                      <div className="flex gap-4">
+                        <div className="w-[120px] shrink-0 font-bold text-slate-900">Tools & Platforms</div>
+                        <div className="flex-1 text-slate-700">{skills.tools.join(", ")}</div>
+                      </div>
+                    )}
+                    {skills.soft.length > 0 && (
+                      <div className="flex gap-4">
+                        <div className="w-[120px] shrink-0 font-bold text-slate-900">Core Competencies</div>
+                        <div className="flex-1 text-slate-700">{skills.soft.join(", ")}</div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
