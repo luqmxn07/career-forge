@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { Plus, Calendar, Tag, Loader2, Sparkles, MapPin, Globe, ExternalLink, Search, CheckCircle2, SlidersHorizontal, Briefcase, X, Trash2 } from "lucide-react";
+import { Plus, Calendar, Tag, Loader2, Sparkles, MapPin, Globe, ExternalLink, Search, CheckCircle2, SlidersHorizontal, Briefcase, X, Trash2, FileText, ScanLine, MessageSquare } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
 import {
@@ -515,6 +515,65 @@ function JobTrackerPage() {
                   <span>Search Job Link on Google</span>
                 </a>
               )}
+
+              {/* 1-Click AI Career Actions */}
+              <div className="space-y-1.5 border-t border-white/10 pt-3">
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>1-Click AI Actions for this Job</span>
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    to="/resumes"
+                    search={{
+                      tailorRole: selectedJob.position,
+                      jd: editingNotes || selectedJob.description || "",
+                    }}
+                    className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 p-2 text-xs font-semibold text-primary transition cursor-pointer"
+                  >
+                    <FileText className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">Tailor Resume</span>
+                  </Link>
+
+                  <Link
+                    to="/cover-letters"
+                    search={{
+                      role: selectedJob.position,
+                      company: selectedJob.company,
+                      jd: editingNotes || selectedJob.description || "",
+                    }}
+                    className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 p-2 text-xs font-semibold text-emerald-400 transition cursor-pointer"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">Draft Cover Letter</span>
+                  </Link>
+
+                  <Link
+                    to="/ats"
+                    search={{
+                      role: selectedJob.position,
+                      jd: editingNotes || selectedJob.description || "",
+                    }}
+                    className="flex items-center gap-2 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 p-2 text-xs font-semibold text-sky-400 transition cursor-pointer"
+                  >
+                    <ScanLine className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">Scan ATS Score</span>
+                  </Link>
+
+                  <Link
+                    to="/interviews"
+                    search={{
+                      role: selectedJob.position,
+                      company: selectedJob.company,
+                      jd: editingNotes || selectedJob.description || "",
+                    }}
+                    className="flex items-center gap-2 rounded-xl border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 p-2 text-xs font-semibold text-purple-300 transition cursor-pointer"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">Mock Interview</span>
+                  </Link>
+                </div>
+              </div>
 
               {/* Stage Switcher */}
               <div className="space-y-1.5">

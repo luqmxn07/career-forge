@@ -23,6 +23,13 @@ function CoverLettersPage() {
 
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const queryJd = params.get("jd");
+      if (queryJd) {
+        setJd(queryJd);
+      }
+    }
   }, []);
 
   if (!mounted || loadingLetters || loadingResumes) {

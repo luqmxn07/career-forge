@@ -51,7 +51,69 @@ function DashboardPage() {
     <div>
       <PageHeader title="Welcome back" description="Your resume workshop, ATS results, interview prep, and pipeline — at a glance." />
 
-      {/* Stats Grid */}
+      {/* Guided Career Accelerator Workflow Banner */}
+      <GlassCard className="mb-6 border-emerald-500/25 bg-gradient-to-r from-emerald-500/10 via-primary/5 to-purple-500/10 p-4 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+          <div className="flex items-center gap-2">
+            <div className="grid h-7 w-7 place-items-center rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-xs">
+              ⚡
+            </div>
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Job Application Guided Pathway</h3>
+              <p className="text-[11px] text-muted-foreground">Follow this 4-step workflow to maximize your interview callbacks</p>
+            </div>
+          </div>
+          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/25">
+            4-Step System
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <Link
+            to="/profile"
+            className="flex flex-col justify-between p-2.5 rounded-xl border border-white/10 bg-black/40 hover:bg-white/10 transition group"
+          >
+            <div>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">Step 1</span>
+              <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">Fill Master Profile</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">Skills, education & bio</p>
+          </Link>
+
+          <Link
+            to="/job-tracker"
+            className="flex flex-col justify-between p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 transition group"
+          >
+            <div>
+              <span className="text-[10px] font-bold text-emerald-400 uppercase">Step 2</span>
+              <p className="text-xs font-semibold text-emerald-300 group-hover:text-emerald-200 transition-colors">Discover & Track Jobs</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">LinkedIn & Indeed jobs</p>
+          </Link>
+
+          <Link
+            to="/resumes"
+            className="flex flex-col justify-between p-2.5 rounded-xl border border-white/10 bg-black/40 hover:bg-white/10 transition group"
+          >
+            <div>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">Step 3</span>
+              <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">Tailor Resume & Letter</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">1-Click AI role adaptation</p>
+          </Link>
+
+          <Link
+            to="/interviews"
+            className="flex flex-col justify-between p-2.5 rounded-xl border border-white/10 bg-black/40 hover:bg-white/10 transition group"
+          >
+            <div>
+              <span className="text-[10px] font-bold text-muted-foreground uppercase">Step 4</span>
+              <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">Mock AI Interview</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">Practice role questions</p>
+          </Link>
+        </div>
+      </GlassCard>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {/* Resumes Stat Card */}
         {hasResumes ? (

@@ -33,6 +33,13 @@ function AtsPage() {
 
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const queryJd = params.get("jd");
+      if (queryJd) {
+        setJd(queryJd);
+      }
+    }
   }, []);
 
   if (!mounted || loadingScans || loadingResumes) {
