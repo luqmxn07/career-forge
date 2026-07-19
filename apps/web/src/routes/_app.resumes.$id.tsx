@@ -176,36 +176,35 @@ function ResumeEditor() {
     setIsTailoring(true);
     try {
       const res = await api.post<{
-        success: boolean;
-        data: {
-          summary: string;
-          experience: any[];
-          skills: { technical: string[]; tools: string[]; soft: string[] };
-        };
+        summary: string;
+        experience: any[];
+        skills: { technical: string[]; tools: string[]; soft: string[] };
       }>(`/resume/${id}/tailor`, { targetRole });
 
-      if (res?.data) {
-        if (res.data.summary) setSummary(res.data.summary);
-        if (res.data.skills) {
-          setSkills(res.data.skills);
-          setTechSkillsInput((res.data.skills.technical || []).join(", "));
-          setToolsSkillsInput((res.data.skills.tools || []).join(", "));
-          setSoftSkillsInput((res.data.skills.soft || []).join(", "));
+      const tailoredData = (res as any)?.data || res;
+
+      if (tailoredData) {
+        if (tailoredData.summary) setSummary(tailoredData.summary);
+        if (tailoredData.skills) {
+          setSkills(tailoredData.skills);
+          setTechSkillsInput((tailoredData.skills.technical || []).join(", "));
+          setToolsSkillsInput((tailoredData.skills.tools || []).join(", "));
+          setSoftSkillsInput((tailoredData.skills.soft || []).join(", "));
         }
-        if (res.data.experience && res.data.experience.length > 0) {
-          setExperience(res.data.experience.map((e: any) => ({
+        if (tailoredData.experience && tailoredData.experience.length > 0) {
+          setExperience(tailoredData.experience.map((e: any) => ({
             company: e.company || "",
             position: e.position || targetRole,
             startDate: e.startDate || "",
             endDate: e.endDate || "Present",
             location: e.location || "",
-            description: e.bullets || e.description || [],
+            description: Array.isArray(e.bullets) ? e.bullets : (Array.isArray(e.description) ? e.description : [e.description || ""]),
           })));
         }
         toast.success(`✨ AI Tailored resume for ${targetRole}!`);
       }
     } catch (e: any) {
-      toast.error(e?.message || "AI Tailoring completed with rule-based enhancement!");
+      toast.error(e?.message || "AI Tailoring request failed. Please try again.");
     } finally {
       setIsTailoring(false);
     }
