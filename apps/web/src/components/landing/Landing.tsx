@@ -338,7 +338,9 @@ function ResumeMockup({ variant = "hero" }: { variant?: "hero" | "small" }) {
       ? profile.experiences[0].role
       : "Senior Product Designer";
   const score =
-    isAuthenticated && stats?.atsAverageScore !== undefined ? stats.atsAverageScore : 96;
+    isAuthenticated && ((stats as any)?.atsAverageScore !== undefined || (stats as any)?.averageAtsScore !== undefined)
+      ? ((stats as any).atsAverageScore ?? (stats as any).averageAtsScore)
+      : 96;
   const skills =
     isAuthenticated && profile?.skills?.length
       ? profile.skills.slice(0, 6)
@@ -712,7 +714,9 @@ function ATSScanner() {
   const { data: stats } = useDashboardStats();
 
   const score =
-    isAuthenticated && stats?.atsAverageScore !== undefined ? stats.atsAverageScore : 96;
+    isAuthenticated && ((stats as any)?.atsAverageScore !== undefined || (stats as any)?.averageAtsScore !== undefined)
+      ? ((stats as any).atsAverageScore ?? (stats as any).averageAtsScore)
+      : 96;
 
   return (
     <section className="relative py-32">
