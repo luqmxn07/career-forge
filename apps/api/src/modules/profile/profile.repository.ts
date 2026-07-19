@@ -21,12 +21,18 @@ export class ProfileRepository {
       }
     }
 
-    const [education, experience, skills, languages, socialLinks] = await Promise.all([
-      this.prisma.education.findMany({ where: { userId }, orderBy: { sortOrder: "asc" } }),
-      this.prisma.experience.findMany({ where: { userId }, orderBy: { sortOrder: "asc" } }),
-      this.prisma.skill.findMany({ where: { userId } }),
-      this.prisma.language.findMany({ where: { userId } }),
-      this.prisma.socialLink.findMany({ where: { userId } })
+    let education: Education[] = [];
+    try {
+      education = await this.prisma.education.findMany({ where: { userId }, orderBy: { sortOrder: "asc" } });
+    } catch (e) {
+      education = [];
+    }
+
+    const [experience, skills, languages, socialLinks] = await Promise.all([
+      this.prisma.experience.findMany({ where: { userId }, orderBy: { sortOrder: "asc" } }).catch(() => []),
+      this.prisma.skill.findMany({ where: { userId } }).catch(() => []),
+      this.prisma.language.findMany({ where: { userId } }).catch(() => []),
+      this.prisma.socialLink.findMany({ where: { userId } }).catch(() => [])
     ]);
 
     return {

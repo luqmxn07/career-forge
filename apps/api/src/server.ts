@@ -9,9 +9,22 @@ import { defaultTemplates } from "./prisma/seed.js";
 const server = app.listen(env.PORT, async () => {
   logger.info(`🚀 CareerForge Server started in ${env.NODE_ENV} mode on port ${env.PORT}`);
   
-  // Auto-seed database templates on startup if table is empty
+  // Auto-migrate missing PostgreSQL columns & seed templates on startup
   try {
     const prisma = container.prisma;
+
+    // Run safe ALTER TABLE queries to ensure education_entries columns exist in production DB
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "education_entries" ADD COLUMN IF NOT EXISTS "board" TEXT;`);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "education_entries" ADD COLUMN IF NOT EXISTS "level" TEXT;`);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "education_entries" ADD COLUMN IF NOT EXISTS "marks" TEXT;`);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "education_entries" ADD COLUMN IF NOT EXISTS "year_of_passing" TEXT;`);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "education_entries" ADD COLUMN IF NOT EXISTS "city_state" TEXT;`);
+      logger.info("✅ Database schema column verification complete.");
+    } catch (dbErr) {
+      logger.warn("⚠️ Database column verification skipped/handled:", dbErr);
+    }
+
     const count = await prisma.template.count();
     if (count === 0) {
       logger.info("🌱 Seeding database templates on startup...");

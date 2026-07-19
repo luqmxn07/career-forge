@@ -106,7 +106,7 @@ export class JobTrackerService {
   async deleteJobEntry(id: string, userId: string): Promise<void> {
     const existing = await this.jobTrackerRepository.findById(id);
     if (!existing || existing.userId !== userId) {
-      throw new NotFoundError("Job entry not found");
+      return;
     }
 
     await this.jobTrackerRepository.softDelete(id, userId);
