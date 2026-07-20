@@ -332,7 +332,7 @@ function ResumeMockup({ variant = "hero" }: { variant?: "hero" | "small" }) {
   };
 
   // Pull dynamic metrics or fall back to default
-  const name = isAuthenticated && profile?.fullName ? profile.fullName : "Alex Chen";
+  const name = isAuthenticated && profile?.fullName ? profile.fullName : "Aric Paul";
   const role =
     isAuthenticated && profile?.experiences?.[0]?.role
       ? profile.experiences[0].role
@@ -619,9 +619,9 @@ function BuilderBlock({ title, index, progress, start, end }: BuilderBlockProps)
   const { token } = useAuthStore();
   const isAuthenticated = !!token;
   const { data: profile } = useProfile();
-  const name = isAuthenticated && profile?.fullName ? profile.fullName : "Alex Chen";
+  const name = isAuthenticated && profile?.fullName ? profile.fullName : "Aric Paul";
   const location = isAuthenticated && profile?.location ? profile.location : "San Francisco";
-  const email = isAuthenticated && profile?.email ? profile.email : "alex@forge.co";
+  const email = isAuthenticated && profile?.email ? profile.email : "aric@forge.co";
 
   const content: Record<string, ReactNode> = {
     Header: (
@@ -891,7 +891,7 @@ function CoverLetter() {
 
   const prompt = "Write a cover letter for a Senior Product Designer role at Stripe.";
   const letter =
-    "Dear Stripe hiring team,\n\nDesigning payments infrastructure is designing trust at planetary scale. Over the last six years I've shipped systems used by millions — from Figma's community platform to Stripe Terminal's next-generation flows. I obsess over the surface area where craft and clarity meet.\n\nI'd love to bring that obsession to your team.\n\nWarmly,\nAlex";
+    "Dear Stripe hiring team,\n\nDesigning payments infrastructure is designing trust at planetary scale. Over the last six years I've shipped systems used by millions — from Figma's community platform to Stripe Terminal's next-generation flows. I obsess over the surface area where craft and clarity meet.\n\nI'd love to bring that obsession to your team.\n\nWarmly,\nAric";
 
   const typedPrompt = useTyped(prompt, inView, 25);
   const [showLetter, setShowLetter] = useState(false);
