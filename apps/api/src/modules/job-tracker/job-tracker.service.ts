@@ -119,8 +119,8 @@ export class JobTrackerService {
   }
 
   async sendJobEmailSummary(id: string, userId: string): Promise<boolean> {
-    const entry = await this.jobTrackerRepository.findById(id, userId);
-    if (!entry || entry.isDeleted) {
+    const entry = await this.jobTrackerRepository.findById(id);
+    if (!entry || entry.userId !== userId) {
       throw new NotFoundError("Job tracker entry not found");
     }
 
@@ -134,15 +134,19 @@ export class JobTrackerService {
 
     const deadlineStr = entry.deadline ? new Date(entry.deadline).toLocaleDateString() : "No deadline specified";
 
+    const tagsList = Array.isArray(entry.tags) ? (entry.tags as string[]) : [];
+    const urlTag = tagsList.find((t: string) => typeof t === "string" && t.startsWith("URL:"));
+    const jobUrl = urlTag ? urlTag.replace(/^URL:/, "") : undefined;
+
     const htmlContent = `
       <div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #f8fafc; padding: 24px; border-radius: 12px;">
         <h2 style="color: #38bdf8; margin-top: 0;">💼 Tracked Job Summary — CareerForge</h2>
         <div style="background-color: #1e293b; padding: 16px; border-radius: 8px; border: 1px solid #334155;">
           <h3 style="margin: 0; color: #ffffff; font-size: 20px;">${entry.role}</h3>
-          <p style="margin: 4px 0 12px 0; color: #94a3b8; font-size: 14px;"><strong>Company:</strong> ${entry.company} ${entry.location ? `· ${entry.location}` : ""}</p>
+          <p style="margin: 4px 0 12px 0; color: #94a3b8; font-size: 14px;"><strong>Company:</strong> ${entry.company}</p>
           <p style="margin: 4px 0; color: #cbd5e1; font-size: 14px;"><strong>Application Stage:</strong> <span style="color: #38bdf8; font-weight: bold;">${entry.stage}</span></p>
           <p style="margin: 4px 0; color: #cbd5e1; font-size: 14px;"><strong>Deadline:</strong> ${deadlineStr}</p>
-          ${entry.jobUrl ? `<p style="margin: 8px 0 0 0;"><a href="${entry.jobUrl}" target="_blank" style="color: #38bdf8; text-decoration: underline;">View Job Posting →</a></p>` : ""}
+          ${jobUrl ? `<p style="margin: 8px 0 0 0;"><a href="${jobUrl}" target="_blank" style="color: #38bdf8; text-decoration: underline;">View Job Posting →</a></p>` : ""}
         </div>
         ${entry.notes ? `<div style="margin-top: 16px; background-color: #1e293b; padding: 12px; border-radius: 6px;"><p style="margin: 0; color: #94a3b8; font-size: 12px;"><strong>Notes:</strong></p><p style="margin: 4px 0 0 0; color: #e2e8f0; font-size: 14px;">${entry.notes}</p></div>` : ""}
         <footer style="margin-top: 24px; border-top: 1px solid #334155; padding-top: 16px; font-size: 12px; color: #64748b;">
