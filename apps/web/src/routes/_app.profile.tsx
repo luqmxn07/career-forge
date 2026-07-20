@@ -467,21 +467,54 @@ function ProfilePage() {
         </motion.div>
 
         <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }}>
-          <GlassCard glow>
-            <p className="text-xs uppercase tracking-wider text-muted-foreground">Profile completion</p>
-            <div className="mt-3 flex items-baseline gap-2">
-              <span className="font-display text-4xl font-semibold text-gradient-primary">{completion}%</span>
-            </div>
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.06]">
-              <div className="h-full rounded-full bg-linear-to-r from-primary to-emerald" style={{ width: `${completion}%` }} />
-            </div>
-            <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
-              <li>✓ Add 3+ experiences</li>
-              <li>✓ Set a professional summary</li>
-              <li>○ Add 5+ skills</li>
-              <li>○ Verify phone number</li>
-            </ul>
-          </GlassCard>
+          {(() => {
+            const hasFullName = !!(form.fullName || profile?.fullName);
+            const hasContact = !!(form.phoneNumber || form.location || profile?.phoneNumber || profile?.location);
+            const hasSummary = !!(form.summary || profile?.summary);
+            const hasEdu = (profile?.education?.length ?? 0) >= 1;
+            const hasExp = (profile?.experiences?.length ?? 0) >= 1;
+            const hasEnoughSkills = userSkills.length >= 3;
+
+            const computedCompletion = 
+              (hasFullName ? 15 : 0) +
+              (hasContact ? 15 : 0) +
+              (hasSummary ? 20 : 0) +
+              (hasEdu ? 20 : 0) +
+              (hasExp ? 15 : 0) +
+              (hasEnoughSkills ? 15 : 0);
+
+            return (
+              <GlassCard glow>
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">Profile completion</p>
+                <div className="mt-3 flex items-baseline gap-2">
+                  <span className="font-display text-4xl font-semibold text-gradient-primary">{computedCompletion}%</span>
+                </div>
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/[0.06]">
+                  <div className="h-full rounded-full bg-gradient-to-r from-primary to-emerald transition-all duration-500" style={{ width: `${computedCompletion}%` }} />
+                </div>
+                <ul className="mt-6 space-y-2.5 text-xs text-muted-foreground">
+                  <li className={`flex items-center gap-2 ${hasFullName ? "text-emerald-400 font-medium" : ""}`}>
+                    <span>{hasFullName ? "✓" : "○"}</span> Set full name & details
+                  </li>
+                  <li className={`flex items-center gap-2 ${hasContact ? "text-emerald-400 font-medium" : ""}`}>
+                    <span>{hasContact ? "✓" : "○"}</span> Provide contact phone & location
+                  </li>
+                  <li className={`flex items-center gap-2 ${hasSummary ? "text-emerald-400 font-medium" : ""}`}>
+                    <span>{hasSummary ? "✓" : "○"}</span> Set a professional summary
+                  </li>
+                  <li className={`flex items-center gap-2 ${hasEdu ? "text-emerald-400 font-medium" : ""}`}>
+                    <span>{hasEdu ? "✓" : "○"}</span> Add education details
+                  </li>
+                  <li className={`flex items-center gap-2 ${hasExp ? "text-emerald-400 font-medium" : ""}`}>
+                    <span>{hasExp ? "✓" : "○"}</span> Add work/project experience
+                  </li>
+                  <li className={`flex items-center gap-2 ${hasEnoughSkills ? "text-emerald-400 font-medium" : ""}`}>
+                    <span>{hasEnoughSkills ? "✓" : "○"}</span> Add 3+ skills & competencies
+                  </li>
+                </ul>
+              </GlassCard>
+            );
+          })()}
 
           <GlassCard className="mt-4">
             <div className="flex items-center justify-between">
