@@ -486,12 +486,44 @@ function Hero() {
           </FadeIn>
         </div>
 
-        <div className="lg:col-span-6">
+        <div className="lg:col-span-6 relative">
           <motion.div
-            animate={{ y: [0, -14, 0] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            animate={{ y: [0, -12, 0] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
           >
             <ResumeMockup />
+          </motion.div>
+
+          {/* Floating ATS Badge */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, x: 20 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="absolute -top-4 -right-4 glass-panel border border-glass-border p-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md hidden sm:flex"
+          >
+            <div className="h-10 w-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
+              96%
+            </div>
+            <div>
+              <div className="text-xs font-bold text-foreground">ATS Match Gauge</div>
+              <div className="text-[10px] text-emerald-400 font-medium">Top 5% candidate match</div>
+            </div>
+          </motion.div>
+
+          {/* Floating STAR AI Badge */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, x: -20 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+            className="absolute -bottom-6 -left-4 glass-panel border border-glass-border p-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md hidden sm:flex"
+          >
+            <div className="h-10 w-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center">
+              <Zap className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <div className="text-xs font-bold text-foreground">STAR AI Bullet Optimizer</div>
+              <div className="text-[10px] text-muted-foreground font-medium">Auto-tailored for job role</div>
+            </div>
           </motion.div>
         </div>
       </motion.div>
