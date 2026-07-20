@@ -336,7 +336,7 @@ function ResumeMockup({ variant = "hero" }: { variant?: "hero" | "small" }) {
   const role =
     isAuthenticated && profile?.experiences?.[0]?.role
       ? profile.experiences[0].role
-      : "Senior Product Designer";
+      : "2nd Year CS Student · UEM";
   const score =
     isAuthenticated && ((stats as any)?.atsAverageScore !== undefined || (stats as any)?.averageAtsScore !== undefined)
       ? ((stats as any).atsAverageScore ?? (stats as any).averageAtsScore)
@@ -627,11 +627,12 @@ function BuilderBlock({ title, index, progress, start, end }: BuilderBlockProps)
     Header: (
       <div className="flex items-center justify-between">
         <div>
-          <div className="font-display text-2xl text-white">{name}</div>
-          <div className="text-sm text-white/60">Product Designer · {location}</div>
+          <div className="font-display text-2xl text-foreground font-bold">{name}</div>
+          <div className="text-sm text-primary font-medium">2nd Year CS Student · {location === "San Francisco" ? "University of Engineering and Management (UEM)" : location}</div>
         </div>
-        <div className="text-right text-xs text-white/60">
+        <div className="text-right text-xs text-muted-foreground font-mono">
           <div>{email}</div>
+          <div className="mt-0.5 text-[10px] text-emerald-400 font-semibold">Still Learning & Building</div>
         </div>
       </div>
     ),
@@ -641,30 +642,30 @@ function BuilderBlock({ title, index, progress, start, end }: BuilderBlockProps)
           ? profile.experiences.slice(0, 2).map((e, idx) => (
               <div
                 key={idx}
-                className="flex items-start justify-between border-l-2 border-white/15 pl-4"
+                className="flex items-start justify-between border-l-2 border-primary/50 pl-4"
               >
                 <div>
-                  <div className="text-white">{e.role}</div>
-                  <div className="text-sm text-white/60">{e.company}</div>
+                  <div className="text-foreground font-semibold">{e.role}</div>
+                  <div className="text-sm text-muted-foreground">{e.company}</div>
                 </div>
-                <div className="text-xs text-white/50">
-                  {e.startDate || "2023"} — {e.endDate || "Now"}
+                <div className="text-xs text-muted-foreground font-mono">
+                  {e.startDate || "2024"} — {e.endDate || "Present"}
                 </div>
               </div>
             ))
           : [
-              { c: "Stripe", r: "Senior Product Designer", y: "2022 — Now" },
-              { c: "Figma", r: "Product Designer", y: "2019 — 2022" },
+              { c: "University of Engineering and Management (UEM)", r: "2nd Year Computer Science Student", y: "2024 — Present" },
+              { c: "Building AI & Web Applications", r: "Software Engineering Learner", y: "2024 — Present" },
             ].map((e) => (
               <div
                 key={e.c}
-                className="flex items-start justify-between border-l-2 border-white/15 pl-4"
+                className="flex items-start justify-between border-l-2 border-primary/50 pl-4"
               >
                 <div>
-                  <div className="text-white">{e.r}</div>
-                  <div className="text-sm text-white/60">{e.c}</div>
+                  <div className="text-foreground font-semibold">{e.r}</div>
+                  <div className="text-sm text-muted-foreground">{e.c}</div>
                 </div>
-                <div className="text-xs text-white/50">{e.y}</div>
+                <div className="text-xs text-muted-foreground font-mono">{e.y}</div>
               </div>
             ))}
       </div>
