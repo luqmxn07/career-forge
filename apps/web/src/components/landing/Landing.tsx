@@ -88,11 +88,11 @@ function MagneticButton({
   };
 
   const base =
-    "group relative inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium tracking-tight transition-colors cursor-pointer select-none";
+    "group relative inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold tracking-tight transition-all cursor-pointer select-none";
   const styles =
     variant === "primary"
-      ? "text-white shadow-[0_10px_40px_-10px_rgba(120,90,255,0.6)] bg-[linear-gradient(120deg,#6366f1,#a855f7_60%,#22d3ee)]"
-      : "text-white/90 glass hover:text-white";
+      ? "text-primary-foreground bg-primary shadow-lg hover:shadow-primary/30 hover:brightness-110"
+      : "text-foreground glass-panel border border-glass-border hover:border-primary/50 hover:bg-muted/40";
 
   const content = (
     <>
@@ -228,15 +228,15 @@ function Nav() {
       >
         <Link to="/" className="flex items-center gap-2 pl-2">
           <div className="relative h-7 w-7 rounded-lg bg-[linear-gradient(135deg,#22d3ee,#6366f1,#a855f7)] shadow-[0_0_20px_rgba(120,90,255,0.5)]">
-            <div className="absolute inset-[3px] rounded-md bg-background/60 flex items-center justify-center">
-              <span className="font-display text-sm leading-none text-white">C</span>
+            <div className="absolute inset-[3px] rounded-md bg-background flex items-center justify-center">
+              <span className="font-display text-sm leading-none text-primary">C</span>
             </div>
           </div>
-          <span className="text-sm font-semibold tracking-tight text-white">CareerForge</span>
+          <span className="text-sm font-semibold tracking-tight text-foreground">CareerForge</span>
         </Link>
-        <div className="hidden items-center gap-7 text-sm text-white/70 md:flex">
+        <div className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
           {["Features", "FAQ"].map((l) => (
-            <a key={l} href={`#${l.toLowerCase()}`} className="transition hover:text-white">
+            <a key={l} href={`#${l.toLowerCase()}`} className="transition hover:text-foreground">
               {l}
             </a>
           ))}
@@ -246,7 +246,7 @@ function Nav() {
             <>
               <Link
                 to="/dashboard"
-                className="hidden text-sm text-white/70 hover:text-white sm:inline-block"
+                className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline-block"
               >
                 Dashboard
               </Link>
@@ -261,7 +261,7 @@ function Nav() {
             <>
               <Link
                 to="/auth/login"
-                className="hidden text-sm text-white/70 hover:text-white sm:inline-block mr-2"
+                className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline-block mr-2"
               >
                 Sign in
               </Link>
@@ -354,18 +354,18 @@ function ResumeMockup({ variant = "hero" }: { variant?: "hero" | "small" }) {
       className={`relative mx-auto ${variant === "hero" ? "w-full max-w-[560px]" : "w-full max-w-[420px]"}`}
     >
       <div className="absolute -inset-8 rounded-[40px] bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.35),transparent_60%)] blur-2xl" />
-      <div className="relative rounded-3xl glass-strong glow-blue p-6 text-left">
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+      <div className="relative rounded-3xl glass-panel shadow-2xl p-6 text-left border border-glass-border">
+        <div className="flex items-center justify-between border-b border-glass-border pb-4">
           <div>
-            <div className="text-[10px] uppercase tracking-widest text-white/50">Resume · live</div>
-            <div className="mt-1 font-display text-xl text-white">{name}</div>
-            <div className="text-xs text-white/60">{role}</div>
+            <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Resume · live</div>
+            <div className="mt-1 font-display text-xl text-foreground font-bold">{name}</div>
+            <div className="text-xs text-muted-foreground">{role}</div>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <div className="text-[10px] uppercase tracking-widest text-emerald-300/80">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">
               ATS Score
             </div>
-            <div className="text-2xl font-semibold text-gradient">{score}</div>
+            <div className="text-2xl font-bold text-primary">{score}%</div>
           </div>
         </div>
 
@@ -376,17 +376,17 @@ function ResumeMockup({ variant = "hero" }: { variant?: "hero" | "small" }) {
             { label: "Keywords", w: `${score}%` },
           ].map((row, i) => (
             <div key={row.label}>
-              <div className="mb-1 flex justify-between text-[10px] uppercase tracking-widest text-white/50">
+              <div className="mb-1 flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
                 <span>{row.label}</span>
                 <span>{row.w}</span>
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+              <div className="h-1.5 overflow-hidden rounded-full bg-muted/40">
                 <motion.div
                   initial={{ width: 0 }}
                   whileInView={{ width: row.w }}
                   viewport={{ once: true }}
                   transition={{ duration: 1.2, delay: 0.2 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
-                  className="h-full rounded-full bg-[linear-gradient(90deg,#22d3ee,#6366f1,#a855f7)]"
+                  className="h-full rounded-full bg-primary"
                 />
               </div>
             </div>
@@ -401,9 +401,10 @@ function ResumeMockup({ variant = "hero" }: { variant?: "hero" | "small" }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 + i * 0.05 }}
-              className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] text-white/80"
+              className="rounded-lg border border-glass-border bg-card/50 px-2.5 py-1.5 text-[11px] text-foreground font-medium flex items-center justify-between"
             >
-              {t}
+              <span>{t}</span>
+              <Check className="h-3 w-3 text-emerald-400" />
             </motion.div>
           ))}
         </div>
