@@ -118,4 +118,18 @@ export class JobTrackerController {
       next(error);
     }
   };
+
+  notifyEmail = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = (req as any).user.userId;
+      const { id } = req.params;
+      await this.jobTrackerService.sendJobEmailSummary(id, userId);
+      res.status(200).json({
+        success: true,
+        data: { message: "Job summary email sent successfully" }
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

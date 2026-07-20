@@ -15,6 +15,7 @@ export const createJobTrackerRouter = (jobTrackerController: JobTrackerControlle
   router.get("/:id", jobTrackerController.getEntry);
   router.put("/:id", validate({ body: updateJobEntrySchema }), jobTrackerController.update);
   router.patch("/:id", validate({ body: updateJobEntrySchema }), jobTrackerController.update);
+  router.post("/:id/notify-email", jobTrackerController.notifyEmail);
   router.delete("/:id", jobTrackerController.delete);
 
   return router;

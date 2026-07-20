@@ -78,3 +78,9 @@ export function useSearchLiveJobs() {
     }) => api.post<DiscoveredJob[]>("/job-tracker/search", body),
   });
 }
+
+export function useSendJobEmailNotification() {
+  return useMutation({
+    mutationFn: (id: string) => api.post<{ message: string }>(`/job-tracker/${id}/notify-email`, {}),
+  });
+}

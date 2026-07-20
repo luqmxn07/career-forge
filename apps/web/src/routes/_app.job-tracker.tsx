@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
-import { Plus, Calendar, Tag, Loader2, Sparkles, MapPin, Globe, ExternalLink, Search, CheckCircle2, SlidersHorizontal, Briefcase, X, Trash2, FileText, ScanLine, MessageSquare } from "lucide-react";
+import { Plus, Calendar, Tag, Loader2, Sparkles, MapPin, Globe, ExternalLink, Search, CheckCircle2, SlidersHorizontal, Briefcase, X, Trash2, FileText, ScanLine, MessageSquare, Mail } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GlassCard } from "@/components/shared/GlassCard";
 import {
@@ -11,6 +11,7 @@ import {
   useCreateJobCard,
   useDeleteJobCard,
   useSearchLiveJobs,
+  useSendJobEmailNotification,
   type JobCard,
   type Stage,
   type DiscoveredJob,
@@ -37,6 +38,7 @@ function JobTrackerPage() {
   const update = useUpdateJobCard();
   const create = useCreateJobCard();
   const deleteJob = useDeleteJobCard();
+  const sendEmail = useSendJobEmailNotification();
 
   // Selected Card for Liquid Glass Modal
   const [selectedJob, setSelectedJob] = useState<JobCard | null>(null);
@@ -501,28 +503,45 @@ function JobTrackerPage() {
                 ))}
               </div>
 
-              {/* External Apply Link Button */}
-              {getJobUrl(selectedJob) ? (
-                <a
-                  href={getJobUrl(selectedJob)!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full btn-glow flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg cursor-pointer transition-all"
+              {/* External Apply Link & Email Notification Buttons */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {getJobUrl(selectedJob) ? (
+                  <a
+                    href={getJobUrl(selectedJob)!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full btn-glow flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 shadow-lg cursor-pointer transition-all"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span>Open & Apply</span>
+                  </a>
+                ) : (
+                  <a
+                    href={`https://www.google.com/search?q=${encodeURIComponent(`${selectedJob.company} ${selectedJob.position} jobs`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold border border-white/15 bg-white/5 hover:bg-white/10 text-foreground cursor-pointer transition-all"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span>Search Google</span>
+                  </a>
+                )}
+
+                <button
+                  type="button"
+                  disabled={sendEmail.isPending}
+                  onClick={() => {
+                    sendEmail.mutate(selectedJob.id, {
+                      onSuccess: () => toast.success(`📧 Sent email notification for ${selectedJob.company}!`),
+                      onError: (e: any) => toast.error(e?.message || "Failed to send email notification"),
+                    });
+                  }}
+                  className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold border border-sky-500/40 bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 shadow-lg cursor-pointer transition-all disabled:opacity-50"
                 >
-                  <ExternalLink className="h-4 w-4" />
-                  <span>Open & Apply on Job Portal</span>
-                </a>
-              ) : (
-                <a
-                  href={`https://www.google.com/search?q=${encodeURIComponent(`${selectedJob.company} ${selectedJob.position} jobs`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-xs font-semibold border border-white/15 bg-white/5 hover:bg-white/10 text-foreground cursor-pointer transition-all"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  <span>Search Job Link on Google</span>
-                </a>
-              )}
+                  {sendEmail.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4 text-sky-400" />}
+                  <span>{sendEmail.isPending ? "Sending Email..." : "Email Job Details"}</span>
+                </button>
+              </div>
 
               {/* 1-Click AI Career Actions */}
               <div className="space-y-1.5 border-t border-white/10 pt-3">
