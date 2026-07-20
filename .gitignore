@@ -33,3 +33,6 @@ lerna-debug.log*
 *.sln
 *.sw?
 Thumbs.db
+
+# Draft UI designs
+new frontend/
