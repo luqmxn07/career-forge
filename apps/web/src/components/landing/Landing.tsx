@@ -1475,80 +1475,74 @@ function FinalCTA() {
 
 function Footer() {
   return (
-    <footer className="relative border-t border-white/10 pt-20 pb-10">
-      <div className="mx-auto grid max-w-7xl gap-14 px-6 lg:grid-cols-12 text-left">
-        <div className="lg:col-span-5">
+    <footer className="relative border-t border-glass-border pt-16 pb-10">
+      <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-12 text-left">
+        <div className="lg:col-span-6">
           <div className="flex items-center gap-2">
             <div className="relative h-8 w-8 rounded-lg bg-[linear-gradient(135deg,#22d3ee,#6366f1,#a855f7)]">
-              <div className="absolute inset-[3px] rounded-md bg-background/60 grid place-items-center">
-                <span className="font-display text-sm text-white">C</span>
+              <div className="absolute inset-[3px] rounded-md bg-background flex items-center justify-center">
+                <span className="font-display text-sm text-primary font-bold">C</span>
               </div>
             </div>
-            <span className="text-base font-semibold text-white">CareerForge</span>
+            <span className="text-base font-bold text-foreground">CareerForge</span>
           </div>
-          <p className="mt-5 max-w-sm text-sm text-white/60">
-            The AI career operating system. Built for people who refuse to settle.
+          <p className="mt-4 max-w-md text-sm text-muted-foreground leading-relaxed">
+            An AI Career Platform built as a passion project by a <strong className="text-foreground">2nd year CS student</strong> at <strong className="text-foreground">University of Engineering and Management (UEM)</strong> for fun and learning.
           </p>
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="mt-8 flex max-w-md items-center gap-2 rounded-full glass p-1.5 pl-4"
-          >
-            <input
-              placeholder="you@work.com"
-              className="flex-1 bg-transparent text-sm text-white placeholder:text-white/40 focus:outline-none"
-            />
-            <button className="rounded-full bg-[linear-gradient(120deg,#6366f1,#a855f7)] px-4 py-2 text-xs font-medium text-white cursor-pointer">
-              Subscribe
-            </button>
-          </form>
-          <div className="mt-6 flex items-center gap-3 text-white/60">
-            {[AtSign, Globe, Send, Play].map((I, i) => (
-              <a
-                key={i}
-                href="#"
-                className="grid h-9 w-9 place-items-center rounded-full glass transition hover:text-white"
-              >
-                <I className="h-4 w-4" />
-              </a>
-            ))}
+          <div className="mt-6 flex flex-wrap items-center gap-3 text-xs">
+            <a
+              href="https://github.com/luqmxn07/career-forge"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-full glass-panel border border-glass-border px-4 py-2 font-medium text-foreground hover:border-primary/50 transition-all"
+            >
+              <Globe className="h-4 w-4 text-primary" />
+              <span>View Source on GitHub</span>
+              <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+            </a>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-10 lg:col-span-7 md:grid-cols-4">
-          {[
-            {
-              title: "Product",
-              links: ["Resume Builder", "ATS Scanner", "Cover Letter", "Interview Coach"],
-            },
-            { title: "Company", links: ["About", "Careers", "Press", "Contact"] },
-            { title: "Resources", links: ["Blog", "Guides", "Templates", "Changelog"] },
-            { title: "Legal", links: ["Privacy", "Terms", "Security", "Cookies"] },
-          ].map((c) => (
-            <div key={c.title}>
-              <div className="text-xs uppercase tracking-widest text-white/50">{c.title}</div>
-              <ul className="mt-4 space-y-2 text-sm">
-                {c.links.map((l) => (
-                  <li key={l}>
-                    <a href="#" className="text-white/75 transition hover:text-white">
-                      {l}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+
+        <div className="grid grid-cols-2 gap-8 lg:col-span-6">
+          <div>
+            <div className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Platform Tools</div>
+            <ul className="mt-4 space-y-2 text-sm font-medium">
+              {[
+                { name: "Resume Builder", to: "/resumes" },
+                { name: "ATS Match Scanner", to: "/ats" },
+                { name: "Cover Letter Generator", to: "/cover-letters" },
+                { name: "AI Interview Coach", to: "/interviews" },
+                { name: "Job Tracker Pipeline", to: "/job-tracker" },
+              ].map((item) => (
+                <li key={item.name}>
+                  <Link to={item.to} className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5">
+                    <Check className="h-3 w-3 text-emerald-400" />
+                    <span>{item.name}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <div className="text-xs uppercase tracking-widest text-muted-foreground font-bold">About Project</div>
+            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+              <li>🎓 2nd Year CS Student</li>
+              <li>🏛️ UEM (University of Engineering & Management)</li>
+              <li>⚡ Built for Fun & Learning</li>
+              <li>🚀 React 19 + AI Gateway</li>
+            </ul>
+          </div>
         </div>
       </div>
-      <div className="mx-auto mt-16 flex max-w-7xl flex-wrap items-center justify-between gap-4 border-t border-white/10 px-6 pt-6 text-xs text-white/50">
-        <div>© {new Date().getFullYear()} CareerForge Labs. All rights reserved.</div>
-        <div className="flex items-center gap-1.5">
-          <Target className="h-3 w-3" />
-          Built for ambitious careers
+
+      <div className="mx-auto mt-12 flex max-w-7xl flex-wrap items-center justify-between gap-4 border-t border-glass-border px-6 pt-6 text-xs text-muted-foreground">
+        <div>© {new Date().getFullYear()} CareerForge · Built for fun & learning by a 2nd year CS student at UEM.</div>
+        <div className="flex items-center gap-1.5 font-medium text-foreground">
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          University of Engineering and Management (UEM)
         </div>
       </div>
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 -bottom-20 h-40 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.35),transparent_60%)] blur-3xl"
-      />
     </footer>
   );
 }
