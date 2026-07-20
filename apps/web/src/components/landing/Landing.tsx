@@ -41,9 +41,8 @@ import {
   Award,
   Brain,
   Send,
-  Globe,
-  AtSign,
   Play,
+  Github,
 } from "lucide-react";
 
 import { useAuthStore } from "@/stores/auth-store";
