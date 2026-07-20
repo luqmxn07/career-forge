@@ -2,11 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { AreaChart, Area, BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { FileText, ScanLine, MessageSquare, Zap, Briefcase, ArrowRight, Loader2 } from "lucide-react";
+import { FileText, ScanLine, MessageSquare, Zap, Briefcase, ArrowRight, Loader2, Check, Sparkles } from "lucide-react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard } from "@/components/shared/StatCard";
 import { GlassCard } from "@/components/shared/GlassCard";
 import { useDashboardStats } from "@/features/dashboard/api/dashboard";
+import { useProfile } from "@/features/profile/api/profile";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — CareerForge" }] }),
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/_app/dashboard")({
 });
 
 function DashboardPage() {
+  const { data: profile } = useProfile();
   const { data, isLoading } = useDashboardStats();
   const [mounted, setMounted] = useState(false);
 
@@ -37,7 +39,65 @@ function DashboardPage() {
   const hasResumes = resumesCount > 0;
   const hasAtsScans = averageAtsScore > 0;
   const hasInterviews = interviewsCount > 0;
-  const hasJobEntries = data?.jobTrackerStages && data.jobTrackerStages.some(s => s.count > 0);
+  const hasJobEntries = !!(data?.jobTrackerStages && data.jobTrackerStages.some(s => s.count > 0));
+
+  // Determine completion status of each of the 4 pathway steps
+  const isStep1Done = !!(
+    profile &&
+    (profile.fullName ||
+      (profile.skills && profile.skills.length > 0) ||
+      (profile.education && profile.education.length > 0) ||
+      (profile.experiences && profile.experiences.length > 0) ||
+      (profile.completionScore && profile.completionScore >= 40))
+  );
+  const isStep2Done = hasJobEntries;
+  const isStep3Done = hasResumes || hasAtsScans;
+  const isStep4Done = hasInterviews;
+
+  const steps = [
+    {
+      step: 1,
+      title: "Fill Master Profile",
+      desc: "Skills, education & bio",
+      to: "/profile",
+      isDone: isStep1Done,
+      actionText: "Complete Profile",
+      guideText: "Start by filling your Master Profile so our AI can automatically generate tailored resumes and cover letters for you.",
+    },
+    {
+      step: 2,
+      title: "Discover & Track Jobs",
+      desc: "LinkedIn & Indeed jobs",
+      to: "/job-tracker",
+      isDone: isStep2Done,
+      actionText: "Add First Job",
+      guideText: "Add your target job applications to your Kanban board to stay organized and tailor your materials for each role.",
+    },
+    {
+      step: 3,
+      title: "Tailor Resume & Letter",
+      desc: "1-Click AI role adaptation",
+      to: "/resumes",
+      isDone: isStep3Done,
+      actionText: "Create Resume",
+      guideText: "Create your first resume or run an ATS scan to measure your match score against job descriptions.",
+    },
+    {
+      step: 4,
+      title: "Mock AI Interview",
+      desc: "Practice role questions",
+      to: "/interviews",
+      isDone: isStep4Done,
+      actionText: "Start Practice",
+      guideText: "Practice mock interview questions with real-time AI feedback to boost your confidence before real interviews.",
+    },
+  ];
+
+  const completedCount = steps.filter((s) => s.isDone).length;
+  const progressPercent = Math.round((completedCount / 4) * 100);
+
+  // Active step is the first incomplete step, or step 4 if all complete
+  const activeStep = steps.find((s) => !s.isDone) || steps[3];
 
   const ats = hasAtsScans ? [{ date: "Average", score: averageAtsScore }] : [];
   const kanban = hasJobEntries
@@ -51,9 +111,30 @@ function DashboardPage() {
     <div>
       <PageHeader title="Welcome back" description="Your resume workshop, ATS results, interview prep, and pipeline — at a glance." />
 
-      {/* Guided Career Accelerator Workflow Banner */}
-      <GlassCard className="mb-6 border-emerald-500/25 bg-gradient-to-r from-emerald-500/10 via-primary/5 to-purple-500/10 p-4 space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-2.5">
+      {/* Quick Actions Bar */}
+      <div className="mb-6 flex flex-wrap gap-2 items-center justify-between rounded-xl border border-glass-border bg-white/[0.02] p-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Quick Actions:</span>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/resumes" className="inline-flex items-center gap-1.5 rounded-lg border border-glass-border bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary/20 hover:border-primary/40 transition">
+            <FileText className="h-3.5 w-3.5 text-primary" /> Create Resume
+          </Link>
+          <Link to="/ats" className="inline-flex items-center gap-1.5 rounded-lg border border-glass-border bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-foreground hover:bg-emerald/20 hover:border-emerald/40 transition">
+            <ScanLine className="h-3.5 w-3.5 text-emerald" /> ATS Match Scan
+          </Link>
+          <Link to="/job-tracker" className="inline-flex items-center gap-1.5 rounded-lg border border-glass-border bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-foreground hover:bg-purple-500/20 hover:border-purple-500/40 transition">
+            <Briefcase className="h-3.5 w-3.5 text-purple-400" /> Track Application
+          </Link>
+          <Link to="/interviews" className="inline-flex items-center gap-1.5 rounded-lg border border-glass-border bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-foreground hover:bg-amber-500/20 hover:border-amber-500/40 transition">
+            <MessageSquare className="h-3.5 w-3.5 text-amber-400" /> Mock Interview
+          </Link>
+        </div>
+      </div>
+
+      {/* Dynamic Guided Career Accelerator Workflow Banner */}
+      <GlassCard className="mb-6 border-emerald-500/25 bg-gradient-to-r from-emerald-500/10 via-primary/5 to-purple-500/10 p-4 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">
             <div className="grid h-7 w-7 place-items-center rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-xs">
               ⚡
@@ -63,57 +144,124 @@ function DashboardPage() {
               <p className="text-[11px] text-muted-foreground">Follow this 4-step workflow to maximize your interview callbacks</p>
             </div>
           </div>
-          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/25">
-            4-Step System
-          </span>
+          <div className="flex items-center gap-2">
+            <span className={`text-[10px] font-mono font-semibold px-2.5 py-1 rounded-md border ${
+              completedCount === 4 
+                ? "text-emerald-300 bg-emerald-500/20 border-emerald-500/40" 
+                : "text-amber-300 bg-amber-500/20 border-amber-500/40"
+            }`}>
+              {completedCount === 4 ? "🎉 All 4 Steps Completed!" : `${completedCount}/4 Completed (${progressPercent}%)`}
+            </span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          <Link
-            to="/profile"
-            className="flex flex-col justify-between p-2.5 rounded-xl border border-white/10 bg-black/40 hover:bg-white/10 transition group"
-          >
-            <div>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Step 1</span>
-              <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">Fill Master Profile</p>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1">Skills, education & bio</p>
-          </Link>
-
-          <Link
-            to="/job-tracker"
-            className="flex flex-col justify-between p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 transition group"
-          >
-            <div>
-              <span className="text-[10px] font-bold text-emerald-400 uppercase">Step 2</span>
-              <p className="text-xs font-semibold text-emerald-300 group-hover:text-emerald-200 transition-colors">Discover & Track Jobs</p>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1">LinkedIn & Indeed jobs</p>
-          </Link>
-
-          <Link
-            to="/resumes"
-            className="flex flex-col justify-between p-2.5 rounded-xl border border-white/10 bg-black/40 hover:bg-white/10 transition group"
-          >
-            <div>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Step 3</span>
-              <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">Tailor Resume & Letter</p>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1">1-Click AI role adaptation</p>
-          </Link>
-
-          <Link
-            to="/interviews"
-            className="flex flex-col justify-between p-2.5 rounded-xl border border-white/10 bg-black/40 hover:bg-white/10 transition group"
-          >
-            <div>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">Step 4</span>
-              <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors">Mock AI Interview</p>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-1">Practice role questions</p>
-          </Link>
+        {/* Pathway Progress Line */}
+        <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-emerald-400 via-primary to-purple-400 transition-all duration-500"
+            style={{ width: `${progressPercent}%` }}
+          />
         </div>
+
+        {/* 4 Interactive Step Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {steps.map((s) => {
+            const isCurrent = !s.isDone && s.step === activeStep.step;
+            return (
+              <Link
+                key={s.step}
+                to={s.to}
+                className={`relative flex flex-col justify-between p-3.5 rounded-xl border transition-all duration-300 group cursor-pointer ${
+                  s.isDone
+                    ? "border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 hover:border-emerald-500/60"
+                    : isCurrent
+                    ? "border-amber-400/60 bg-amber-500/10 ring-2 ring-amber-400/30 shadow-[0_0_20px_rgba(245,158,11,0.25)] hover:bg-amber-500/20"
+                    : "border-white/10 bg-black/40 hover:bg-white/10 hover:border-white/20"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider ${
+                      s.isDone
+                        ? "text-emerald-400"
+                        : isCurrent
+                        ? "text-amber-400"
+                        : "text-muted-foreground"
+                    }`}
+                  >
+                    Step {s.step}
+                  </span>
+                  {s.isDone ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                      <Check className="h-3 w-3" /> Done
+                    </span>
+                  ) : isCurrent ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 animate-pulse">
+                      <Sparkles className="h-3 w-3" /> Current Step
+                    </span>
+                  ) : (
+                    <span className="text-[10px] text-muted-foreground">Up Next</span>
+                  )}
+                </div>
+                <div>
+                  <p
+                    className={`text-xs font-semibold transition-colors ${
+                      s.isDone
+                        ? "text-emerald-200 group-hover:text-white"
+                        : isCurrent
+                        ? "text-amber-200 group-hover:text-white"
+                        : "text-foreground group-hover:text-primary"
+                    }`}
+                  >
+                    {s.title}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{s.desc}</p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Dynamic Action Guidance Box */}
+        {completedCount < 4 ? (
+          <div className="mt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5">
+            <div className="flex items-center gap-3">
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-amber-500/20 text-amber-400 font-bold text-sm shrink-0">
+                🎯
+              </div>
+              <div>
+                <p className="text-xs font-bold text-amber-200">Recommended Next Step: {activeStep.title}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{activeStep.guideText}</p>
+              </div>
+            </div>
+            <Link
+              to={activeStep.to}
+              className="btn-glow btn-glow-hover shrink-0 rounded-lg px-4 py-2 text-xs font-semibold inline-flex items-center gap-1.5"
+            >
+              {activeStep.actionText} <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        ) : (
+          <div className="mt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10">
+            <div className="flex items-center gap-3">
+              <div className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-sm shrink-0">
+                🎉
+              </div>
+              <div>
+                <p className="text-xs font-bold text-emerald-300">All 4 Guided Steps Completed!</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Your career accelerator pipeline is active and optimized. Keep tracking applications and practicing interviews.</p>
+              </div>
+            </div>
+            <Link
+              to="/job-tracker"
+              className="btn-glow btn-glow-hover shrink-0 rounded-lg px-4 py-2 text-xs font-semibold inline-flex items-center gap-1.5"
+            >
+              View Job Tracker <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        )}
       </GlassCard>
+
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {/* Resumes Stat Card */}
         {hasResumes ? (
@@ -280,3 +428,4 @@ function DashboardPage() {
     </div>
   );
 }
+
