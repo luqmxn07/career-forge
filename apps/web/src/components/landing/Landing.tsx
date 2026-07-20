@@ -39,8 +39,9 @@ import {
   Rocket,
   Target,
   Award,
-  Brain,
   Send,
+  Globe,
+  AtSign,
   Play,
   Github,
 } from "lucide-react";
