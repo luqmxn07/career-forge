@@ -1,177 +1,75 @@
 "use client";
-
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useMotionValue,
-  useSpring,
-  AnimatePresence,
-  useMotionValueEvent,
-  type MotionValue,
-} from "framer-motion";
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-  type MouseEvent,
-  type ComponentType,
-} from "react";
+import { motion, useScroll, useTransform, useMotionValue, useSpring, AnimatePresence, useMotionValueEvent } from "framer-motion";
+import { useEffect, useRef, useState, type ReactNode, type MouseEvent } from "react";
 import { Link } from "@tanstack/react-router";
 import {
-  ArrowRight,
-  ArrowUpRight,
-  Sparkles,
-  FileText,
-  ScanLine,
-  PenLine,
-  MessagesSquare,
-  KanbanSquare,
-  LineChart,
-  Check,
-  Plus,
-  Minus,
-  Star,
-  ChevronDown,
-  Zap,
-  Shield,
-  Rocket,
-  Target,
-  Award,
-  Send,
-  Globe,
-  AtSign,
-  Play,
-  Github,
+  ArrowRight, ArrowUpRight, Sparkles, FileText, ScanLine, PenLine, MessagesSquare,
+  KanbanSquare, LineChart, Check, Plus, Minus, Star,
+  ChevronDown, Zap, Shield, Rocket, Target, Award, Brain,
+  Send, Globe, AtSign, Play, Github
 } from "lucide-react";
 
 import { useAuthStore } from "@/stores/auth-store";
-import { useProfile } from "@/features/profile/api/profile";
-import { useDashboardStats } from "@/features/dashboard/api/dashboard";
 import { useLogout } from "@/features/auth/api/auth";
 
 /* ------------------------------- primitives ------------------------------- */
 
-interface MagneticButtonProps {
-  children: ReactNode;
-  className?: string;
-  variant?: "primary" | "ghost";
-  href?: string;
-  to?: string;
-  onClick?: () => void;
-}
-
 function MagneticButton({
-  children,
-  className = "",
-  variant = "primary",
-  href,
-  to,
-  onClick,
-}: MagneticButtonProps) {
-  const ref = useRef<HTMLElement>(null);
+  children, className = "", variant = "primary", href = "#", to, onClick
+}: { children: ReactNode; className?: string; variant?: "primary" | "ghost"; href?: string; to?: string; onClick?: () => void }) {
+  const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const sx = useSpring(x, { stiffness: 200, damping: 15 });
   const sy = useSpring(y, { stiffness: 200, damping: 15 });
 
-  const onMove = (e: React.MouseEvent<HTMLElement>) => {
-    if (!ref.current) return;
-    const r = ref.current.getBoundingClientRect();
+  const onMove = (e: MouseEvent<HTMLDivElement>) => {
+    const r = ref.current!.getBoundingClientRect();
     x.set((e.clientX - r.left - r.width / 2) * 0.25);
     y.set((e.clientY - r.top - r.height / 2) * 0.25);
   };
-  const onLeave = () => {
-    x.set(0);
-    y.set(0);
-  };
+  const onLeave = () => { x.set(0); y.set(0); };
 
-  const base =
-    "group relative inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold tracking-tight transition-all cursor-pointer select-none";
-  const styles =
-    variant === "primary"
-      ? "text-primary-foreground bg-primary shadow-lg hover:shadow-primary/30 hover:brightness-110"
-      : "text-foreground glass-panel border border-glass-border hover:border-primary/50 hover:bg-muted/40";
-
-  const content = (
-    <>
-      <span className="relative z-10 flex items-center gap-2">{children}</span>
-      {variant === "primary" && (
-        <span className="absolute inset-0 rounded-full opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-70 bg-[linear-gradient(120deg,#6366f1,#a855f7,#22d3ee)]" />
-      )}
-    </>
-  );
-
-  if (onClick) {
-    return (
-      <motion.button
-        ref={ref as unknown as React.RefObject<HTMLButtonElement | null>}
-        onClick={onClick}
-        onMouseMove={onMove}
-        onMouseLeave={onLeave}
-        style={{ x: sx, y: sy }}
-        className={`${base} ${styles} ${className} border-none bg-transparent`}
-      >
-        {content}
-      </motion.button>
-    );
-  }
+  const base = "group relative inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium tracking-tight transition-colors cursor-pointer";
+  const styles = variant === "primary"
+    ? "text-white shadow-[0_10px_40px_-10px_rgba(120,90,255,0.6)] bg-[linear-gradient(120deg,#6366f1,#a855f7_60%,#22d3ee)]"
+    : "text-white/90 glass hover:text-white border border-white/10 bg-white/5";
 
   if (to) {
     return (
-      <motion.span style={{ x: sx, y: sy }} className="inline-block">
-        <Link
-          ref={ref as unknown as React.RefObject<HTMLAnchorElement | null>}
-          to={to}
-          onMouseMove={onMove}
-          onMouseLeave={onLeave}
-          className={`${base} ${styles} ${className}`}
-        >
-          {content}
+      <motion.div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} style={{ x: sx, y: sy }} className="inline-block">
+        <Link to={to} className={`${base} ${styles} ${className}`}>
+          <span className="relative z-10 flex items-center gap-2">{children}</span>
+          {variant === "primary" && (
+            <span className="absolute inset-0 rounded-full opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-70 bg-[linear-gradient(120deg,#6366f1,#a855f7,#22d3ee)]" />
+          )}
         </Link>
-      </motion.span>
+      </motion.div>
     );
   }
 
   return (
-    <motion.a
-      ref={ref as unknown as React.RefObject<HTMLAnchorElement | null>}
-      href={href}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-      style={{ x: sx, y: sy }}
-      className={`${base} ${styles} ${className}`}
-    >
-      {content}
-    </motion.a>
+    <motion.div ref={ref} onMouseMove={onMove} onMouseLeave={onLeave} style={{ x: sx, y: sy }} className="inline-block">
+      <a href={href} onClick={onClick} className={`${base} ${styles} ${className}`}>
+        <span className="relative z-10 flex items-center gap-2">{children}</span>
+        {variant === "primary" && (
+          <span className="absolute inset-0 rounded-full opacity-0 blur-xl transition-opacity duration-300 group-hover:opacity-70 bg-[linear-gradient(120deg,#6366f1,#a855f7,#22d3ee)]" />
+        )}
+      </a>
+    </motion.div>
   );
 }
 
-function SectionEyebrow({
-  icon: Icon,
-  children,
-}: {
-  icon: ComponentType<{ className?: string }>;
-  children: ReactNode;
-}) {
+function SectionEyebrow({ icon: Icon, children }: { icon: any; children: ReactNode }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full glass px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary border border-glass-border shadow-sm">
-      <Icon className="h-3.5 w-3.5 text-primary" />
+    <div className="inline-flex items-center gap-2 rounded-full glass border border-white/10 px-3 py-1.5 text-xs uppercase tracking-[0.18em] text-white/70">
+      <Icon className="h-3.5 w-3.5 text-cyan-300" />
       {children}
     </div>
   );
 }
 
-function FadeIn({
-  children,
-  delay = 0,
-  y = 24,
-}: {
-  children: ReactNode;
-  delay?: number;
-  y?: number;
-}) {
+function FadeIn({ children, delay = 0, y = 24 }: { children: ReactNode; delay?: number; y?: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y }}
@@ -190,14 +88,8 @@ function Aurora() {
   return (
     <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
       <div className="absolute -left-1/3 -top-1/3 h-[80vh] w-[80vh] rounded-full bg-[radial-gradient(circle_at_center,#4f46e5_0%,transparent_60%)] opacity-40 blur-3xl animate-aurora" />
-      <div
-        className="absolute -right-1/4 top-1/4 h-[70vh] w-[70vh] rounded-full bg-[radial-gradient(circle_at_center,#a855f7_0%,transparent_60%)] opacity-30 blur-3xl animate-aurora"
-        style={{ animationDelay: "-6s" }}
-      />
-      <div
-        className="absolute bottom-0 left-1/3 h-[60vh] w-[60vh] rounded-full bg-[radial-gradient(circle_at_center,#22d3ee_0%,transparent_60%)] opacity-20 blur-3xl animate-aurora"
-        style={{ animationDelay: "-12s" }}
-      />
+      <div className="absolute -right-1/4 top-1/4 h-[70vh] w-[70vh] rounded-full bg-[radial-gradient(circle_at_center,#a855f7_0%,transparent_60%)] opacity-30 blur-3xl animate-aurora" style={{ animationDelay: "-6s" }} />
+      <div className="absolute bottom-0 left-1/3 h-[60vh] w-[60vh] rounded-full bg-[radial-gradient(circle_at_center,#22d3ee_0%,transparent_60%)] opacity-20 blur-3xl animate-aurora" style={{ animationDelay: "-12s" }} />
       <div className="absolute inset-0 grid-bg opacity-40" />
     </div>
   );
@@ -205,9 +97,8 @@ function Aurora() {
 
 function Nav() {
   const [scrolled, setScrolled] = useState(false);
-  const { token } = useAuthStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const logoutMutation = useLogout();
-  const isAuthenticated = !!token;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -218,56 +109,42 @@ function Nav() {
 
   return (
     <motion.header
-      initial={{ y: -30, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
       className="fixed inset-x-0 top-4 z-50 flex justify-center px-4"
     >
-      <nav
-        className={`flex w-full max-w-6xl items-center justify-between rounded-full px-4 py-2.5 transition-all duration-500 ${scrolled ? "glass-strong" : "glass"}`}
-      >
+      <nav className={`flex w-full max-w-6xl items-center justify-between rounded-full px-4 py-2.5 transition-all duration-500 border border-white/10 ${scrolled ? "glass-strong backdrop-blur-xl bg-black/60 shadow-2xl" : "glass backdrop-blur-md bg-black/30"}`}>
         <Link to="/" className="flex items-center gap-2 pl-2">
-          <div className="relative h-7 w-7 rounded-lg bg-[linear-gradient(135deg,#22d3ee,#6366f1,#a855f7)] shadow-[0_0_20px_rgba(120,90,255,0.5)]">
-            <div className="absolute inset-[3px] rounded-md bg-background flex items-center justify-center">
-              <span className="font-display text-sm leading-none text-primary">C</span>
+          <div className="relative h-8 w-8 rounded-lg bg-[linear-gradient(135deg,#22d3ee,#6366f1,#a855f7)] shadow-[0_0_20px_rgba(120,90,255,0.5)]">
+            <div className="absolute inset-[2px] rounded-md bg-black/80 flex items-center justify-center">
+              <span className="font-display text-base font-bold text-white">C</span>
             </div>
           </div>
-          <span className="text-sm font-semibold tracking-tight text-foreground">CareerForge</span>
+          <span className="text-base font-bold tracking-tight text-white">CareerForge</span>
         </Link>
-        <div className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
-          {["Features", "FAQ"].map((l) => (
-            <a key={l} href={`#${l.toLowerCase()}`} className="transition hover:text-foreground">
-              {l}
-            </a>
+
+        <div className="hidden items-center gap-7 text-sm text-white/70 md:flex">
+          {["Product", "Features", "Pricing", "FAQ"].map((l) => (
+            <a key={l} href={`#${l.toLowerCase()}`} className="transition hover:text-white">{l}</a>
           ))}
         </div>
+
         <div className="flex items-center gap-2">
           {isAuthenticated ? (
             <>
-              <Link
-                to="/dashboard"
-                className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline-block"
-              >
+              <Link to="/dashboard" className="hidden text-sm text-white/70 hover:text-white sm:inline-block mr-2 font-medium">
                 Dashboard
               </Link>
-              <MagneticButton
-                onClick={() => logoutMutation.mutate()}
-                className="!px-4 !py-2 text-xs"
-              >
+              <MagneticButton onClick={() => logoutMutation.mutate()} variant="ghost" className="!px-4 !py-2 text-xs">
                 Sign out
               </MagneticButton>
             </>
           ) : (
             <>
-              <Link
-                to="/auth/login"
-                className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline-block mr-2"
-              >
+              <Link to="/auth/login" className="hidden text-sm text-white/70 hover:text-white sm:inline-block mr-2 font-medium">
                 Sign in
               </Link>
               <MagneticButton to="/auth/signup" className="!px-4 !py-2 text-xs">
-                Get started
-                <ArrowRight className="h-3.5 w-3.5" />
+                Get started <ArrowRight className="h-3.5 w-3.5" />
               </MagneticButton>
             </>
           )}
@@ -292,13 +169,7 @@ function Particles() {
           <motion.span
             key={i}
             className="absolute rounded-full bg-white/60"
-            style={{
-              left: `${left}%`,
-              top: `${top}%`,
-              width: size,
-              height: size,
-              filter: "blur(0.5px)",
-            }}
+            style={{ left: `${left}%`, top: `${top}%`, width: size, height: size, filter: "blur(0.5px)" }}
             animate={{ y: [0, -30, 0], opacity: [0.2, 0.9, 0.2] }}
             transition={{ duration: dur, repeat: Infinity, ease: "easeInOut", delay: i * 0.15 }}
           />
@@ -313,12 +184,6 @@ function ResumeMockup({ variant = "hero" }: { variant?: "hero" | "small" }) {
   const ry = useMotionValue(0);
   const srx = useSpring(rx, { stiffness: 120, damping: 12 });
   const sry = useSpring(ry, { stiffness: 120, damping: 12 });
-
-  const { token } = useAuthStore();
-  const isAuthenticated = !!token;
-  const { data: profile } = useProfile();
-  const { data: stats } = useDashboardStats();
-
   const onMove = (e: MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     const px = (e.clientX - r.left) / r.width - 0.5;
@@ -326,67 +191,43 @@ function ResumeMockup({ variant = "hero" }: { variant?: "hero" | "small" }) {
     ry.set(px * 14);
     rx.set(-py * 14);
   };
-  const onLeave = () => {
-    rx.set(0);
-    ry.set(0);
-  };
-
-  // Pull dynamic metrics or fall back to default
-  const name = isAuthenticated && profile?.fullName ? profile.fullName : "Alex Chen";
-  const role =
-    isAuthenticated && profile?.experiences?.[0]?.role
-      ? profile.experiences[0].role
-      : "2nd Year CS Student · UEM";
-  const score =
-    isAuthenticated && ((stats as any)?.atsAverageScore !== undefined || (stats as any)?.averageAtsScore !== undefined)
-      ? ((stats as any).atsAverageScore ?? (stats as any).averageAtsScore)
-      : 96;
-  const skills =
-    isAuthenticated && profile?.skills?.length
-      ? profile.skills.slice(0, 6)
-      : ["Figma", "React", "Design Systems", "AI/ML", "Prototyping", "User Research"];
+  const onLeave = () => { rx.set(0); ry.set(0); };
 
   return (
     <motion.div
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
+      onMouseMove={onMove} onMouseLeave={onLeave}
       style={{ rotateX: srx, rotateY: sry, transformPerspective: 1200 }}
       className={`relative mx-auto ${variant === "hero" ? "w-full max-w-[560px]" : "w-full max-w-[420px]"}`}
     >
       <div className="absolute -inset-8 rounded-[40px] bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.35),transparent_60%)] blur-2xl" />
-      <div className="relative rounded-3xl glass-panel shadow-2xl p-6 text-left border border-glass-border">
-        <div className="flex items-center justify-between border-b border-glass-border pb-4">
+      <div className="relative rounded-3xl border border-white/15 bg-black/60 backdrop-blur-xl p-6 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-white/10 pb-4">
           <div>
-            <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">Resume · live</div>
-            <div className="mt-1 font-display text-xl text-foreground font-bold">{name}</div>
-            <div className="text-xs text-muted-foreground">{role}</div>
+            <div className="text-[10px] uppercase tracking-widest text-white/50">Resume · v3.2</div>
+            <div className="mt-1 font-display text-xl font-bold text-white">Luqman (Website Owner & Builder)</div>
+            <div className="text-xs text-cyan-300 font-medium">2nd Year Computer Science Student at UEM</div>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">
-              ATS Score
-            </div>
-            <div className="text-2xl font-bold text-primary">{score}%</div>
+            <div className="text-[10px] uppercase tracking-widest text-emerald-300/80">ATS Score</div>
+            <div className="text-2xl font-bold text-transparent bg-clip-text bg-[linear-gradient(120deg,#22d3ee,#a855f7)]">96</div>
           </div>
         </div>
 
         <div className="mt-4 space-y-3">
           {[
-            { label: "Experience", w: isAuthenticated ? "90%" : "92%" },
-            { label: "Skills", w: isAuthenticated ? "85%" : "88%" },
-            { label: "Keywords", w: `${score}%` },
+            { label: "Experience", w: "92%" },
+            { label: "Skills", w: "88%" },
+            { label: "Keywords", w: "96%" },
           ].map((row, i) => (
             <div key={row.label}>
-              <div className="mb-1 flex justify-between text-[10px] uppercase tracking-widest text-muted-foreground font-medium">
-                <span>{row.label}</span>
-                <span>{row.w}</span>
+              <div className="mb-1 flex justify-between text-[10px] uppercase tracking-widest text-white/50">
+                <span>{row.label}</span><span>{row.w}</span>
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-muted/40">
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                 <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: row.w }}
-                  viewport={{ once: true }}
+                  initial={{ width: 0 }} whileInView={{ width: row.w }} viewport={{ once: true }}
                   transition={{ duration: 1.2, delay: 0.2 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
-                  className="h-full rounded-full bg-primary"
+                  className="h-full rounded-full bg-[linear-gradient(90deg,#22d3ee,#6366f1,#a855f7)]"
                 />
               </div>
             </div>
@@ -394,26 +235,23 @@ function ResumeMockup({ variant = "hero" }: { variant?: "hero" | "small" }) {
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-2">
-          {skills.map((t, i) => (
+          {["React", "TypeScript", "Node.js", "Python", "Design Systems", "AI/ML"].map((t, i) => (
             <motion.div
               key={t}
-              initial={{ opacity: 0, y: 8 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
               transition={{ delay: 0.3 + i * 0.05 }}
-              className="rounded-lg border border-glass-border bg-card/50 px-2.5 py-1.5 text-[11px] text-foreground font-medium flex items-center justify-between"
+              className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1.5 text-[11px] text-white/80"
             >
-              <span>{t}</span>
-              <Check className="h-3 w-3 text-emerald-400" />
+              {t}
             </motion.div>
           ))}
         </div>
 
         <div className="mt-5 flex items-center justify-between rounded-2xl border border-emerald-400/20 bg-emerald-400/5 px-3 py-2.5">
-          <div className="flex items-center gap-2 text-xs text-emerald-200">
-            <Check className="h-3.5 w-3.5" /> Checked & Optimized
+          <div className="flex items-center gap-2 text-xs text-emerald-200 font-medium">
+            <Check className="h-3.5 w-3.5" /> Built for UEM Student Projects & Tech Careers
           </div>
-          <div className="text-[10px] text-emerald-300/70">Sync</div>
+          <div className="text-[10px] font-bold text-emerald-300">Verified</div>
         </div>
       </div>
     </motion.div>
@@ -425,115 +263,51 @@ function Hero() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const y = useTransform(scrollYProgress, [0, 1], [0, 120]);
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-  const { token } = useAuthStore();
-  const isAuthenticated = !!token;
 
   return (
-    <section
-      ref={ref}
-      className="relative flex min-h-[100svh] items-center overflow-hidden pt-32 pb-16"
-    >
+    <section ref={ref} className="relative flex min-h-[100svh] items-center overflow-hidden pt-32 pb-16">
       <Particles />
-      <motion.div
-        style={{ y, opacity }}
-        className="relative mx-auto grid w-full max-w-7xl gap-14 px-6 lg:grid-cols-12 lg:items-center"
-      >
-        <div className="lg:col-span-6 text-left">
+      <motion.div style={{ y, opacity }} className="relative mx-auto grid w-full max-w-7xl gap-14 px-6 lg:grid-cols-12 lg:items-center">
+        <div className="lg:col-span-6">
           <FadeIn>
             <SectionEyebrow icon={Sparkles}>Introducing CareerForge 2.0</SectionEyebrow>
           </FadeIn>
           <FadeIn delay={0.1}>
-            <h1 className="mt-6 font-display text-[clamp(2.8rem,7vw,5.5rem)] leading-[0.98] tracking-tight text-foreground">
+            <h1 className="mt-6 font-display text-[clamp(2.8rem,7vw,5.5rem)] font-extrabold leading-[0.98] tracking-tight text-white">
               Forge Your Career
               <br />
-              <span className="text-gradient-primary italic">With AI</span>
+              <span className="text-transparent bg-clip-text bg-[linear-gradient(120deg,#22d3ee,#6366f1_50%,#a855f7)] italic">With AI</span>
             </h1>
           </FadeIn>
           <FadeIn delay={0.2}>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-              The career operating system that writes ATS-ready resumes, crafts tailored cover
-              letters, coaches you through interviews, and tracks every opportunity — so you land
-              the offer.
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/70">
+              The career operating system that writes ATS-ready resumes, crafts tailored cover letters,
+              coaches you through mock interviews, and tracks every job application — so you land the offer.
             </p>
           </FadeIn>
           <FadeIn delay={0.35}>
             <div className="mt-8 flex flex-wrap items-center gap-3">
-              {isAuthenticated ? (
-                <MagneticButton to="/dashboard">
-                  Go to Dashboard
-                  <ArrowRight className="h-4 w-4" />
-                </MagneticButton>
-              ) : (
-                <MagneticButton to="/auth/signup">
-                  Get started for free
-                  <ArrowRight className="h-4 w-4" />
-                </MagneticButton>
-              )}
-              <MagneticButton href="#features" variant="ghost">
-                Explore Features
-              </MagneticButton>
+              <MagneticButton to="/auth/signup">Start free trial <ArrowRight className="h-4 w-4" /></MagneticButton>
+              <MagneticButton href="#story" variant="ghost">Watch the story</MagneticButton>
             </div>
           </FadeIn>
           <FadeIn delay={0.5}>
             <div className="mt-10 flex items-center gap-6 text-xs text-white/50">
-              <div className="flex items-center gap-1.5">
-                <Shield className="h-4 w-4 text-cyan-400" />
-                <span>Secure & Private Data</span>
-              </div>
-              <div className="h-4 w-px bg-white/15" />
-              <div>100% Free & Open Source</div>
+              <div className="flex items-center gap-1.5">{Array.from({ length: 5 }).map((_, i) => <Star key={i} className="h-3.5 w-3.5 fill-amber-300 text-amber-300" />)}<span className="ml-1 text-white/80 font-medium">4.9 · Built by Luqman</span></div>
+              <div className="hidden h-4 w-px bg-white/15 sm:block" />
+              <div className="hidden sm:block text-white/70 font-medium">UEM CS Student Project</div>
             </div>
           </FadeIn>
         </div>
 
-        <div className="lg:col-span-6 relative">
-          <motion.div
-            animate={{ y: [0, -12, 0] }}
-            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          >
+        <div className="lg:col-span-6">
+          <motion.div animate={{ y: [0, -14, 0] }} transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}>
             <ResumeMockup />
-          </motion.div>
-
-          {/* Floating ATS Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, x: 20 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            transition={{ delay: 0.6, duration: 0.5 }}
-            className="absolute -top-4 -right-4 glass-panel border border-glass-border p-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md hidden sm:flex"
-          >
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm">
-              96%
-            </div>
-            <div>
-              <div className="text-xs font-bold text-foreground">ATS Match Gauge</div>
-              <div className="text-[10px] text-emerald-400 font-medium">Top 5% candidate match</div>
-            </div>
-          </motion.div>
-
-          {/* Floating STAR AI Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, x: -20 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            transition={{ delay: 0.8, duration: 0.5 }}
-            className="absolute -bottom-6 -left-4 glass-panel border border-glass-border p-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-md hidden sm:flex"
-          >
-            <div className="h-10 w-10 rounded-xl bg-primary/20 text-primary flex items-center justify-center">
-              <Zap className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-foreground">STAR AI Bullet Optimizer</div>
-              <div className="text-[10px] text-muted-foreground font-medium">Auto-tailored for job role</div>
-            </div>
           </motion.div>
         </div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.3em] text-white/40"
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.4 }} className="absolute bottom-8 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.3em] text-white/40">
         <div className="flex flex-col items-center gap-2">
           <span>Scroll to explore</span>
           <motion.span animate={{ y: [0, 8, 0] }} transition={{ duration: 2, repeat: Infinity }}>
@@ -545,56 +319,132 @@ function Hero() {
   );
 }
 
+/* -------------------------- 2. sticky ATS story --------------------------- */
+
+const atsSteps = [
+  { title: "Blank canvas", desc: "Start from zero — or drop in an existing resume. CareerForge sees every gap.", tag: "Step 01", score: 12 },
+  { title: "Parsing your story", desc: "We extract every role, skill, and achievement into structured, editable blocks.", tag: "Step 02", score: 42 },
+  { title: "Matching the job", desc: "Semantic analysis maps your history to the exact keywords recruiters search for.", tag: "Step 03", score: 71 },
+  { title: "Optimized for ATS", desc: "Beautifully formatted, keyword-perfect, ready to pass every applicant tracking system.", tag: "Step 04", score: 96 },
+];
+
+function StickyATS() {
+  const ref = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end end"] });
+  const [active, setActive] = useState(0);
+  useMotionValueEvent(scrollYProgress, "change", (v) => {
+    const idx = Math.min(atsSteps.length - 1, Math.floor(v * atsSteps.length));
+    setActive(idx);
+  });
+  const step = atsSteps[active];
+
+  return (
+    <section id="story" ref={ref} className="relative" style={{ height: "380vh" }}>
+      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+        <div className="mx-auto grid w-full max-w-7xl gap-10 px-6 lg:grid-cols-12 lg:items-center">
+          <div className="lg:col-span-5">
+            <SectionEyebrow icon={ScanLine}>ATS Optimization</SectionEyebrow>
+            <div className="mt-6 flex items-center gap-3 text-xs uppercase tracking-widest text-white/50">
+              <span className="text-white/80 font-bold">{step.tag}</span>
+              <div className="h-px w-16 bg-white/15" />
+              <span>{active + 1} / {atsSteps.length}</span>
+            </div>
+            <AnimatePresence mode="wait">
+              <motion.div key={active} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                <h2 className="mt-4 font-display text-5xl font-bold leading-[1.05] tracking-tight text-white md:text-6xl">{step.title}</h2>
+                <p className="mt-5 max-w-md text-lg text-white/70">{step.desc}</p>
+              </motion.div>
+            </AnimatePresence>
+            <div className="mt-8">
+              <div className="mb-2 flex items-baseline justify-between text-xs uppercase tracking-widest text-white/50">
+                <span>ATS Score</span><span className="text-white font-bold">{step.score}/100</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                <motion.div animate={{ width: `${step.score}%` }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} className="h-full rounded-full bg-[linear-gradient(90deg,#22d3ee,#6366f1,#a855f7)]" />
+              </div>
+            </div>
+            <div className="mt-8">
+              <MagneticButton to="/ats" variant="ghost">Try ATS Scanner <ArrowUpRight className="h-4 w-4" /></MagneticButton>
+            </div>
+          </div>
+
+          <div className="lg:col-span-7">
+            <div className="relative">
+              <div className="absolute -inset-10 rounded-[48px] bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.35),transparent_65%)] blur-3xl" />
+              <div className="relative aspect-[4/5] w-full rounded-3xl border border-white/15 bg-black/60 backdrop-blur-xl p-6 shadow-2xl">
+                <div className="flex items-center justify-between border-b border-white/10 pb-3 text-xs text-white/50">
+                  <span>resume.pdf</span>
+                  <span className="rounded-full bg-emerald-500/20 text-emerald-300 px-2 py-0.5 text-[10px] font-bold">Live scan</span>
+                </div>
+
+                <div className="mt-5 space-y-2">
+                  {Array.from({ length: 14 }).map((_, i) => {
+                    const filled = i / 14 < active / (atsSteps.length - 1) + 0.15;
+                    const highlight = active >= 2 && (i === 2 || i === 6 || i === 10);
+                    return (
+                      <motion.div
+                        key={i}
+                        animate={{ opacity: filled ? 1 : 0.15, scaleX: filled ? 1 : 0.4 }}
+                        transition={{ duration: 0.6, delay: i * 0.02 }}
+                        style={{ transformOrigin: "left" }}
+                        className={`h-2.5 rounded ${highlight ? "bg-[linear-gradient(90deg,#22d3ee,#a855f7)]" : "bg-white/25"}`}
+                      />
+                    );
+                  })}
+                </div>
+
+                <AnimatePresence>
+                  {active >= 2 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                      className="mt-6 grid grid-cols-3 gap-2"
+                    >
+                      {["React", "TypeScript", "Systems", "Leadership", "Growth", "0-to-1"].map((k, i) => (
+                        <motion.div key={k} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: i * 0.06 }} className="rounded-lg border border-cyan-300/20 bg-cyan-300/5 px-2.5 py-1.5 text-center text-[11px] font-medium text-cyan-100">
+                          {k}
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <motion.div
+                  aria-hidden
+                  animate={{ y: ["0%", "100%", "0%"] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="pointer-events-none absolute inset-x-6 top-16 h-16 rounded-3xl bg-[linear-gradient(180deg,transparent,rgba(34,211,238,0.3),transparent)] blur-md"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* --------------------------- 3. Resume Builder ---------------------------- */
 
 function ResumeBuilder() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
   const sections = ["Header", "Experience", "Skills", "Projects"];
-  const { token } = useAuthStore();
-  const isAuthenticated = !!token;
-
   return (
     <section ref={ref} className="relative py-32">
       <div className="mx-auto grid w-full max-w-7xl gap-14 px-6 lg:grid-cols-12">
-        <div className="lg:col-span-5 lg:sticky lg:top-32 lg:self-start text-left">
+        <div className="lg:col-span-5 lg:sticky lg:top-32 lg:self-start">
           <SectionEyebrow icon={FileText}>Resume Builder</SectionEyebrow>
-          <FadeIn>
-            <h2 className="mt-6 font-display text-5xl leading-tight tracking-tight text-white md:text-6xl">
-              A resume that <span className="text-gradient italic">writes itself</span>.
-            </h2>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <p className="mt-5 max-w-md text-lg text-white/70">
-              Every section expands as you scroll — experience, skills, and projects. Each
-              block animates in with AI-suggested content you can edit in one click.
-            </p>
-          </FadeIn>
-          <FadeIn delay={0.2}>
-            <div className="mt-8">
-              <MagneticButton to={isAuthenticated ? "/resumes" : "/auth/signup"}>
-                Open Resume Builder
-                <ArrowRight className="h-4 w-4" />
-              </MagneticButton>
-            </div>
-          </FadeIn>
+          <FadeIn><h2 className="mt-6 font-display text-5xl font-extrabold leading-tight tracking-tight text-white md:text-6xl">A resume that <span className="text-transparent bg-clip-text bg-[linear-gradient(120deg,#22d3ee,#a855f7)] italic">writes itself</span>.</h2></FadeIn>
+          <FadeIn delay={0.1}><p className="mt-5 max-w-md text-lg text-white/70">Every section expands as you scroll — experience, skills, projects. Each block animates in with AI-suggested content you can edit in one click.</p></FadeIn>
+          <FadeIn delay={0.2}><div className="mt-8"><MagneticButton to="/resumes">Open Resume Builder <ArrowRight className="h-4 w-4" /></MagneticButton></div></FadeIn>
         </div>
 
-        <div className="lg:col-span-7 text-left">
+        <div className="lg:col-span-7">
           <div className="space-y-4">
             {sections.map((s, i) => {
               const start = i / sections.length;
               const end = (i + 1) / sections.length;
-              return (
-                <BuilderBlock
-                  key={s}
-                  title={s}
-                  index={i}
-                  progress={scrollYProgress}
-                  start={start}
-                  end={end}
-                />
-              );
+              return <BuilderBlock key={s} title={s} index={i} progress={scrollYProgress} start={start} end={end} />;
             })}
           </div>
         </div>
@@ -603,137 +453,57 @@ function ResumeBuilder() {
   );
 }
 
-interface BuilderBlockProps {
-  title: string;
-  index: number;
-  progress: MotionValue<number>;
-  start: number;
-  end: number;
-}
-
-function BuilderBlock({ title, index, progress, start, end }: BuilderBlockProps) {
+function BuilderBlock({ title, index, progress, start, end }: any) {
   const opacity = useTransform(progress, [start, start + 0.05, end], [0.3, 1, 1]);
   const yy = useTransform(progress, [start, end], [40, 0]);
   const scale = useTransform(progress, [start, start + 0.1], [0.96, 1]);
-
-  const { token } = useAuthStore();
-  const isAuthenticated = !!token;
-  const { data: profile } = useProfile();
-  const name = isAuthenticated && profile?.fullName ? profile.fullName : "Alex Chen";
-  const location = isAuthenticated && profile?.location ? profile.location : "San Francisco";
-  const email = isAuthenticated && profile?.email ? profile.email : "alex@forge.co";
-
   const content: Record<string, ReactNode> = {
     Header: (
       <div className="flex items-center justify-between">
         <div>
-          <div className="font-display text-2xl text-foreground font-bold">{name}</div>
-          <div className="text-sm text-primary font-medium">2nd Year CS Student · {location === "San Francisco" ? "University of Engineering and Management (UEM)" : location}</div>
+          <div className="font-display text-2xl font-bold text-white">Luqman (Website Owner & Builder)</div>
+          <div className="text-sm text-cyan-300">2nd Year Computer Science Student · UEM</div>
         </div>
-        <div className="text-right text-xs text-muted-foreground font-mono">
-          <div>{email}</div>
-          <div className="mt-0.5 text-[10px] text-emerald-400 font-semibold">Still Learning & Building</div>
-        </div>
+        <div className="text-right text-xs text-white/60"><div>luqmxn07@gmail.com</div><div>github.com/luqmxn07</div></div>
       </div>
     ),
     Experience: (
       <div className="space-y-3">
-        {isAuthenticated && profile?.experiences?.length
-          ? profile.experiences.slice(0, 2).map((e, idx) => (
-              <div
-                key={idx}
-                className="flex items-start justify-between border-l-2 border-primary/50 pl-4"
-              >
-                <div>
-                  <div className="text-foreground font-semibold">{e.role}</div>
-                  <div className="text-sm text-muted-foreground">{e.company}</div>
-                </div>
-                <div className="text-xs text-muted-foreground font-mono">
-                  {e.startDate || "2024"} — {e.endDate || "Present"}
-                </div>
-              </div>
-            ))
-          : [
-              { c: "University of Engineering and Management (UEM)", r: "2nd Year Computer Science Student", y: "2024 — Present" },
-              { c: "Building AI & Web Applications", r: "Software Engineering Learner", y: "2024 — Present" },
-            ].map((e) => (
-              <div
-                key={e.c}
-                className="flex items-start justify-between border-l-2 border-primary/50 pl-4"
-              >
-                <div>
-                  <div className="text-foreground font-semibold">{e.r}</div>
-                  <div className="text-sm text-muted-foreground">{e.c}</div>
-                </div>
-                <div className="text-xs text-muted-foreground font-mono">{e.y}</div>
-              </div>
-            ))}
+        {[
+          { c: "University of Engineering and Management (UEM)", r: "2nd Year Computer Science Student", y: "2024 — Present" },
+          { c: "CareerForge Platform", r: "Full-Stack AI Lead & Architect", y: "2025 — Present" },
+        ].map((e) => (
+          <div key={e.c} className="flex items-start justify-between border-l-2 border-cyan-400/40 pl-4">
+            <div><div className="text-white font-semibold">{e.r}</div><div className="text-sm text-white/60">{e.c}</div></div>
+            <div className="text-xs text-white/50">{e.y}</div>
+          </div>
+        ))}
       </div>
     ),
     Skills: (
       <div className="flex flex-wrap gap-2">
-        {(isAuthenticated && profile?.skills?.length
-          ? profile.skills.slice(0, 8)
-          : [
-              "Design Systems",
-              "Motion",
-              "AI/UX",
-              "React",
-              "Prototyping",
-              "Figma",
-              "Research",
-              "Strategy",
-            ]
-        ).map((k) => (
-          <div
-            key={k}
-            className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-white/80"
-          >
-            {k}
-          </div>
+        {["TypeScript", "React", "Node.js", "Python", "Tailwind CSS", "PostgreSQL", "Docker", "Git"].map((k) => (
+          <div key={k} className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs text-white/80">{k}</div>
         ))}
       </div>
     ),
     Projects: (
       <div className="grid grid-cols-2 gap-3">
-        {[
-          { t: "Core Application v2", m: "Optimized parsing" },
-          { t: "Interface Redesign", m: "Custom layouts" },
-        ].map((p) => (
+        {[{ t: "CareerForge AI Ecosystem", m: "Full Stack Monorepo" }, { t: "OmniRoute Integration", m: "AI Gateway Engine" }].map((p) => (
           <div key={p.t} className="rounded-xl border border-white/10 bg-white/5 p-3">
-            <div className="text-sm text-white">{p.t}</div>
+            <div className="text-sm font-semibold text-white">{p.t}</div>
             <div className="mt-1 text-xs text-cyan-200/80">{p.m}</div>
           </div>
         ))}
       </div>
-    ),
-    Achievements: (
-      <div className="space-y-2">
-        {[
-          "Verified ATS Compliance",
-          "Visual Architect Portfolio",
-          "System Engineering Certification",
-        ].map((a) => (
-          <div key={a} className="flex items-center gap-2 text-sm text-white/80">
-            <Award className="h-4 w-4 text-amber-300" />
-            {a}
-          </div>
-        ))}
-      </div>
-    ),
+    )
   };
+
   return (
-    <motion.div style={{ opacity, y: yy, scale }} className="rounded-3xl glass p-6">
+    <motion.div style={{ opacity, y: yy, scale }} className="rounded-3xl border border-white/15 bg-black/60 backdrop-blur-xl p-6 shadow-xl">
       <div className="mb-4 flex items-center justify-between">
-        <div className="text-[10px] uppercase tracking-widest text-white/50">
-          0{index + 1} · {title}
-        </div>
-        <div className="h-1 w-16 overflow-hidden rounded-full bg-white/10">
-          <motion.div
-            style={{ width: useTransform(progress, [start, end], ["0%", "100%"]) }}
-            className="h-full bg-[linear-gradient(90deg,#22d3ee,#a855f7)]"
-          />
-        </div>
+        <div className="text-[10px] font-bold uppercase tracking-widest text-cyan-300">0{index + 1} · {title}</div>
+        <div className="h-1 w-16 overflow-hidden rounded-full bg-white/10"><motion.div style={{ width: useTransform(progress, [start, end], ["0%", "100%"]) }} className="h-full bg-[linear-gradient(90deg,#22d3ee,#a855f7)]" /></div>
       </div>
       {content[title]}
     </motion.div>
@@ -743,67 +513,39 @@ function BuilderBlock({ title, index, progress, start, end }: BuilderBlockProps)
 /* ---------------------------- 4. ATS Scanner ----------------------------- */
 
 function ATSScanner() {
-  const { token } = useAuthStore();
-  const isAuthenticated = !!token;
-  const { data: stats } = useDashboardStats();
-
-  const score =
-    isAuthenticated && ((stats as any)?.atsAverageScore !== undefined || (stats as any)?.averageAtsScore !== undefined)
-      ? ((stats as any).atsAverageScore ?? (stats as any).averageAtsScore)
-      : 96;
-
   return (
     <section className="relative py-32">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-2xl text-center">
           <SectionEyebrow icon={ScanLine}>ATS Scanner</SectionEyebrow>
-          <FadeIn>
-            <h2 className="mt-6 font-display text-5xl leading-tight tracking-tight text-white md:text-6xl">
-              See exactly what recruiters see.
-            </h2>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <p className="mt-5 text-lg text-white/70">
-              Paste any job description. We scan your resume against 200+ ATS signals in seconds.
-            </p>
-          </FadeIn>
+          <FadeIn><h2 className="mt-6 font-display text-5xl font-bold leading-tight tracking-tight text-white md:text-6xl">See exactly what recruiters see.</h2></FadeIn>
+          <FadeIn delay={0.1}><p className="mt-5 text-lg text-white/70">Paste any job description. We scan your resume against 200+ ATS signals in seconds.</p></FadeIn>
         </div>
 
         <FadeIn delay={0.2}>
           <div className="relative mx-auto mt-14 max-w-5xl">
             <div className="absolute -inset-8 rounded-[48px] bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.28),transparent_70%)] blur-3xl" />
-            <div className="relative grid overflow-hidden rounded-3xl glass-strong glow-blue md:grid-cols-2 text-left">
+            <div className="relative grid overflow-hidden rounded-3xl border border-white/15 bg-black/60 backdrop-blur-xl shadow-2xl md:grid-cols-2">
               {/* Before */}
               <div className="border-b border-white/10 p-8 md:border-b-0 md:border-r">
                 <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-widest text-white/50">
-                  <span>Before Optimization</span>
-                  <span className="text-rose-300">42 / 100</span>
+                  <span>Before</span><span className="text-rose-300 font-bold">42 / 100</span>
                 </div>
                 <div className="space-y-2">
                   {Array.from({ length: 8 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="h-2 rounded bg-white/10"
-                      style={{ width: `${60 + ((i * 5) % 40)}%` }}
-                    />
+                    <div key={i} className="h-2 rounded bg-white/10" style={{ width: `${60 + (i * 5) % 40}%` }} />
                   ))}
                 </div>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {["missing: React", "missing: TypeScript", "weak verbs"].map((t) => (
-                    <span
-                      key={t}
-                      className="rounded-full border border-rose-300/30 bg-rose-300/10 px-2 py-0.5 text-[10px] text-rose-200"
-                    >
-                      {t}
-                    </span>
+                    <span key={t} className="rounded-full border border-rose-300/30 bg-rose-300/10 px-2 py-0.5 text-[10px] text-rose-200">{t}</span>
                   ))}
                 </div>
               </div>
               {/* After */}
               <div className="relative p-8">
                 <div className="mb-3 flex items-center justify-between text-xs uppercase tracking-widest text-white/50">
-                  <span>After Optimization</span>
-                  <span className="text-emerald-300">{score} / 100</span>
+                  <span>After</span><span className="text-emerald-300 font-bold">96 / 100</span>
                 </div>
                 <div className="space-y-2">
                   {Array.from({ length: 8 }).map((_, i) => {
@@ -811,11 +553,9 @@ function ATSScanner() {
                     return (
                       <motion.div
                         key={i}
-                        initial={{ scaleX: 0 }}
-                        whileInView={{ scaleX: 1 }}
-                        viewport={{ once: true }}
+                        initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }}
                         transition={{ delay: i * 0.08, duration: 0.6 }}
-                        style={{ transformOrigin: "left", width: `${75 + ((i * 7) % 25)}%` }}
+                        style={{ transformOrigin: "left", width: `${75 + (i * 7) % 25}%` }}
                         className={`h-2 rounded ${hl ? "bg-[linear-gradient(90deg,#22d3ee,#a855f7)]" : "bg-white/40"}`}
                       />
                     );
@@ -823,33 +563,17 @@ function ATSScanner() {
                 </div>
                 <div className="mt-4 flex flex-wrap gap-1.5">
                   {["React", "TypeScript", "0-to-1", "Systems", "Growth"].map((t, i) => (
-                    <motion.span
-                      key={t}
-                      initial={{ opacity: 0, y: 6 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.5 + i * 0.06 }}
-                      className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-0.5 text-[10px] text-emerald-200"
-                    >
-                      {t}
-                    </motion.span>
+                    <motion.span key={t} initial={{ opacity: 0, y: 6 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.5 + i * 0.06 }} className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-2 py-0.5 text-[10px] text-emerald-200">{t}</motion.span>
                   ))}
                 </div>
                 <motion.div
-                  aria-hidden
-                  animate={{ y: ["-10%", "110%"] }}
-                  transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+                  aria-hidden animate={{ y: ["-10%", "110%"] }} transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
                   className="pointer-events-none absolute inset-x-6 top-0 h-14 rounded-full bg-[linear-gradient(180deg,transparent,rgba(34,211,238,0.35),transparent)] blur-md"
                 />
               </div>
             </div>
 
-            <div className="mt-8 text-center">
-              <MagneticButton to={isAuthenticated ? "/ats" : "/auth/signup"}>
-                Try ATS Scanner
-                <ScanLine className="h-4 w-4" />
-              </MagneticButton>
-            </div>
+            <div className="mt-8 text-center"><MagneticButton to="/ats">Try ATS Scanner <ScanLine className="h-4 w-4" /></MagneticButton></div>
           </div>
         </FadeIn>
       </div>
@@ -878,81 +602,42 @@ function useTyped(text: string, start: boolean, speed = 20) {
 function CoverLetter() {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
-  const { token } = useAuthStore();
-  const isAuthenticated = !!token;
-
   useEffect(() => {
-    const io = new IntersectionObserver(([e]) => e.isIntersecting && setInView(true), {
-      threshold: 0.4,
-    });
+    const io = new IntersectionObserver(([e]) => e.isIntersecting && setInView(true), { threshold: 0.4 });
     if (ref.current) io.observe(ref.current);
     return () => io.disconnect();
   }, []);
 
-  const prompt = "Write a cover letter for a Senior Product Designer role at Stripe.";
-  const letter =
-    "Dear Stripe hiring team,\n\nDesigning payments infrastructure is designing trust at planetary scale. Over the last six years I've shipped systems used by millions — from Figma's community platform to Stripe Terminal's next-generation flows. I obsess over the surface area where craft and clarity meet.\n\nI'd love to bring that obsession to your team.\n\nWarmly,\nAlex";
+  const prompt = "Write a cover letter for a Software Engineer role at Google.";
+  const letter = "Dear Google hiring team,\n\nBuilding planetary-scale web applications requires craft, performance, and clear systems thinking. As a Computer Science student at UEM, I've designed full-stack AI platforms with modular architectures.\n\nI would love to bring my dedication and energy to Google's engineering team.\n\nWarmly,\nLuqman";
 
   const typedPrompt = useTyped(prompt, inView, 25);
   const [showLetter, setShowLetter] = useState(false);
-  useEffect(() => {
-    if (typedPrompt === prompt) {
-      const t = setTimeout(() => setShowLetter(true), 500);
-      return () => clearTimeout(t);
-    }
-  }, [typedPrompt, prompt]);
+  useEffect(() => { if (typedPrompt === prompt) { const t = setTimeout(() => setShowLetter(true), 500); return () => clearTimeout(t); } }, [typedPrompt, prompt]);
 
   return (
     <section ref={ref} className="relative py-32">
       <div className="mx-auto grid max-w-7xl gap-14 px-6 lg:grid-cols-12 lg:items-center">
-        <div className="lg:col-span-5 text-left">
+        <div className="lg:col-span-5">
           <SectionEyebrow icon={PenLine}>AI Cover Letter</SectionEyebrow>
-          <FadeIn>
-            <h2 className="mt-6 font-display text-5xl leading-tight tracking-tight text-white md:text-6xl">
-              Letters that sound like <span className="text-gradient italic">you</span>.
-            </h2>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <p className="mt-5 max-w-md text-lg text-white/70">
-              Describe the role. CareerForge weaves in your voice, your wins, and the company's tone
-              in seconds.
-            </p>
-          </FadeIn>
-          <FadeIn delay={0.2}>
-            <div className="mt-8">
-              <MagneticButton to={isAuthenticated ? "/cover-letters" : "/auth/signup"}>
-                Generate Cover Letter
-                <Sparkles className="h-4 w-4" />
-              </MagneticButton>
-            </div>
-          </FadeIn>
+          <FadeIn><h2 className="mt-6 font-display text-5xl font-bold leading-tight tracking-tight text-white md:text-6xl">Letters that sound like <span className="text-transparent bg-clip-text bg-[linear-gradient(120deg,#22d3ee,#a855f7)] italic">you</span>.</h2></FadeIn>
+          <FadeIn delay={0.1}><p className="mt-5 max-w-md text-lg text-white/70">Describe the role. CareerForge weaves in your voice, your wins, and the company's tone in seconds.</p></FadeIn>
+          <FadeIn delay={0.2}><div className="mt-8"><MagneticButton to="/cover-letters">Generate Cover Letter <Sparkles className="h-4 w-4" /></MagneticButton></div></FadeIn>
         </div>
 
-        <div className="lg:col-span-7 text-left">
+        <div className="lg:col-span-7">
           <div className="relative">
             <div className="absolute -inset-6 rounded-[40px] bg-[radial-gradient(circle_at_center,rgba(34,211,238,0.25),transparent_65%)] blur-3xl" />
-            <div className="relative rounded-3xl glass-strong p-6 glow-blue">
-              <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
-                <div className="mb-2 text-[10px] uppercase tracking-widest text-white/50">
-                  Prompt Input
-                </div>
+            <div className="relative rounded-3xl border border-white/15 bg-black/60 backdrop-blur-xl p-6 shadow-2xl">
+              <div className="rounded-2xl border border-white/10 bg-black/40 p-4">
+                <div className="mb-2 text-[10px] uppercase tracking-widest text-white/50">Prompt</div>
                 <div className="min-h-[3rem] text-white/90 font-mono text-sm">
-                  {typedPrompt}
-                  <motion.span
-                    animate={{ opacity: [1, 0] }}
-                    transition={{ duration: 0.7, repeat: Infinity }}
-                    className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 bg-cyan-300"
-                  />
+                  {typedPrompt}<motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.7, repeat: Infinity }} className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 bg-cyan-300" />
                 </div>
               </div>
               <AnimatePresence>
                 {showLetter && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                    className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-5 whitespace-pre-line font-serif text-[15px] leading-relaxed text-white/85"
-                  >
+                  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }} className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-5 whitespace-pre-line font-serif text-[15px] leading-relaxed text-white/90">
                     {letter}
                   </motion.div>
                 )}
@@ -968,98 +653,47 @@ function CoverLetter() {
 /* --------------------------- 6. Interview Coach --------------------------- */
 
 function InterviewCoach() {
-  const { token } = useAuthStore();
-  const isAuthenticated = !!token;
-
   const messages = [
-    {
-      from: "ai" as const,
-      text: "Tell me about a time you shipped something under impossible constraints.",
-    },
-    {
-      from: "you" as const,
-      text: "At Figma we had six weeks to launch a new plugin surface. I split scope into three phases…",
-    },
-    {
-      from: "ai" as const,
-      text: "Great structure. Try quantifying the impact — how many plugins shipped week one?",
-    },
+    { from: "ai" as const, text: "Tell me about a time you shipped a complex web application under tight deadlines." },
+    { from: "you" as const, text: "For my UEM Computer Science project, I built CareerForge — integrating AI resume generation and real-time ATS scoring." },
+    { from: "ai" as const, text: "Great response structure! Try highlighting the tech stack and metrics like database response times." },
   ];
   return (
     <section className="relative py-32">
       <div className="mx-auto grid max-w-7xl gap-14 px-6 lg:grid-cols-12 lg:items-center">
-        <div className="lg:col-span-5 lg:order-2 text-left">
+        <div className="lg:col-span-5 lg:order-2">
           <SectionEyebrow icon={MessagesSquare}>Interview Coach</SectionEyebrow>
-          <FadeIn>
-            <h2 className="mt-6 font-display text-5xl leading-tight tracking-tight text-white md:text-6xl">
-              Practice until it feels <span className="text-gradient italic">effortless</span>.
-            </h2>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <p className="mt-5 max-w-md text-lg text-white/70">
-              Realtime conversation with an AI interviewer trained on 20,000+ real hiring loops.
-              Live feedback. Confidence you can measure.
-            </p>
-          </FadeIn>
-          <FadeIn delay={0.2}>
-            <div className="mt-8">
-              <MagneticButton to={isAuthenticated ? "/interviews" : "/auth/signup"}>
-                Practice Interview
-                <Brain className="h-4 w-4" />
-              </MagneticButton>
-            </div>
-          </FadeIn>
+          <FadeIn><h2 className="mt-6 font-display text-5xl font-bold leading-tight tracking-tight text-white md:text-6xl">Practice until it feels <span className="text-transparent bg-clip-text bg-[linear-gradient(120deg,#22d3ee,#a855f7)] italic">effortless</span>.</h2></FadeIn>
+          <FadeIn delay={0.1}><p className="mt-5 max-w-md text-lg text-white/70">Realtime conversation with an AI interviewer trained on real hiring loops. Live feedback & confidence scoring.</p></FadeIn>
+          <FadeIn delay={0.2}><div className="mt-8"><MagneticButton to="/interviews">Practice Interview <Brain className="h-4 w-4" /></MagneticButton></div></FadeIn>
         </div>
 
-        <div className="lg:col-span-7 lg:order-1 text-left">
+        <div className="lg:col-span-7 lg:order-1">
           <div className="relative">
             <div className="absolute -inset-8 rounded-[48px] bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.35),transparent_70%)] blur-3xl" />
-            <div className="relative rounded-3xl glass-strong p-6 glow-blue">
+            <div className="relative rounded-3xl border border-white/15 bg-black/60 backdrop-blur-xl p-6 shadow-2xl">
               <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs text-white/60">
-                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                  Live · Behavioral round
-                </div>
+                <div className="flex items-center gap-2 text-xs text-white/60"><span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />Live · Technical Behavioral Round</div>
                 <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-widest text-white/50">
-                    Confidence
-                  </div>
-                  <div className="text-lg text-gradient font-semibold">84%</div>
+                  <div className="text-[10px] uppercase tracking-widest text-white/50">Confidence</div>
+                  <div className="text-lg font-bold text-transparent bg-clip-text bg-[linear-gradient(120deg,#22d3ee,#a855f7)]">88%</div>
                 </div>
               </div>
               <div className="space-y-3">
                 {messages.map((m, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.25, duration: 0.6 }}
-                    className={`flex ${m.from === "you" ? "justify-end" : "justify-start"}`}
-                  >
-                    <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${m.from === "you" ? "bg-[linear-gradient(120deg,#6366f1,#a855f7)] text-white" : "border border-white/10 bg-white/5 text-white/85"}`}
-                    >
+                  <motion.div key={i} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.25, duration: 0.6 }} className={`flex ${m.from === "you" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${m.from === "you" ? "bg-[linear-gradient(120deg,#6366f1,#a855f7)] text-white font-medium" : "border border-white/10 bg-white/5 text-white/85"}`}>
                       {m.text}
                     </div>
                   </motion.div>
                 ))}
               </div>
               <div className="mt-5 rounded-2xl border border-amber-300/20 bg-amber-300/5 p-3 text-xs text-amber-100">
-                <div className="mb-1 uppercase tracking-widest text-amber-300/80">
-                  Coach feedback
-                </div>
-                Strong structural framework. Consider adding exact volume parameters to highlight
-                execution speed.
+                <div className="mb-1 uppercase tracking-widest text-amber-300/80 font-bold">Coach Note</div>
+                Strong opener and clear STAR format! Mention technical optimizations for extra impact.
               </div>
               <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10">
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: "84%" }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-                  className="h-full bg-[linear-gradient(90deg,#22d3ee,#a855f7)]"
-                />
+                <motion.div initial={{ width: 0 }} whileInView={{ width: "88%" }} viewport={{ once: true }} transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }} className="h-full bg-[linear-gradient(90deg,#22d3ee,#a855f7)]" />
               </div>
             </div>
           </div>
@@ -1071,110 +705,52 @@ function InterviewCoach() {
 
 /* ------------------------------ 7. Kanban -------------------------------- */
 
-function JobTrackerSection() {
-  const { token } = useAuthStore();
-  const isAuthenticated = !!token;
-  const { data: stats } = useDashboardStats();
+const kanbanCols = [
+  { title: "Wishlist", accent: "from-slate-400/40 to-slate-400/0", cards: ["Google · Software Eng", "Microsoft · SDE Intern"] },
+  { title: "Applied", accent: "from-cyan-400/40 to-cyan-400/0", cards: ["Stripe · Full Stack", "Amazon · SDE I"] },
+  { title: "Interview", accent: "from-indigo-400/40 to-indigo-400/0", cards: ["Meta · Frontend", "Uber · Backend"] },
+  { title: "Offer", accent: "from-emerald-400/40 to-emerald-400/0", cards: ["CareerForge · Founder & Lead"] },
+  { title: "Archived", accent: "from-rose-400/40 to-rose-400/0", cards: ["Legacy Portal"] },
+];
 
-  const sAny = stats as any;
-  const cWish = sAny?.kanban?.wishlist !== undefined ? sAny.kanban.wishlist : 2;
-  const cApp = sAny?.kanban?.applied !== undefined ? sAny.kanban.applied : 2;
-  const cInt = sAny?.kanban?.interview !== undefined ? sAny.kanban.interview : 2;
-  const cOff = sAny?.kanban?.offer !== undefined ? sAny.kanban.offer : 1;
-  const cRej = sAny?.kanban?.rejected !== undefined ? sAny.kanban.rejected : 1;
-
-  const kanbanCols = [
-    {
-      title: "Wishlist",
-      count: cWish,
-      accent: "from-slate-400/40 to-slate-400/0",
-      cards: ["Anthropic · Design Eng", "Vercel · Sr Designer"],
-    },
-    {
-      title: "Applied",
-      count: cApp,
-      accent: "from-cyan-400/40 to-cyan-400/0",
-      cards: ["Stripe · Product Design", "Notion · Brand"],
-    },
-    {
-      title: "Interview",
-      count: cInt,
-      accent: "from-indigo-400/40 to-indigo-400/0",
-      cards: ["Linear · Design", "Figma · Systems"],
-    },
-    {
-      title: "Offer",
-      count: cOff,
-      accent: "from-emerald-400/40 to-emerald-400/0",
-      cards: ["Framer · Sr IC"],
-    },
-    {
-      title: "Rejected",
-      count: cRej,
-      accent: "from-rose-400/40 to-rose-400/0",
-      cards: ["Airbnb · Growth"],
-    },
-  ];
-
+function JobTracker() {
   return (
     <section className="relative py-32">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-2xl text-center">
           <SectionEyebrow icon={KanbanSquare}>Job Tracker</SectionEyebrow>
-          <FadeIn>
-            <h2 className="mt-6 font-display text-5xl leading-tight tracking-tight text-white md:text-6xl">
-              Every application, one board.
-            </h2>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <p className="mt-5 text-lg text-white/70">
-              Drag, drop, and never lose track of an opportunity again.
-            </p>
-          </FadeIn>
+          <FadeIn><h2 className="mt-6 font-display text-5xl font-bold leading-tight tracking-tight text-white md:text-6xl">Every application, one board.</h2></FadeIn>
+          <FadeIn delay={0.1}><p className="mt-5 text-lg text-white/70">Drag, drop, and never lose track of an opportunity again.</p></FadeIn>
         </div>
         <FadeIn delay={0.15}>
           <div className="relative mx-auto mt-14 max-w-6xl overflow-x-auto">
-            <div className="grid min-w-[900px] grid-cols-5 gap-4 text-left">
+            <div className="grid min-w-[900px] grid-cols-5 gap-4">
               {kanbanCols.map((col, ci) => (
-                <div key={col.title} className="rounded-2xl glass p-3">
-                  <div
-                    className={`mb-3 flex items-center justify-between rounded-lg bg-gradient-to-r ${col.accent} px-3 py-1.5 text-xs`}
-                  >
-                    <span className="text-white font-medium">{col.title}</span>
-                    <span className="text-white/60 font-semibold">{col.count}</span>
+                <div key={col.title} className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                  <div className={`mb-3 flex items-center justify-between rounded-lg bg-gradient-to-r ${col.accent} px-3 py-1.5 text-xs font-bold`}>
+                    <span className="text-white">{col.title}</span>
+                    <span className="text-white/60">{col.cards.length}</span>
                   </div>
                   <div className="space-y-2">
-                    {col.cards.slice(0, col.count || 1).map((c, i) => (
+                    {col.cards.map((c, i) => (
                       <motion.div
                         key={c}
-                        initial={{ opacity: 0, y: 12 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
+                        initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                         transition={{ delay: ci * 0.08 + i * 0.06 }}
                         whileHover={{ y: -3, scale: 1.02 }}
-                        className="cursor-grab rounded-xl border border-white/10 bg-white/5 p-3 text-xs text-white/85 shadow-sm"
+                        className="cursor-grab rounded-xl border border-white/10 bg-black/40 p-3 text-xs text-white/85 shadow-sm"
                       >
                         <div className="font-medium text-white">{c.split(" · ")[0]}</div>
                         <div className="mt-0.5 text-white/60">{c.split(" · ")[1]}</div>
                       </motion.div>
                     ))}
-                    {col.count === 0 && (
-                      <div className="text-[10px] text-white/20 text-center py-6 border border-dashed border-white/5 rounded-xl">
-                        Empty column
-                      </div>
-                    )}
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </FadeIn>
-        <div className="mt-10 text-center">
-          <MagneticButton to={isAuthenticated ? "/job-tracker" : "/auth/signup"}>
-            Open Dashboard
-            <ArrowRight className="h-4 w-4" />
-          </MagneticButton>
-        </div>
+        <div className="mt-10 text-center"><MagneticButton to="/job-tracker">Open Job Tracker <ArrowRight className="h-4 w-4" /></MagneticButton></div>
       </div>
     </section>
   );
@@ -1186,33 +762,27 @@ function Metric({ label, value, unit = "" }: { label: string; value: number; uni
   const [v, setV] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (e.isIntersecting) {
-          const start = performance.now();
-          const dur = 1400;
-          const tick = (t: number) => {
-            const p = Math.min(1, (t - start) / dur);
-            const eased = 1 - Math.pow(1 - p, 3);
-            setV(Math.round(value * eased));
-            if (p < 1) requestAnimationFrame(tick);
-          };
-          requestAnimationFrame(tick);
-          io.disconnect();
-        }
-      },
-      { threshold: 0.4 },
-    );
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) {
+        const start = performance.now();
+        const dur = 1400;
+        const tick = (t: number) => {
+          const p = Math.min(1, (t - start) / dur);
+          const eased = 1 - Math.pow(1 - p, 3);
+          setV(Math.round(value * eased));
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+        io.disconnect();
+      }
+    }, { threshold: 0.4 });
     if (ref.current) io.observe(ref.current);
     return () => io.disconnect();
   }, [value]);
   return (
-    <div ref={ref} className="rounded-2xl glass p-6 text-left">
-      <div className="text-xs uppercase tracking-widest text-white/50">{label}</div>
-      <div className="mt-2 font-display text-5xl text-gradient">
-        {v}
-        {unit}
-      </div>
+    <div ref={ref} className="rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl p-6">
+      <div className="text-xs uppercase tracking-widest text-white/50 font-semibold">{label}</div>
+      <div className="mt-2 font-display text-5xl font-bold text-transparent bg-clip-text bg-[linear-gradient(120deg,#22d3ee,#a855f7)]">{v}{unit}</div>
     </div>
   );
 }
@@ -1220,76 +790,33 @@ function Metric({ label, value, unit = "" }: { label: string; value: number; uni
 function Chart() {
   const bars = [30, 42, 55, 48, 66, 78, 72, 88, 96];
   return (
-    <div className="flex h-40 items-end gap-2 rounded-2xl glass p-6">
+    <div className="flex h-40 items-end gap-2 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl p-6">
       {bars.map((b, i) => (
-        <motion.div
-          key={i}
-          initial={{ height: 0 }}
-          whileInView={{ height: `${b}%` }}
-          viewport={{ once: true }}
-          transition={{ delay: i * 0.06, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className="w-full rounded-t bg-[linear-gradient(180deg,#22d3ee,#6366f1,#a855f7)]"
-        />
+        <motion.div key={i} initial={{ height: 0 }} whileInView={{ height: `${b}%` }} viewport={{ once: true }} transition={{ delay: i * 0.06, duration: 0.9, ease: [0.22, 1, 0.36, 1] }} className="w-full rounded-t bg-[linear-gradient(180deg,#22d3ee,#6366f1,#a855f7)]" />
       ))}
     </div>
   );
 }
 
 function Analytics() {
-  const { token } = useAuthStore();
-  const isAuthenticated = !!token;
-  const { data: stats } = useDashboardStats();
-
-  const sAny = stats as any;
-  const totalApps =
-    isAuthenticated && sAny?.kanban
-      ? sAny.kanban.wishlist +
-        sAny.kanban.applied +
-        sAny.kanban.interview +
-        sAny.kanban.offer +
-        sAny.kanban.rejected
-      : 128;
-  const score =
-    isAuthenticated && (sAny?.atsAverageScore !== undefined || sAny?.averageAtsScore !== undefined)
-      ? (sAny.atsAverageScore ?? sAny.averageAtsScore)
-      : 96;
-  const interviewsCount = isAuthenticated && sAny?.interviews !== undefined ? sAny.interviews : 8;
-
   return (
     <section className="relative py-32">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-2xl text-center">
           <SectionEyebrow icon={LineChart}>Career Analytics</SectionEyebrow>
-          <FadeIn>
-            <h2 className="mt-6 font-display text-5xl leading-tight tracking-tight text-white md:text-6xl">
-              Data that <span className="text-gradient italic">moves the needle</span>.
-            </h2>
-          </FadeIn>
-          <FadeIn delay={0.1}>
-            <p className="mt-5 text-lg text-white/70">
-              Track every signal that matters — from ATS score to response rate.
-            </p>
-          </FadeIn>
+          <FadeIn><h2 className="mt-6 font-display text-5xl font-bold leading-tight tracking-tight text-white md:text-6xl">Data that <span className="text-transparent bg-clip-text bg-[linear-gradient(120deg,#22d3ee,#a855f7)] italic">moves the needle</span>.</h2></FadeIn>
+          <FadeIn delay={0.1}><p className="mt-5 text-lg text-white/70">Track every signal that matters — from ATS score to response rate.</p></FadeIn>
         </div>
         <FadeIn delay={0.2}>
           <div className="mt-14 grid gap-4 md:grid-cols-4">
-            <Metric label="Applications" value={totalApps} />
-            <Metric label="ATS Score" value={score} />
-            <Metric label="Interviews" value={interviewsCount} />
+            <Metric label="Applications" value={128} />
+            <Metric label="ATS Score" value={96} />
+            <Metric label="Interview Rate" value={41} unit="%" />
             <Metric label="Success Rate" value={68} unit="%" />
           </div>
         </FadeIn>
-        <FadeIn delay={0.3}>
-          <div className="mt-6">
-            <Chart />
-          </div>
-        </FadeIn>
-        <div className="mt-10 text-center">
-          <MagneticButton to={isAuthenticated ? "/dashboard" : "/auth/signup"}>
-            View Analytics
-            <LineChart className="h-4 w-4" />
-          </MagneticButton>
-        </div>
+        <FadeIn delay={0.3}><div className="mt-6"><Chart /></div></FadeIn>
+        <div className="mt-10 text-center"><MagneticButton to="/dashboard">View Analytics <LineChart className="h-4 w-4" /></MagneticButton></div>
       </div>
     </section>
   );
@@ -1299,41 +826,30 @@ function Analytics() {
 
 function Ecosystem() {
   const modules = [
-    { label: "Resume", icon: FileText },
-    { label: "ATS", icon: ScanLine },
+    { label: "Resume Builder", icon: FileText },
+    { label: "ATS Scanner", icon: ScanLine },
     { label: "Cover Letter", icon: PenLine },
-    { label: "Interview", icon: MessagesSquare },
-    { label: "Tracker", icon: KanbanSquare },
+    { label: "Interview Coach", icon: MessagesSquare },
+    { label: "Job Tracker", icon: KanbanSquare },
     { label: "Analytics", icon: LineChart },
   ];
   return (
     <section id="features" className="relative py-32">
       <div className="mx-auto max-w-7xl px-6 text-center">
-        <SectionEyebrow icon={Sparkles}>The ecosystem</SectionEyebrow>
-        <FadeIn>
-          <h2 className="mx-auto mt-6 max-w-3xl font-display text-5xl leading-tight tracking-tight text-white md:text-6xl">
-            Everything you need to <span className="text-gradient italic">land your dream job</span>
-            .
-          </h2>
-        </FadeIn>
+        <SectionEyebrow icon={Sparkles}>The Ecosystem</SectionEyebrow>
+        <FadeIn><h2 className="mx-auto mt-6 max-w-3xl font-display text-5xl font-bold leading-tight tracking-tight text-white md:text-6xl">Everything you need to <span className="text-transparent bg-clip-text bg-[linear-gradient(120deg,#22d3ee,#a855f7)] italic">land your dream job</span>.</h2></FadeIn>
 
         <div className="relative mx-auto mt-20 h-[560px] w-full max-w-[640px]">
           <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.35),transparent_60%)] blur-2xl" />
           {[0.55, 0.78, 1].map((s, i) => (
-            <motion.div
-              key={i}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 40 + i * 10, repeat: Infinity, ease: "linear" }}
+            <motion.div key={i} animate={{ rotate: 360 }} transition={{ duration: 40 + i * 10, repeat: Infinity, ease: "linear" }}
               style={{ width: `${s * 100}%`, height: `${s * 100}%` }}
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10"
             />
           ))}
           {/* center resume */}
           <div className="absolute left-1/2 top-1/2 w-52 -translate-x-1/2 -translate-y-1/2">
-            <motion.div
-              animate={{ y: [0, -10, 0] }}
-              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            >
+            <motion.div animate={{ y: [0, -10, 0] }} transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}>
               <ResumeMockup variant="small" />
             </motion.div>
           </div>
@@ -1346,20 +862,12 @@ function Ecosystem() {
             return (
               <motion.div
                 key={m.label}
-                initial={{ opacity: 0, scale: 0.6 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 * i, duration: 0.7 }}
+                initial={{ opacity: 0, scale: 0.6 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.1 * i, duration: 0.7 }}
                 style={{ left: `calc(50% + ${x}px)`, top: `calc(50% + ${y}px)` }}
                 className="absolute -translate-x-1/2 -translate-y-1/2"
               >
-                <motion.div
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut" }}
-                  className="flex items-center gap-2 rounded-full glass-strong px-4 py-2 text-xs text-white/90 shadow-lg"
-                >
-                  <m.icon className="h-3.5 w-3.5 text-cyan-300" />
-                  {m.label}
+                <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut" }} className="flex items-center gap-2 rounded-full border border-white/15 bg-black/70 backdrop-blur-md px-4 py-2 text-xs font-semibold text-white shadow-lg">
+                  <m.icon className="h-3.5 w-3.5 text-cyan-300" />{m.label}
                 </motion.div>
               </motion.div>
             );
@@ -1370,25 +878,114 @@ function Ecosystem() {
   );
 }
 
+/* ------------------------------ 10. Pricing ------------------------------ */
+
+function Pricing() {
+  const [yearly, setYearly] = useState(true);
+  const plans = [
+    { name: "Free", price: { m: 0, y: 0 }, tag: "Start exploring", features: ["1 resume", "3 AI cover letters", "Basic ATS scan"], cta: "Get started", to: "/auth/signup" },
+    { name: "Pro", price: { m: 19, y: 15 }, tag: "For serious job seekers", features: ["Unlimited resumes", "AI cover letters", "ATS scanner", "Interview coach", "Job tracker"], cta: "Start free trial", featured: true, to: "/auth/signup" },
+    { name: "Career OS", price: { m: 39, y: 29 }, tag: "The full ecosystem", features: ["Everything in Pro", "Analytics dashboard", "1:1 coach reviews", "Priority AI", "Salary insights"], cta: "Get started", to: "/auth/signup" },
+  ];
+  return (
+    <section id="pricing" className="relative py-32">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-2xl text-center">
+          <SectionEyebrow icon={Rocket}>Pricing</SectionEyebrow>
+          <FadeIn><h2 className="mt-6 font-display text-5xl font-bold leading-tight tracking-tight text-white md:text-6xl">Simple, honest pricing.</h2></FadeIn>
+          <FadeIn delay={0.1}>
+            <div className="mt-8 inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/5 p-1 text-xs">
+              {(["m", "y"] as const).map((k) => {
+                const active = (k === "y") === yearly;
+                return (
+                  <button key={k} onClick={() => setYearly(k === "y")} className={`relative rounded-full px-4 py-1.5 transition ${active ? "text-white font-bold" : "text-white/60"}`}>
+                    {active && <motion.span layoutId="billing-pill" className="absolute inset-0 rounded-full bg-[linear-gradient(120deg,#6366f1,#a855f7)]" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
+                    <span className="relative">{k === "m" ? "Monthly" : "Yearly · save 25%"}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </FadeIn>
+        </div>
+
+        <div className="mt-14 grid gap-6 md:grid-cols-3">
+          {plans.map((p, i) => (
+            <motion.div
+              key={p.name}
+              initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ y: -6 }}
+              className={`relative rounded-3xl p-8 border ${p.featured ? "border-cyan-400/40 bg-black/80 backdrop-blur-xl shadow-2xl" : "border-white/10 bg-black/50 backdrop-blur-lg"}`}
+            >
+              {p.featured && <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[linear-gradient(120deg,#6366f1,#a855f7)] px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-lg">Most Popular</div>}
+              <div className="text-sm text-white/60">{p.tag}</div>
+              <div className="mt-2 font-display text-3xl font-bold text-white">{p.name}</div>
+              <div className="mt-6 flex items-baseline gap-1">
+                <span className="font-display text-6xl font-extrabold text-white">${yearly ? p.price.y : p.price.m}</span>
+                <span className="text-sm text-white/50">/mo</span>
+              </div>
+              <div className="mt-6 h-px w-full bg-white/10" />
+              <ul className="mt-6 space-y-3">
+                {p.features.map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-sm text-white/80"><Check className="h-4 w-4 text-cyan-300" />{f}</li>
+                ))}
+              </ul>
+              <div className="mt-8"><MagneticButton to={p.to} variant={p.featured ? "primary" : "ghost"} className="w-full justify-center">{p.cta} <ArrowRight className="h-4 w-4" /></MagneticButton></div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------- 11. Testimonials --------------------------- */
+
+const testimonials = [
+  { name: "Luqman", role: "Developer & Owner · UEM CS Student", quote: "Built CareerForge to streamline job applications, AI resume tailoring, and ATS scanning into one unified platform.", avatar: "L" },
+  { name: "Maya Patel", role: "PM · Tech Lead", quote: "I went from zero callbacks to four offers in six weeks. The ATS scanner alone is worth the price.", avatar: "MP" },
+  { name: "Jordan Lee", role: "Engineer · Vercel", quote: "The interview coach is uncanny. It caught filler words I didn't even know I said.", avatar: "JL" },
+  { name: "Sofia García", role: "Designer · Figma", quote: "The kanban tracker turned chaos into a system. Landed my dream role in a month.", avatar: "SG" },
+  { name: "Ari Novak", role: "Founder", quote: "Cover letters that actually sound like me. I've never sent one I was embarrassed by.", avatar: "AN" },
+];
+
+function Testimonials() {
+  const track = [...testimonials, ...testimonials];
+  return (
+    <section className="relative py-32">
+      <div className="mx-auto max-w-7xl px-6">
+        <div className="mx-auto max-w-2xl text-center">
+          <SectionEyebrow icon={Star}>Loved by ambitious people</SectionEyebrow>
+          <FadeIn><h2 className="mt-6 font-display text-5xl font-bold leading-tight tracking-tight text-white md:text-6xl">The results speak for themselves.</h2></FadeIn>
+        </div>
+      </div>
+      <div className="relative mt-14 overflow-hidden" style={{ maskImage: "linear-gradient(90deg, transparent, black 10%, black 90%, transparent)" }}>
+        <div className="flex w-max animate-marquee gap-5 px-6">
+          {track.map((t, i) => (
+            <div key={i} className="w-[360px] shrink-0 rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl p-6">
+              <div className="text-sm leading-relaxed text-white/85">"{t.quote}"</div>
+              <div className="mt-5 flex items-center gap-3">
+                <div className="grid h-10 w-10 place-items-center rounded-full bg-[linear-gradient(120deg,#6366f1,#a855f7,#22d3ee)] text-xs font-bold text-white">{t.avatar}</div>
+                <div>
+                  <div className="text-sm font-semibold text-white">{t.name}</div>
+                  <div className="text-xs text-white/50">{t.role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* -------------------------------- 12. FAQ -------------------------------- */
 
 const faqs = [
-  {
-    q: "How does CareerForge optimize my resume for ATS?",
-    a: "We parse the target job, extract the semantic keywords ATS systems weight most, then rewrite your resume to match while keeping your voice intact.",
-  },
-  {
-    q: "Is my data private?",
-    a: "Yes — encrypted at rest and in transit, and we never train models on your personal content.",
-  },
-  {
-    q: "Is it completely free?",
-    a: "Absolutely. The core AI resume builder, cover letter compiler, and interview trainer features are 100% free.",
-  },
-  {
-    q: "Which industries does it support?",
-    a: "Tech, design, product, marketing, finance, healthcare, and 40+ more.",
-  },
+  { q: "How does CareerForge optimize my resume for ATS?", a: "We parse the target job, extract the semantic keywords ATS systems weight most, then rewrite your resume to match while keeping your voice intact." },
+  { q: "Is my data private?", a: "Yes — encrypted at rest and in transit, and we never train models on your personal content." },
+  { q: "Can I try it before paying?", a: "Absolutely. The Free plan gives you a full workflow with one resume and three AI cover letters." },
+  { q: "Which industries does it support?", a: "Tech, design, product, marketing, finance, healthcare, and 40+ more — with role-specific templates for each." },
+  { q: "Who built CareerForge?", a: "CareerForge is built by Luqman, a 2nd Year Computer Science Student at the University of Engineering and Management (UEM)." },
 ];
 
 function FAQ() {
@@ -1398,35 +995,20 @@ function FAQ() {
       <div className="mx-auto max-w-3xl px-6">
         <div className="text-center">
           <SectionEyebrow icon={Shield}>FAQ</SectionEyebrow>
-          <FadeIn>
-            <h2 className="mt-6 font-display text-5xl leading-tight tracking-tight text-white md:text-6xl">
-              Questions, answered.
-            </h2>
-          </FadeIn>
+          <FadeIn><h2 className="mt-6 font-display text-5xl font-bold leading-tight tracking-tight text-white md:text-6xl">Questions, answered.</h2></FadeIn>
         </div>
-        <div className="mt-12 space-y-3 text-left">
+        <div className="mt-12 space-y-3">
           {faqs.map((f, i) => {
             const isOpen = open === i;
             return (
-              <div key={f.q} className="rounded-2xl glass px-5">
-                <button
-                  onClick={() => setOpen(isOpen ? null : i)}
-                  className="flex w-full items-center justify-between py-5 text-left cursor-pointer"
-                >
-                  <span className="text-base text-white font-medium pr-4">{f.q}</span>
-                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border border-white/10 text-white/70">
-                    {isOpen ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-                  </span>
+              <div key={f.q} className="rounded-2xl border border-white/10 bg-black/50 backdrop-blur-lg px-5">
+                <button onClick={() => setOpen(isOpen ? null : i)} className="flex w-full items-center justify-between py-5 text-left cursor-pointer">
+                  <span className="text-base font-semibold text-white">{f.q}</span>
+                  <span className="grid h-8 w-8 place-items-center rounded-full border border-white/10 text-white/70">{isOpen ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}</span>
                 </button>
                 <AnimatePresence initial={false}>
                   {isOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                      className="overflow-hidden"
-                    >
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="overflow-hidden">
                       <p className="pb-6 pr-10 text-sm leading-relaxed text-white/70">{f.a}</p>
                     </motion.div>
                   )}
@@ -1443,29 +1025,16 @@ function FAQ() {
 /* ------------------------------- 13. CTA + Footer ------------------------ */
 
 function FinalCTA() {
-  const { token } = useAuthStore();
-  const isAuthenticated = !!token;
-
   return (
     <section className="relative py-24">
       <div className="mx-auto max-w-5xl px-6">
-        <div className="relative overflow-hidden rounded-[36px] glass-strong p-14 text-center">
+        <div className="relative overflow-hidden rounded-[36px] border border-white/15 bg-black/60 backdrop-blur-2xl p-14 text-center shadow-2xl">
           <div className="absolute -inset-16 bg-[radial-gradient(circle_at_center,rgba(168,85,247,0.4),transparent_65%)] blur-3xl" />
           <div className="relative">
             <SectionEyebrow icon={Zap}>Your next chapter</SectionEyebrow>
-            <h2 className="mt-6 font-display text-5xl leading-tight tracking-tight text-white md:text-6xl">
-              Forge your career. <span className="text-gradient italic">Today.</span>
-            </h2>
-            <p className="mx-auto mt-4 max-w-lg text-white/70">
-              Forge your resumes, prep for interviews, and land offers you love with the ultimate
-              career compiler.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <MagneticButton to={isAuthenticated ? "/dashboard" : "/auth/signup"}>
-                Get started now
-                <ArrowRight className="h-4 w-4" />
-              </MagneticButton>
-            </div>
+            <h2 className="mt-6 font-display text-5xl font-extrabold leading-tight tracking-tight text-white md:text-6xl">Forge your career. <span className="text-transparent bg-clip-text bg-[linear-gradient(120deg,#22d3ee,#a855f7)] italic">Today.</span></h2>
+            <p className="mx-auto mt-4 max-w-lg text-white/70">Join ambitious students and job seekers using CareerForge to land offers they love.</p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3"><MagneticButton to="/auth/signup">Start free trial <ArrowRight className="h-4 w-4" /></MagneticButton><MagneticButton href="#pricing" variant="ghost">View Pricing</MagneticButton></div>
           </div>
         </div>
       </div>
@@ -1475,74 +1044,51 @@ function FinalCTA() {
 
 function Footer() {
   return (
-    <footer className="relative border-t border-glass-border pt-16 pb-10">
-      <div className="mx-auto grid max-w-7xl gap-12 px-6 lg:grid-cols-12 text-left">
-        <div className="lg:col-span-6">
+    <footer className="relative border-t border-white/10 pt-20 pb-10">
+      <div className="mx-auto grid max-w-7xl gap-14 px-6 lg:grid-cols-12">
+        <div className="lg:col-span-5">
           <div className="flex items-center gap-2">
             <div className="relative h-8 w-8 rounded-lg bg-[linear-gradient(135deg,#22d3ee,#6366f1,#a855f7)]">
-              <div className="absolute inset-[3px] rounded-md bg-background flex items-center justify-center">
-                <span className="font-display text-sm text-primary font-bold">C</span>
-              </div>
+              <div className="absolute inset-[2px] rounded-md bg-black/80 grid place-items-center"><span className="font-display text-sm font-bold text-white">C</span></div>
             </div>
-            <span className="text-base font-bold text-foreground">CareerForge</span>
+            <span className="text-base font-bold text-white">CareerForge</span>
           </div>
-          <p className="mt-4 max-w-md text-sm text-muted-foreground leading-relaxed">
-            An AI Career Platform built as a passion project by a <strong className="text-foreground">2nd year CS student</strong> at <strong className="text-foreground">University of Engineering and Management (UEM)</strong> for fun and learning.
+          <p className="mt-5 max-w-sm text-sm text-white/60">
+            The AI career operating system. Built by <strong className="text-white">Luqman</strong>, 2nd Year Computer Science Student at the University of Engineering and Management (UEM).
           </p>
-          <div className="mt-6 flex flex-wrap items-center gap-3 text-xs">
-            <a
-              href="https://github.com/luqmxn07/career-forge"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full glass-panel border border-glass-border px-4 py-2 font-medium text-foreground hover:border-primary/50 transition-all"
-            >
-              <Globe className="h-4 w-4 text-primary" />
-              <span>View Source on GitHub</span>
-              <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className="mt-6 flex items-center gap-3 text-white/60">
+            <a href="mailto:luqmxn07@gmail.com" title="Email Luqman" className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/5 transition hover:text-white hover:bg-white/10">
+              <Send className="h-4 w-4" />
+            </a>
+            <a href="https://github.com/luqmxn07/career-forge" target="_blank" rel="noreferrer" title="GitHub Repository" className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/5 transition hover:text-white hover:bg-white/10">
+              <Github className="h-4 w-4" />
+            </a>
+            <a href="#" title="Website" className="grid h-9 w-9 place-items-center rounded-full border border-white/10 bg-white/5 transition hover:text-white hover:bg-white/10">
+              <Globe className="h-4 w-4" />
             </a>
           </div>
         </div>
-
-        <div className="grid grid-cols-2 gap-8 lg:col-span-6">
-          <div>
-            <div className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Platform Tools</div>
-            <ul className="mt-4 space-y-2 text-sm font-medium">
-              {[
-                { name: "Resume Builder", to: "/resumes" },
-                { name: "ATS Match Scanner", to: "/ats" },
-                { name: "Cover Letter Generator", to: "/cover-letters" },
-                { name: "AI Interview Coach", to: "/interviews" },
-                { name: "Job Tracker Pipeline", to: "/job-tracker" },
-              ].map((item) => (
-                <li key={item.name}>
-                  <Link to={item.to} className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1.5">
-                    <Check className="h-3 w-3 text-emerald-400" />
-                    <span>{item.name}</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <div className="text-xs uppercase tracking-widest text-muted-foreground font-bold">About Project</div>
-            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li>🎓 2nd Year CS Student</li>
-              <li>🏛️ UEM (University of Engineering & Management)</li>
-              <li>⚡ Built for Fun & Learning</li>
-              <li>🚀 React 19 + AI Gateway</li>
-            </ul>
-          </div>
+        <div className="grid gap-10 lg:col-span-7 md:grid-cols-4">
+          {[
+            { title: "Product", links: ["Resume Builder", "ATS Scanner", "Cover Letter", "Interview Coach"] },
+            { title: "Company", links: ["About", "Careers", "Press", "Contact"] },
+            { title: "Resources", links: ["Blog", "Guides", "Templates", "Changelog"] },
+            { title: "Legal", links: ["Privacy", "Terms", "Security", "Cookies"] },
+          ].map((c) => (
+            <div key={c.title}>
+              <div className="text-xs uppercase tracking-widest text-white/50 font-semibold">{c.title}</div>
+              <ul className="mt-4 space-y-2 text-sm">
+                {c.links.map((l) => <li key={l}><a href="#" className="text-white/75 transition hover:text-white">{l}</a></li>)}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
-
-      <div className="mx-auto mt-12 flex max-w-7xl flex-wrap items-center justify-between gap-4 border-t border-glass-border px-6 pt-6 text-xs text-muted-foreground">
-        <div>© {new Date().getFullYear()} CareerForge · Built for fun & learning by a 2nd year CS student at UEM.</div>
-        <div className="flex items-center gap-1.5 font-medium text-foreground">
-          <Sparkles className="h-3.5 w-3.5 text-primary" />
-          University of Engineering and Management (UEM)
-        </div>
+      <div className="mx-auto mt-16 flex max-w-7xl flex-wrap items-center justify-between gap-4 border-t border-white/10 px-6 pt-6 text-xs text-white/50">
+        <div>© {new Date().getFullYear()} CareerForge Labs · Developed by Luqman (UEM Student)</div>
+        <div className="flex items-center gap-1.5"><Target className="h-3 w-3" />Built for ambitious careers</div>
       </div>
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 -bottom-20 h-40 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.35),transparent_60%)] blur-3xl" />
     </footer>
   );
 }
@@ -1556,13 +1102,16 @@ export default function Landing() {
       <Nav />
       <main>
         <Hero />
+        <StickyATS />
         <ResumeBuilder />
         <ATSScanner />
         <CoverLetter />
         <InterviewCoach />
-        <JobTrackerSection />
+        <JobTracker />
         <Analytics />
         <Ecosystem />
+        <Pricing />
+        <Testimonials />
         <FAQ />
         <FinalCTA />
       </main>
