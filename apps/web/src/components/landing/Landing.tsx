@@ -550,7 +550,7 @@ function Hero() {
 function ResumeBuilder() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const sections = ["Header", "Experience", "Skills", "Projects", "Achievements"];
+  const sections = ["Header", "Experience", "Skills", "Projects"];
   const { token } = useAuthStore();
   const isAuthenticated = !!token;
 
@@ -566,7 +566,7 @@ function ResumeBuilder() {
           </FadeIn>
           <FadeIn delay={0.1}>
             <p className="mt-5 max-w-md text-lg text-white/70">
-              Every section expands as you scroll — experience, skills, projects, achievements. Each
+              Every section expands as you scroll — experience, skills, and projects. Each
               block animates in with AI-suggested content you can edit in one click.
             </p>
           </FadeIn>
