@@ -1,8 +1,17 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { Header } from "@/components/shared/Header";
 import { Sidebar } from "@/components/shared/Sidebar";
+import { useAuthStore } from "@/stores/auth-store";
 
-export const Route = createFileRoute("/_app")({ component: AppLayout });
+export const Route = createFileRoute("/_app")({
+  beforeLoad: () => {
+    const token = useAuthStore.getState().token;
+    if (!token) {
+      throw redirect({ to: "/auth/login" });
+    }
+  },
+  component: AppLayout,
+});
 
 function AppLayout() {
   return (
@@ -17,3 +26,4 @@ function AppLayout() {
     </div>
   );
 }
+

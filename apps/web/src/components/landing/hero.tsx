@@ -1,11 +1,14 @@
 import { Link } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
-import { ArrowRight, Play, Sparkles } from 'lucide-react'
+import { ArrowRight, LogIn, Sparkles } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 import { ResumeCard } from './resume-card'
 
 const steps = ['Master Profile', '1-Click Resume', 'ATS Optimize', 'Mock Interview']
 
 export function Hero() {
+  const token = useAuthStore((s) => s.token)
+
   return (
     <section className="relative z-10 mx-auto flex max-w-6xl flex-col items-center gap-12 px-4 pb-24 pt-36 md:pt-44 lg:flex-row lg:gap-8 lg:pb-32">
       {/* Left */}
@@ -68,21 +71,36 @@ export function Hero() {
           transition={{ duration: 0.7, delay: 0.35 }}
           className="mt-9 flex flex-col items-center gap-4 sm:flex-row lg:justify-start"
         >
-          <Link
-            to="/dashboard"
-            className="group relative inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-[0_0_28px_rgba(56,189,248,0.4)] transition-all hover:shadow-[0_0_44px_rgba(56,189,248,0.7)]"
-          >
-            <span className="absolute inset-0 rounded-xl ring-2 ring-brand-cyan/0 transition-all duration-300 group-hover:ring-brand-cyan/60" />
-            Get Started Free
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-          <Link
-            to="/auth/login"
-            className="glass inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold text-foreground transition-colors hover:text-brand-cyan"
-          >
-            <Play className="h-4 w-4 fill-current" />
-            Try Interactive Platform
-          </Link>
+          {token ? (
+            <>
+              <Link
+                to="/dashboard"
+                className="group relative inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-[0_0_28px_rgba(56,189,248,0.4)] transition-all hover:shadow-[0_0_44px_rgba(56,189,248,0.7)]"
+              >
+                <span className="absolute inset-0 rounded-xl ring-2 ring-brand-cyan/0 transition-all duration-300 group-hover:ring-brand-cyan/60" />
+                Launch Dashboard
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/auth/signup"
+                className="group relative inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-[0_0_28px_rgba(56,189,248,0.4)] transition-all hover:shadow-[0_0_44px_rgba(56,189,248,0.7)]"
+              >
+                <span className="absolute inset-0 rounded-xl ring-2 ring-brand-cyan/0 transition-all duration-300 group-hover:ring-brand-cyan/60" />
+                Get Started Free
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <Link
+                to="/auth/login"
+                className="glass inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold text-foreground transition-colors hover:text-brand-cyan"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign In to Account
+              </Link>
+            </>
+          )}
         </motion.div>
 
         <motion.p

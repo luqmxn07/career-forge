@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { motion } from 'framer-motion'
 import { ArrowRight, Check, Flame } from 'lucide-react'
+import { useAuthStore } from '@/stores/auth-store'
 
 const perks = [
   'Unlimited role-tailored resumes',
@@ -10,6 +11,8 @@ const perks = [
 ]
 
 export function PricingFooter() {
+  const token = useAuthStore((s) => s.token)
+
   return (
     <>
       <section id="pricing" className="relative z-10 mx-auto max-w-4xl px-4 pb-24">
@@ -47,10 +50,10 @@ export function PricingFooter() {
           </ul>
 
           <Link
-            to="/dashboard"
+            to={token ? "/dashboard" : "/auth/signup"}
             className="group mt-10 inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground shadow-[0_0_28px_rgba(56,189,248,0.4)] transition-all hover:shadow-[0_0_44px_rgba(56,189,248,0.7)]"
           >
-            Get Started Free
+            {token ? "Launch Dashboard" : "Get Started Free"}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </motion.div>
