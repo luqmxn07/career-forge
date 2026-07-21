@@ -138,6 +138,37 @@ html.theme-cyber-violet, body.theme-cyber-violet {
                       radial-gradient(900px 500px at 100% 0%, hsl(310 100% 60% / 0.1), transparent 55%);
 }
 
+/* Midnight Ink — near-black, low-distraction focus mode. */
+html.theme-midnight-ink, body.theme-midnight-ink {
+  color-scheme: dark;
+  --background: hsl(240 10% 3.5%);
+  --foreground: hsl(220 18% 96%);
+  --card: hsl(240 10% 6.5%);
+  --card-foreground: hsl(220 18% 96%);
+  --popover: hsl(240 10% 7%);
+  --popover-foreground: hsl(220 18% 96%);
+  --primary: hsl(210 100% 66%);
+  --primary-glow: hsl(197 100% 70%);
+  --primary-foreground: hsl(240 12% 5%);
+  --secondary: hsl(240 8% 11%);
+  --secondary-foreground: hsl(220 15% 90%);
+  --accent: hsl(240 8% 13%);
+  --accent-foreground: hsl(220 18% 96%);
+  --muted: hsl(240 8% 9%);
+  --muted-foreground: hsl(220 10% 58%);
+  --border: hsl(240 8% 16%);
+  --input: hsl(240 9% 10%);
+  --ring: hsl(210 100% 66%);
+  --glass: hsl(240 12% 7% / 0.82);
+  --glass-border: hsl(220 30% 95% / 0.08);
+  --gradient-primary: linear-gradient(135deg, hsl(210 100% 62%), hsl(190 100% 68%));
+  --gradient-surface: radial-gradient(1000px 600px at 10% -10%, hsl(210 100% 60% / 0.09), transparent 58%), radial-gradient(800px 500px at 100% 10%, hsl(260 90% 65% / 0.06), transparent 60%);
+  --shadow-glow: 0 10px 34px -14px hsl(210 100% 60% / 0.42);
+  --brand-blue: oklch(0.72 0.17 250);
+  --brand-purple: oklch(0.67 0.17 285);
+  --brand-cyan: oklch(0.83 0.13 210);
+}
+
 /* 🌿 Theme: Emerald Neon (Matrix Tech) */
 html.theme-emerald-glow, body.theme-emerald-glow {
   color-scheme: dark;
@@ -155,6 +186,40 @@ html.theme-emerald-glow, body.theme-emerald-glow {
   --gradient-primary: linear-gradient(135deg, hsl(158 90% 52%), hsl(140 100% 60%));
   --gradient-surface: radial-gradient(1200px 600px at 10% -10%, hsl(158 90% 52% / 0.15), transparent 60%),
                       radial-gradient(900px 500px at 100% 0%, hsl(180 100% 50% / 0.1), transparent 55%);
+}
+
+/* Sunset Ember — warm editorial contrast with an amber-to-coral accent. */
+html.theme-sunset-ember, body.theme-sunset-ember {
+  color-scheme: dark;
+  --background: hsl(18 22% 6%);
+  --foreground: hsl(30 28% 96%);
+  --card: hsl(18 18% 10%);
+  --card-foreground: hsl(30 28% 96%);
+  --popover: hsl(18 18% 10%);
+  --popover-foreground: hsl(30 28% 96%);
+  --primary: hsl(22 100% 62%);
+  --primary-glow: hsl(350 100% 70%);
+  --primary-foreground: hsl(18 24% 7%);
+  --secondary: hsl(18 15% 15%);
+  --secondary-foreground: hsl(30 20% 92%);
+  --accent: hsl(18 16% 17%);
+  --accent-foreground: hsl(30 28% 96%);
+  --emerald: hsl(48 100% 58%);
+  --emerald-foreground: hsl(25 40% 8%);
+  --muted: hsl(18 14% 13%);
+  --muted-foreground: hsl(20 12% 64%);
+  --border: hsl(18 16% 21%);
+  --input: hsl(18 16% 14%);
+  --ring: hsl(22 100% 62%);
+  --glass: hsl(18 22% 11% / 0.7);
+  --glass-border: hsl(30 50% 96% / 0.1);
+  --gradient-primary: linear-gradient(135deg, hsl(22 100% 62%), hsl(350 100% 68%));
+  --gradient-emerald: linear-gradient(135deg, hsl(48 100% 58%), hsl(28 100% 60%));
+  --gradient-surface: radial-gradient(1000px 650px at 8% -12%, hsl(22 100% 60% / 0.14), transparent 58%), radial-gradient(900px 560px at 100% 8%, hsl(350 100% 65% / 0.1), transparent 56%);
+  --shadow-glow: 0 10px 40px -12px hsl(22 100% 60% / 0.42);
+  --brand-blue: oklch(0.74 0.18 45);
+  --brand-purple: oklch(0.68 0.22 15);
+  --brand-cyan: oklch(0.84 0.14 75);
 }
 
 /* ☀️ Theme: Pure Light (High Contrast Clean) */
@@ -179,6 +244,11 @@ html.theme-pure-light, body.theme-pure-light {
   --gradient-primary: linear-gradient(135deg, hsl(215 100% 50%), hsl(225 100% 60%));
   --gradient-surface: radial-gradient(1200px 600px at 10% -10%, hsl(215 100% 50% / 0.08), transparent 60%),
                       radial-gradient(900px 500px at 100% 0%, hsl(280 80% 60% / 0.05), transparent 55%);
+  --shadow-glow: 0 10px 36px -14px hsl(215 100% 50% / 0.34);
+  --shadow-card: 0 1px 0 0 hsl(220 30% 20% / 0.03) inset, 0 20px 40px -22px hsl(220 30% 20% / 0.2);
+  --brand-blue: oklch(0.62 0.2 250);
+  --brand-purple: oklch(0.6 0.2 300);
+  --brand-cyan: oklch(0.66 0.16 210);
 }
 
 @layer base {
@@ -216,7 +286,7 @@ html.theme-pure-light, body.theme-pure-light {
 }
 
 @utility glass-panel {
-  background: hsl(228 20% 8% / 0.75);
+  background: color-mix(in srgb, var(--glass) 94%, var(--background));
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(24px) saturate(150%);
 }
@@ -274,12 +344,24 @@ html.theme-pure-light, body.theme-pure-light {
   border: 1px solid oklch(1 0 0 / 12%);
 }
 
+html.theme-pure-light .glass,
+html.theme-pure-light .glass-strong {
+  background: linear-gradient(180deg, hsl(0 0% 100% / 92%), hsl(210 30% 98% / 78%));
+  border-color: hsl(214 24% 76% / 0.65);
+}
+
 @utility grid-bg {
   background-image:
     linear-gradient(oklch(1 0 0 / 4%) 1px, transparent 1px),
     linear-gradient(90deg, oklch(1 0 0 / 4%) 1px, transparent 1px);
   background-size: 44px 44px;
   mask-image: radial-gradient(ellipse at center, black 40%, transparent 75%);
+}
+
+html.theme-pure-light .grid-bg {
+  background-image:
+    linear-gradient(hsl(215 30% 35% / 8%) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(215 30% 35% / 8%) 1px, transparent 1px);
 }
 
 @utility glow-blue {
@@ -309,4 +391,3 @@ html.theme-pure-light, body.theme-pure-light {
   0%, 100% { transform: translate3d(-10%, -10%, 0) scale(1); }
   50% { transform: translate3d(10%, 5%, 0) scale(1.15); }
 }
-

@@ -1,6 +1,12 @@
 import { create } from "zustand";
 
-export type AppTheme = "dark" | "cyber-violet" | "emerald-glow" | "pure-light";
+export type AppTheme =
+  | "dark"
+  | "midnight-ink"
+  | "cyber-violet"
+  | "emerald-glow"
+  | "sunset-ember"
+  | "pure-light";
 
 interface UIState {
   sidebarCollapsed: boolean;
@@ -15,7 +21,7 @@ interface UIState {
 const getInitialTheme = (): AppTheme => {
   if (typeof window === "undefined") return "dark";
   const saved = localStorage.getItem("cf_theme") as AppTheme;
-  if (saved && ["dark", "cyber-violet", "emerald-glow", "pure-light"].includes(saved)) {
+  if (saved && ["dark", "midnight-ink", "cyber-violet", "emerald-glow", "sunset-ember", "pure-light"].includes(saved)) {
     return saved;
   }
   return "dark";
@@ -24,7 +30,14 @@ const getInitialTheme = (): AppTheme => {
 export const applyThemeToDom = (theme: AppTheme) => {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-  root.classList.remove("theme-cyber-violet", "theme-emerald-glow", "theme-pure-light", "dark");
+  root.classList.remove(
+    "theme-midnight-ink",
+    "theme-cyber-violet",
+    "theme-emerald-glow",
+    "theme-sunset-ember",
+    "theme-pure-light",
+    "dark"
+  );
   if (theme !== "dark") {
     root.classList.add(`theme-${theme}`);
   } else {

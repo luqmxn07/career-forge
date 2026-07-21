@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import { Bell, LogOut, Menu, Sparkles, User as UserIcon, Zap } from "lucide-react";
+import { Bell, LogOut, Menu, Palette, User as UserIcon, Zap } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuthStore } from "@/stores/auth-store";
 import { useUIStore } from "@/stores/ui-store";
@@ -93,21 +93,23 @@ export function Header() {
               aria-label="Switch Theme"
               title="Switch Theme"
             >
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Palette className="h-4 w-4 text-primary" />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
             <DropdownMenu.Content
               align="end"
               sideOffset={8}
-              className="glass-panel z-50 w-48 rounded-lg border border-glass-border p-1.5 shadow-2xl space-y-1"
+              className="glass-panel z-50 w-52 rounded-lg border border-glass-border p-1.5 shadow-2xl space-y-1"
             >
               <p className="px-2 py-1 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Select Theme</p>
               {[
-                { id: "dark", label: "🌙 Dark Glass", icon: "✨" },
-                { id: "cyber-violet", label: "👾 Cyber Violet", icon: "💜" },
-                { id: "emerald-glow", label: "🌿 Emerald Neon", icon: "💚" },
-                { id: "pure-light", label: "☀️ Pure Light", icon: "🤍" },
+                { id: "dark", label: "Dark Glass", icon: "✦" },
+                { id: "midnight-ink", label: "Midnight Ink", icon: "◐" },
+                { id: "cyber-violet", label: "Cyber Violet", icon: "◈" },
+                { id: "emerald-glow", label: "Emerald Glow", icon: "◆" },
+                { id: "sunset-ember", label: "Sunset Ember", icon: "◒" },
+                { id: "pure-light", label: "Pure Light", icon: "☼" },
               ].map((t) => (
                 <DropdownMenu.Item
                   key={t.id}

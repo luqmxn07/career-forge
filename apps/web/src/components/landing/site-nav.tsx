@@ -1,8 +1,10 @@
 import { Link, useNavigate } from '@tanstack/react-router'
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu'
 import { motion } from 'framer-motion'
-import { Flame, LogOut, LogIn, UserPlus } from 'lucide-react'
+import { Flame, LogOut, LogIn, Palette, UserPlus } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-store'
 import { useLogout } from '@/features/auth/api/auth'
+import { useUIStore, type AppTheme } from '@/stores/ui-store'
 import { toast } from 'sonner'
 
 const links = [
@@ -12,8 +14,19 @@ const links = [
   { label: 'Pricing', href: '#pricing' },
 ]
 
+const themes: { id: AppTheme; label: string; swatch: string }[] = [
+  { id: 'dark', label: 'Dark Glass', swatch: 'from-sky-400 to-violet-500' },
+  { id: 'midnight-ink', label: 'Midnight Ink', swatch: 'from-slate-500 to-slate-950' },
+  { id: 'cyber-violet', label: 'Cyber Violet', swatch: 'from-violet-500 to-fuchsia-500' },
+  { id: 'emerald-glow', label: 'Emerald Glow', swatch: 'from-emerald-400 to-teal-500' },
+  { id: 'sunset-ember', label: 'Sunset Ember', swatch: 'from-amber-400 to-rose-500' },
+  { id: 'pure-light', label: 'Pure Light', swatch: 'from-slate-100 to-sky-300' },
+]
+
 export function SiteNav() {
   const token = useAuthStore((s) => s.token)
+  const theme = useUIStore((s) => s.theme)
+  const setTheme = useUIStore((s) => s.setTheme)
   const navigate = useNavigate()
   const logout = useLogout()
 
@@ -62,6 +75,37 @@ export function SiteNav() {
         </ul>
 
         <div className="flex items-center gap-2">
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button
+                className="glass grid h-9 w-9 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+                aria-label="Choose theme"
+                title="Choose theme"
+              >
+                <Palette className="h-4 w-4 text-primary" />
+              </button>
+            </DropdownMenu.Trigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                align="end"
+                sideOffset={10}
+                className="glass-strong z-50 w-52 rounded-2xl p-2 shadow-2xl"
+              >
+                <p className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Appearance</p>
+                {themes.map((item) => (
+                  <DropdownMenu.Item
+                    key={item.id}
+                    onSelect={() => setTheme(item.id)}
+                    className="flex cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium text-foreground outline-none transition-colors hover:bg-white/10 focus:bg-white/10"
+                  >
+                    <span className={`h-4 w-4 rounded-full bg-gradient-to-br ${item.swatch} ring-1 ring-white/20`} />
+                    <span className="flex-1">{item.label}</span>
+                    {theme === item.id && <span className="text-primary">✓</span>}
+                  </DropdownMenu.Item>
+                ))}
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
           {token ? (
             <>
               <Link
